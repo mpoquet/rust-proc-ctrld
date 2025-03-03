@@ -3,6 +3,7 @@ target/
 out/
 bin/
 build/
+tmp/
 
 # Fichiers temporaires ou de sauvegarde
 *.log

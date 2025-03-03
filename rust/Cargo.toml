@@ -4,3 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+daemonize = "0.5"
+tokio = { version = "1", features = ["full"] }
+nix = "0.29"
