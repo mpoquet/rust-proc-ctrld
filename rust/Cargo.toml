@@ -15,3 +15,7 @@ path = "src/monitoring_tools/clone.rs"
 [[bin]]
 name = "foo"
 path = "src/monitoring_tools/foo.rs"
+
+[[bin]]
+name = "test_clone"
+path = "src/monitoring_tools/test_clone.rs"

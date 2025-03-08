@@ -1,4 +1,4 @@
-use std::process::{Command, Child};
+use std::process::Command;
 use std::sync::atomic::{AtomicI32, Ordering};
 use nix::sys::signal::{self, SigHandler, Signal};
 use nix::sys::wait::waitpid;
@@ -9,7 +9,7 @@ use std::{thread, time};
 // Variable atomique pour stocker le PID du fils
 static CHILD_PID: AtomicI32 = AtomicI32::new(0);
 
-extern "C" fn handle_sigchld(_: i32) {
+pub extern "C" fn handle_sigchld(_: i32) {
     // Récupère le PID de manière atomique
     let raw_pid = CHILD_PID.load(Ordering::Relaxed);
     if raw_pid != 0 {
@@ -22,28 +22,32 @@ extern "C" fn handle_sigchld(_: i32) {
     }
 }
 
+pub fn execute_file(path : String){
+    match Command::new(path).spawn() {
+        Ok(c) => {
+            println!("Processus lancé avec PID : {}", c.id());
+            CHILD_PID.store(c.id() as i32, Ordering::Relaxed);
+        },
+        Err(e) => println!("Error while trying to execute file : {}", e),
+    }
+}
+
+pub fn setup_handler(f_handler: extern "C" fn(i32)){
+    unsafe {
+        let handler = SigHandler::Handler(f_handler);
+        match signal::signal(Signal::SIGCHLD, handler){
+            Ok(t) => println!("Handler has been succesfully placed : {:?}", t),
+            Err(e) => println!("Error while trying to place the handler {}", e),
+        }
+    }
+}
+
 fn main() {
     // Configuration du gestionnaire de signal
-    unsafe {
-        let handler = SigHandler::Handler(handle_sigchld);
-        signal::signal(Signal::SIGCHLD, handler)
-            .expect("Échec de l'enregistrement du gestionnaire SIGCHLD");
-    }
+    setup_handler(handle_sigchld);
 
-    let child: Child = match Command::new("./foo").spawn() {
-        Ok(c) => c,
-        Err(e) => {
-            eprintln!("Erreur lors du lancement : {}", e);
-            return;
-        }
-    };
-
-    // Stockage atomique du PID
-    let pid = child.id() as i32;
-    CHILD_PID.store(pid, Ordering::Relaxed);
-
-    println!("Processus lancé avec PID : {}", pid);
+    execute_file(String::from("./foo"));
 
     // Attente active (à adapter selon les besoins)
-    thread::sleep(time::Duration::from_secs(5));
+    thread::sleep(time::Duration::from_secs(2));
 }
