@@ -32,7 +32,7 @@ chaque machine, offrant une interface de contrôle distant.
 
 ## Crédit
 
-FORT Alexandre 
+FORT Alexandre  
 MAATI Mohamed  
 FIEUX Telmo  
 LAGIER Hadrien  
