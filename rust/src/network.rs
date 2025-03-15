@@ -1,5 +1,6 @@
 use std::net::TcpListener;
 use std::net::TcpStream;
+use std::sync::{Arc, atomic::{AtomicBool, Ordering}};
 
 /*
     Gestion des communications réseaux
@@ -11,21 +12,22 @@ use std::net::TcpStream;
 /*
     Configurer le serveur réseau pour qu'il écoute sur un port TCP et exécute les commandes
 */
-fn start_server() -> Result<(), ()> {
-    let listener = TcpListener::bind("127.0.0.1:80")
-        .unwrap();
+pub fn start_server(running: Arc<AtomicBool>) -> Result<(), ()> {
+    let listener = TcpListener::bind("127.0.0.1:80").unwrap();
     println!("Server listening on port 80");
 
     for stream in listener.incoming() {
-        // TODO handle_client() ce que fais notre client (-> ici qu'il serait intêressant d'utiliser l'exécution des commandes ? => poll)
+        if !running.load(Ordering::SeqCst) {
+            break;
+        }
+
         match stream {
             Ok(stream) => {
                 handle_client(stream);
-            },
+            }
             Err(e) => {
                 eprintln!("Connection failed: {}", e);
-                return Err(());
-            },
+            }
         }
     }
 
@@ -33,6 +35,6 @@ fn start_server() -> Result<(), ()> {
 }
 
 #[allow(unused_variables)]
-fn handle_client(stream: TcpStream) {
+pub fn handle_client(stream: TcpStream) {
     ()
 }
