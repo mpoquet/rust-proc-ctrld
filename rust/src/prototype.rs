@@ -5,6 +5,7 @@ use std::{io::{self, Write}, process::Command};
     Fonction qui agit localement comme un "petit terminal"
     stop pour arrêter le processus 
 */
+#[allow(dead_code)]
 pub fn prototype() {
 
     println!("Lancement du Démon de Contrôle");

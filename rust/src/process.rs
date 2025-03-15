@@ -14,7 +14,7 @@ use nix::unistd::{fork, setsid, chdir, close};
         - chdir() -> évite d'empêcher un démontage
         - close(0, 1, 2) -> on ferme les descripteurs inutiles
 */
-fn daemonize() -> Result<(), ()>{
+pub fn daemonize() -> Result<(), ()> {
     match unsafe {fork()} {
         Ok(ForkResult::Parent { .. }) => std::process::exit(0),
         Ok(ForkResult::Child) => {

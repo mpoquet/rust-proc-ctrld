@@ -1,3 +1,4 @@
+use std::io::Read;
 use std::net::TcpListener;
 use std::net::TcpStream;
 use std::sync::{Arc, atomic::{AtomicBool, Ordering}};
@@ -34,7 +35,15 @@ pub fn start_server(running: Arc<AtomicBool>) -> Result<(), ()> {
     Ok(())
 }
 
-#[allow(unused_variables)]
-pub fn handle_client(stream: TcpStream) {
-    ()
+/*
+    Gestion du client des commandes sur le stream TCP
+*/
+pub fn handle_client(mut stream: TcpStream) {
+    let mut buffer = [0; 512]; // Création de buffer pour le stream TCP
+    let mess = stream.read(&mut buffer);
+
+    match mess {
+        Ok(_) => todo!(),
+        Err(_) => todo!(),
+    } 
 }

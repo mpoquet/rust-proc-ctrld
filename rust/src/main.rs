@@ -1,8 +1,11 @@
-use prototype::*;
-
 mod prototype;
 mod network;
 mod process;
+
+use std::sync::{atomic::AtomicBool, Arc};
+
+use process::daemonize;
+use network::start_server;
 
 /*
     Point d'entrée, initialisation du démon
@@ -13,5 +16,8 @@ mod process;
 */
 
 fn main() {
-    prototype();
+    let running = Arc::new(AtomicBool::new(true));
+
+    daemonize().expect("error main() : function daemonize error.");
+    start_server(running).expect("error main() : function start_server error.");
 }
