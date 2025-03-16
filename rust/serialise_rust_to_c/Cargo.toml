@@ -1,0 +1,7 @@
+[package]
+name = "serialise_rust_to_c"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+flatbuffers = "23.5.26"
