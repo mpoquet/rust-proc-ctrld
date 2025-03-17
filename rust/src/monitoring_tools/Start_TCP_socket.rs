@@ -1,3 +1,5 @@
+mod inotify;
+
 use nix::unistd::Pid;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use std::time::Duration;
