@@ -1,4 +1,3 @@
-
 use std::fmt;
 
 use inotify::{
@@ -6,31 +5,30 @@ use inotify::{
 };
 
 #[derive(Debug)]
-struct DisplayEventMask(EventMask);
+pub struct DisplayEventMask(pub EventMask);
 
-fn create_inotify_watch_file(path: &str) -> Inotify {
-    let inotify = Inotify::init().expect("error inotify init.");
-
+pub fn create_inotify_watch_file(inotify: &Inotify, path: &str) {
     inotify.watches()
         .add(
             path,
             WatchMask::ALL_EVENTS
         )
         .expect("error adding file watch");
-
-    inotify
 }
 
-fn inotify_read_blocking(mut inotify: Inotify) {
+pub fn inotify_read_blocking(inotify: &mut Inotify) {
     let mut buffer = [0; 1024];
 
-    let events = inotify.read_events_blocking(&mut buffer)
+    let events = (*inotify).read_events_blocking(&mut buffer)
         .expect("error while reading events in buffer");
 
     for event in events {
         let event_mask = DisplayEventMask(event.mask);
-        let name = event.name.expect("error no file recognize");
-        println!("Event = {}, for the file : {:?}.", event_mask, name);
+
+        match event.name {
+            Some(name) => println!("Event = {}, for the file : {:?}.", event_mask, name),
+            None => println!("No event record"),
+        }        
     }
 }
 
@@ -65,6 +63,10 @@ impl fmt::Display for DisplayEventMask {
 
 
 fn main() {
-    let inotify = create_inotify_watch_file("/home/wer/Documents/rust-proc-ctrld/rust/src/monitoring_tools");
-    inotify_read_blocking(inotify);
+    let mut inotify = Inotify::init().expect("error inotify init.");
+    create_inotify_watch_file(&inotify, "/home/wer/Documents/rust-proc-ctrld/rust/src/monitoring_tools");
+
+    inotify_read_blocking(&mut inotify);
+
+    inotify.close().expect("error closing inotify instance");
 }

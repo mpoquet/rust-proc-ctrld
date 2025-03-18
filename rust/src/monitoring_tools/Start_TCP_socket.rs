@@ -1,4 +1,4 @@
-mod inotify;
+mod inotify_tool;
 
 use nix::unistd::Pid;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
