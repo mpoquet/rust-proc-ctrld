@@ -3,14 +3,14 @@ extern crate flatbuffers;
 #[allow(dead_code, unused_imports)]
 #[path = "./monster_generated.rs"]
 mod monster_generated;
-pub use monster_generated::my_game::sample::{get_root_as_monster,
+pub use monster_generated::my_game::sample::{root_as_monster,
                                             Color, Equipement,
                                             Monster, MonsterArgs,
                                             Vec3,
                                             Weapon, WeaponArgs};
 
 
-fn main() {
+fn main() -> std::io::Result<()> {
     let mut builder = flatbuffers::FlatBufferBuilder::with_capacity(1024);
 
     let weapon_one_name = builder.create_string("Sword");
@@ -43,7 +43,7 @@ fn main() {
         inventory: Some(inventory),
         color: Color::Red,
         weapons: Some(weapons),
-        equipped_type: Equipment::Weapon,
+        equipped_type: Equipement::Weapon,
         equipped: Some(axe.as_union_value()),
         path: Some(path),
         ..Default::default()
@@ -52,4 +52,6 @@ fn main() {
     builder.finish(orc, None);
 
     let buf = builder.finished_data();
+    std::fs::write("buffer.fb", buf)?; //create and write our buffer in a FlatBuffers binary file (fast to access and compact)
+    Ok(())
 }
