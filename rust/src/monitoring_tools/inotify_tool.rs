@@ -46,7 +46,3 @@ pub fn print_event(event: EventMask, source: &str) {
     }
 
 }
-
-fn main() {
-    ()
-}

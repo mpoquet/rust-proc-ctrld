@@ -76,8 +76,3 @@ pub async fn read_events_non_blocking(path: &str) -> Result<(), ()>{
 
     Ok(())
 }
-
-#[tokio::main]
-async fn main() {
-    ()
-}
