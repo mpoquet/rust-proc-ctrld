@@ -55,17 +55,20 @@ mod test {
 
         #[test]
         fn test_ck_is_socket_open() {
-            let res = is_socket_open("127.0.0.1:80800000");
+            let addr = "127.0.0.1";
+            let port = "80800000";
+            let res = is_port_open(addr, port);
 
             assert!(!res)
         }
 
         #[test]
         fn test_ck_is_socket_open_v2() {
-            let addr = "127.0.0.1:8080";
+            let addr = "127.0.0.1";
+            let port = "8080";
             let listener = open_socket(addr)
                 .expect("error test : socket failed open.");
-            let res = is_socket_open(addr);
+            let res = is_port_open(addr, port);
             drop(listener);
 
             assert!(res)
