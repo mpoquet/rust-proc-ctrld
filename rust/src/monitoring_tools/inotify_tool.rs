@@ -1,3 +1,4 @@
+use std::fs::{metadata, Metadata};
 use inotify::{
     EventMask, Inotify, WatchMask
 };
@@ -32,17 +33,8 @@ pub fn inotify_read_blocking(inotify: &mut Inotify) {
     }
 }
 
-pub fn print_event(event: EventMask, source: &str) {
-
-    if event.contains(EventMask::CREATE) {
-        print!("CREATE ");
-        if event.contains(EventMask::ISDIR) {
-            print!("| DIR ");
-        }
-        else {
-            print!("| FILE ")
-        }
-        println!("named : {}", source);
-    }
-
+pub fn get_size_file(path: &String) -> std::io::Result<u64> {
+    let meta_data = metadata(path)?;
+    let file_size = meta_data.len();
+    Ok(file_size)
 }

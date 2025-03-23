@@ -16,7 +16,8 @@ async fn main() {
 
     println!("We watch in the path : {}", args[1]);
 
-    read_events_non_blocking(&args[1])
+    // Par exemple je met que je veux être notifié si la taille dépasse les 100 octets
+    read_events_non_blocking(&args[1], 100)
         .await
         .expect("error read_event_non_blocking");
 
