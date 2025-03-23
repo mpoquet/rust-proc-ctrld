@@ -23,6 +23,7 @@ pub extern "C" fn handle_sigchld(_: i32) {
 }
 
 pub fn execute_file(path : String){
+    println!("avant le spawn");
     match Command::new(path).spawn() {
         Ok(c) => {
             println!("Processus lancé avec PID : {}", c.id());

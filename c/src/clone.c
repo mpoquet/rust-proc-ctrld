@@ -5,8 +5,10 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include "../include/clone.h"
+#include <sys/signalfd.h>
+#include <signal.h>
 
-#define STACK_SIZE 1024*1024  // Taille de la pile du fils
+#define STACK_SIZE 1024*1024
 
 
 int child_function(void *arg) {
@@ -48,17 +50,28 @@ info_child* launch_process(int stack_size, parameter_clone* parameters, int flag
     return info_c;
 
 }
-/*
+
+/*Temporary test function to showcas the use of clone.h 
+and how to wait the child with signal fd*/
 int main() {
+    sigset_t mask;
+    int sfd;
+    struct signalfd_siginfo fdsi;
+    ssize_t s;
 
-    // struct sigaction sa;
-    // sigemptyset(&sa.sa_mask);
-    // sa.sa_flags = SA_RESTART;
-    // sa.sa_handler = sigio_handler;
-    // if (sigaction(SIGIO, &sa, NULL) == -1) {
-    //     fprintf(stderr, "sigaction");
-    // }
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGCHLD);
 
+    if (sigprocmask(SIG_BLOCK,&mask,NULL)==-1){
+        perror("sigprocmask");
+        exit(1);
+    }
+
+    sfd=signalfd(-1,&mask,0);
+    if(sfd == -1){
+        perror("signalfd");
+        exit(3);
+    }
 
     const char* filepath = "./foo";
     parameter_clone* param = malloc(sizeof(parameter_clone));
@@ -68,11 +81,24 @@ int main() {
     }
     param->filepath=filepath;
     param->args = (char* const[]) { "./foo","5", NULL };
-    info_child* info = launch_process(STACK_SIZE,param,SIGCHLD);
+    info_child* info = launch_process(STACK_SIZE,param,0);
 
-    printf("Processus parent : PID = %d, Fils = %d\n", getpid(), info->child_id);
-    waitpid(info->child_id, NULL, 0);  // Attente de la fin du fils
-    free(info->stack_p);
+    for (;;) {
+        s = read(sfd, &fdsi, sizeof(fdsi));
+        if (s != sizeof(fdsi)){
+            perror("read");
+            exit(2);
+        } else if (fdsi.ssi_signo == SIGCHLD) {
+            printf("Got SIGCHLD\n");
+            printf("Processus parent : PID = %d, Fils = %d\n", getpid(), info->child_id);
+            waitpid(info->child_id, NULL, 0);  // Attente de la fin du fils
+            free(info->stack_p);
+            break;
+        } else {
+            printf("Read unexpected signal\n");
+        }
+    }
+    close(sfd);
 
     return 0;
-}*/
+}

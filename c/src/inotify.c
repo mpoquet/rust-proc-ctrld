@@ -8,6 +8,7 @@
 #include <sched.h>
 #include "../include/clone.h"
 #include <signal.h>
+#include <sys/stat.h>
 
 
 #define MAX_EVENTS 1024  /* Maximum number of events to process*/
@@ -16,6 +17,16 @@
 #define BUF_LEN     ( MAX_EVENTS * ( EVENT_SIZE + LEN_NAME )) /*buffer to store the data of events*/
 
 static int inotifyFd;
+
+int findSize(char file_name[]) {
+    struct stat statbuf;
+    if (stat(file_name, &statbuf) == 0) {
+        return statbuf.st_size;
+    } else {
+        printf("File Not Found!\n");
+        return -1;
+    }
+}
 
 static void displayInotifyEvent(struct inotify_event *i)
 {
@@ -33,7 +44,10 @@ static void displayInotifyEvent(struct inotify_event *i)
     if (i->mask & IN_DELETE_SELF)   printf("IN_DELETE_SELF ");
     if (i->mask & IN_IGNORED)      printf("IN_IGNORED ");
     if (i->mask & IN_ISDIR)      printf("IN_ISDIR ");
-    if (i->mask & IN_MODIFY)        printf("IN_MODIFY ");
+    if (i->mask & IN_MODIFY) {
+        printf("IN_MODIFY ");
+        printf("file size : %d",findSize(i->name));
+    }        
     if (i->mask & IN_MOVE_SELF)  printf("IN_MOVE_SELF ");
     if (i->mask & IN_MOVED_FROM)    printf("IN_MOVED_FROM ");
     if (i->mask & IN_MOVED_TO)    printf("IN_MOVED_TO ");
@@ -69,7 +83,7 @@ void sigio_handler(int sig){
     }
 }
 
-
+/*
 int main (int argc, char** argv){
     inotifyFd = inotify_init();
     if (inotifyFd == -1){
@@ -85,14 +99,13 @@ int main (int argc, char** argv){
         fprintf(stderr, "sigaction");
     }
 
-    /* Set owner process that is to receive "I/O possible" signal */
+    // Set owner process that is to receive "I/O possible" signal
 
     if (fcntl(inotifyFd, F_SETOWN, getpid()) == -1) {
         fprintf(stderr, "fcntl(F_SETOWN)");
     }
 
-    /* Enable "I/O possible" signaling and make I/O nonblocking
-       for file descriptor */
+    // Enable "I/O possible" signaling and make I/O nonblocking for file descriptor 
 
     int flags = fcntl(inotifyFd, F_GETFL);
     if (fcntl(inotifyFd, F_SETFL, flags | O_ASYNC | O_NONBLOCK) == -1) {
@@ -101,14 +114,14 @@ int main (int argc, char** argv){
 
     inotify_add_watch(inotifyFd, "./", IN_CREATE | IN_ACCESS | IN_MODIFY );
 
-    const char* filepath = "./foo";
+    char* filepath = "Start_AF_UNIX";
     parameter_clone* param = malloc(sizeof(parameter_clone));
     if (!param) {
         perror("malloc");
         exit(EXIT_FAILURE);
     }
     param->filepath=filepath;
-    param->args = (char* const[]) { "./foo","5", NULL };
+    param->args = (char* const[]) { "Start_AF_UNIX", NULL };
     info_child* info = launch_process(1024*1024,param,SIGCHLD);
 
     printf("Processus parent : PID = %d, Fils = %d\n", getpid(), info->child_id);
@@ -116,4 +129,4 @@ int main (int argc, char** argv){
     free(info->stack_p);
 
     return 1;
-}
+}*/
