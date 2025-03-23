@@ -53,6 +53,7 @@ info_child* launch_process(int stack_size, parameter_clone* parameters, int flag
 
 /*Temporary test function to showcas the use of clone.h 
 and how to wait the child with signal fd*/
+/*
 int main() {
     sigset_t mask;
     int sfd;
@@ -101,4 +102,4 @@ int main() {
     close(sfd);
 
     return 0;
-}
+}*/
