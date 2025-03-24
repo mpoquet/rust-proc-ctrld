@@ -1,5 +1,5 @@
 use inotify::{Event, EventMask};
-use tokio::task;
+use tokio::{sync::watch, task};
 use std::os::fd::AsRawFd;
 use nix::libc::{self, epoll_create1, epoll_ctl, epoll_wait, epoll_event, fcntl, EPOLLIN, EPOLL_CTL_ADD, F_SETFL, O_NONBLOCK};
 
@@ -13,46 +13,49 @@ fn set_non_blocking(fd: i32) -> Result<(), ()>{
     if flags < 0 {
         return Err(());
     }
-    if unsafe { fcntl(fd, F_SETFL, flags | O_NONBLOCK)} < 0 {
+    if unsafe {fcntl(fd, F_SETFL, flags | O_NONBLOCK)} < 0 {
         return Err(());
     }
 
     Ok(())
 }
 
-pub async fn read_events_non_blocking(path: &str, reach_size: u64) -> Result<(), ()>{
-    let mut inotify = create_inotify_watch_file(path);
-    let inotify_fd = inotify.as_raw_fd();
-    set_non_blocking(inotify_fd)
-        .expect("error set_non_blocking() : inotify_fd failed.");
-
-    let epoll_fd = unsafe {epoll_create1(0)};
-
-    if epoll_fd < 0 {
-        return Err(());
-    }
-
-    // Ajouter inotify à epoll
+pub fn add_fd_to_epoll(epoll_fd: i32, watch_fd: i32) -> Result<(), ()> {
     let mut event = epoll_event {
         events: EPOLLIN as u32,
         u64: epoll_fd as u64,
     };
 
     let result = unsafe {
-        epoll_ctl(epoll_fd, EPOLL_CTL_ADD, inotify_fd, &mut event)
+        epoll_ctl(epoll_fd, EPOLL_CTL_ADD, watch_fd, &mut event)
     };
-
     if result < 0 {
         return Err(());
     }
+    Ok(())
+}
+
+pub async fn read_events_non_blocking(path: &str, reach_size: u64) -> Result<(), ()>{
+    let epoll_fd = unsafe {epoll_create1(0)};
+    if epoll_fd < 0 {
+        return Err(());
+    }
+
+    let mut inotify = create_inotify_watch_file(path);
+    let inotify_fd = inotify.as_raw_fd();
+    set_non_blocking(inotify_fd)
+        .expect("error set_non_blocking() : inotify_fd failed.");
+    add_fd_to_epoll(epoll_fd, inotify_fd)
+        .expect("error failed to add fd to epoll");
 
     let mut events = [epoll_event { events: 0, u64: 0 }; 10];
-
     task::spawn({
             let path = path.to_string();
             async move {
             loop {
-                let num_events = unsafe { epoll_wait(epoll_fd, events.as_mut_ptr(), events.len() as i32, -1) };
+                let num_events = unsafe {
+                    epoll_wait(epoll_fd, events.as_mut_ptr(), events.len() as i32, -1)
+                };
                 if num_events < 0 {
                     eprintln!("error num_events < 0");
                     break;
