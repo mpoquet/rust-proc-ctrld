@@ -1,6 +1,6 @@
-use std::fs::{metadata, Metadata};
+use std::fs::metadata;
 use inotify::{
-    EventMask, Inotify, WatchMask
+    Inotify, WatchMask
 };
 
 pub fn create_inotify_watch_file(path: &str) -> Inotify {
@@ -10,7 +10,9 @@ pub fn create_inotify_watch_file(path: &str) -> Inotify {
     inotify.watches()
         .add(
             path,
-            WatchMask::ALL_EVENTS
+            WatchMask::CREATE
+            | WatchMask::CLOSE_NOWRITE
+            | WatchMask::CLOSE_WRITE
         )
         .expect("error adding file watch");
 

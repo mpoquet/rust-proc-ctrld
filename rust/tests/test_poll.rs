@@ -2,7 +2,7 @@
  *  J'utilise dans un fichier a part car c'est une boucle infinie
  */
 
-use rust_proc_ctrl::monitoring_tools::poll::read_events_non_blocking;
+use rust_proc_ctrl::monitoring_tools::epoll::read_events_non_blocking;
 use std::env;
 
 
