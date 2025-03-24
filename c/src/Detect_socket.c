@@ -146,38 +146,14 @@ int receive_message(int socket){
                 printf("erreur");
             }
             else{
-                // printf("Notification :\n");
-                // // printf("message : %p\n", NLMSG_DATA(nh));
-                // // printf("message : %d\n", NLMSG_PAYLOAD(nh,len));
-                // struct unix_diag_msg *diag = NLMSG_DATA(nh);
-                // printf("protocol : %u \n",diag->udiag_ino);
-                // printf("socket state : %d \n", diag->udiag_type);
-
                 struct inet_diag_msg* idm = NLMSG_DATA(nh);
                 printf("uid : %d", idm->idiag_uid);
                 struct inet_diag_sockid ids = idm->id;
                 printf("src port : %d", ids.idiag_src);
 
-
                 if (print_diag(NLMSG_DATA(nh), nh->nlmsg_len)){
                        return -1;
                 }
-                
-
-
-
-                // struct ifaddrmsg *ifa = NLMSG_DATA(nh);
-                // struct rtattr *rta = IFA_RTA(ifa);
-                // int len = IFA_PAYLOAD(nh);
-            
-                // while (RTA_OK(rta, len)) {
-                //     if (rta->rta_type == IFA_ADDRESS) {
-                //         // The IP address is stored in the rta->rta_data field
-                //         printf("IP Address: %p\n", (void *)RTA_DATA(rta));
-                //         break;
-                //     }
-                //     rta = RTA_NEXT(rta, len);
-                // }
                 fflush(stdout);
                 
             }

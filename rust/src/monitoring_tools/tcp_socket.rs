@@ -110,7 +110,7 @@ async unsafe fn launch_trace_process(target: &str) -> Result<(), Box<dyn std::er
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     unsafe {
-        launch_trace_process("/home/telmo/Bureau/Bureau d'étude/Code/rust-proc-ctrld/rust/target/debug/Start_TCP_socket").await?;
+        launch_trace_process("./Start_TCP_socket").await?;
     }
 
     // Attendre que le serveur soit prêt
