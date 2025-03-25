@@ -1,12 +1,19 @@
-use nix::sys::signalfd::{SfdFlags, SignalFd};
-use nix::sys::signal::{SigSet, Signal};
+use tokio::signal::unix::{signal, SignalKind};
+use std::process;
+use tokio::task;
 
-pub fn create_signalfd() -> std::io::Result<SignalFd> {
-    let mut mask = SigSet::empty();
-    mask.add(Signal::SIGINT);
-    mask.add(Signal::SIGTERM);
-    mask.add(Signal::SIGHUP);
-    mask.thread_block().expect("error block signal");
+pub fn read_events_signal() -> Result<(), ()>{
+    println!("PID = {}", process::id());
+    let mut stream_signal = signal(SignalKind::interrupt())
+        .expect("error assigning signal");
 
-    Ok(SignalFd::with_flags(&mask, SfdFlags::empty()).expect("error setting up flags to fd."))
+    task::spawn({
+        async move {
+            loop {
+                stream_signal.recv().await;
+                println!("GOT SIGINT");
+            }
+        }
+    });
+    Ok(())
 }
