@@ -15,7 +15,7 @@
 #include <sys/un.h>
 
 
-static int print_diag(const struct unix_diag_msg *diag, unsigned int len){
+static int print_diag(const struct unix_diag_msg *diag, unsigned int len, const char* path_searched){
 
     if (len < NLMSG_LENGTH(sizeof(*diag))) {
         fputs("short response\n", stderr);
@@ -30,7 +30,7 @@ static int print_diag(const struct unix_diag_msg *diag, unsigned int len){
     unsigned int rta_len = len - NLMSG_LENGTH(sizeof(*diag));
     unsigned int peer = 0;
     size_t path_len = 0;
-    char path[sizeof(((struct sockaddr_un *) 0)->sun_path) + 1];
+    char path[sizeof(((struct sockaddr_un *) 0)->sun_path) + 1]="";
 
     for (struct rtattr *attr = (struct rtattr *) (diag + 1);
                 RTA_OK(attr, rta_len); attr = RTA_NEXT(attr, rta_len)) {
@@ -50,6 +50,10 @@ static int print_diag(const struct unix_diag_msg *diag, unsigned int len){
                 peer = *(unsigned int *) RTA_DATA(attr);
             break;
         }
+    }
+
+    if (strcmp(path,path_searched)!=0){
+        return 0;
     }
 
     printf("inode=%u", diag->udiag_ino);
@@ -113,7 +117,7 @@ int send_message(int socket){
     return 0;
 }
 
-int receive_message(int socket){
+int receive_message(int socket, char* path_searched){
     struct sockaddr_nl sa;
 
     memset(&sa, 0, sizeof(sa));
@@ -130,7 +134,7 @@ int receive_message(int socket){
     struct nlmsghdr *nh;
 
     while(1){
-        printf("waiting for message\n");
+        //printf("waiting for message\n");
         len = recvmsg(socket, &msg, 0);
 
         for (nh = (struct nlmsghdr *) buf; NLMSG_OK (nh, len);
@@ -147,12 +151,11 @@ int receive_message(int socket){
             }
             else{
                 struct inet_diag_msg* idm = NLMSG_DATA(nh);
-                printf("uid : %d", idm->idiag_uid);
+                //printf("uid : %d", idm->idiag_uid);
                 struct inet_diag_sockid ids = idm->id;
-                printf("src port : %d", ids.idiag_src);
-
-                if (print_diag(NLMSG_DATA(nh), nh->nlmsg_len)){
-                       return -1;
+                //printf("src port : %d", ids.idiag_src);
+                if (print_diag(NLMSG_DATA(nh), nh->nlmsg_len, path_searched)){
+                    return -1;
                 }
                 fflush(stdout);
                 
@@ -169,6 +172,9 @@ int main(int argc, char** argv){
 
     send_message(fd);
 
-    receive_message(fd);
+    /*Path of the unix socket you want to search.*/
+    char* searched_path = "./somepath"; 
+
+    receive_message(fd, searched_path);
 
 }

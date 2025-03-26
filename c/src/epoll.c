@@ -207,7 +207,6 @@ int main (int argc, char** argv){
             if (events[i].events != 0) {
                 event_data_t* edata = (event_data_t*)events[i].data.ptr;
                 if (events[i].events & EPOLLIN) {
-                    //printf("pollin : %d, fd num : %d\n", events[i].data.u32, events[i].data.fd);
                     if (edata->type==INOTIFYFD){
                         handle_inotify_event(edata->fd);
                     } else if (edata->type==SIGNALFD){
