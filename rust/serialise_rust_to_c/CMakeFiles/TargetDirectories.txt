@@ -1,2 +1,0 @@
-/mnt/c/Fac/LFlex 3/BE/Serialisation_Test/rust-proc-ctrld/rust/serialise_rust_to_c/CMakeFiles/rebuild_cache.dir
-/mnt/c/Fac/LFlex 3/BE/Serialisation_Test/rust-proc-ctrld/rust/serialise_rust_to_c/CMakeFiles/edit_cache.dir

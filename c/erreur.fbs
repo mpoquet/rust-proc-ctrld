@@ -1,0 +1,8 @@
+namespace erreurs;
+
+table Erreur{
+    code:ulong;
+    contexte:string;
+}
+
+root_type Erreur;
