@@ -1,5 +1,4 @@
-Ce prototype est un test pour sérialiser et désérialiser 
-une erreur typée (code i16, contexte string) depuis un fichier.
+Ce prototype est un test pour sérialiser et désérialiser une erreur typée (code i16, contexte string) depuis un fichier.
 
 Le fonctionnement est le suivant :
 -L'utilisateur renseigne le nom du fichier, le code d'erreur et le contexte
@@ -12,9 +11,9 @@ La commande pour l'executer est :
 cargo run [nom_du_fichier] [code] [contexte]
 
 avec :
-nom_du_fichier : celui de celui qui va être crée pour contenir l'erreur sérialisée
-code : code d'erreur
-contexte : contexte de l'erreur d'execution (doit tenir en une chaine de caractère)
+nom_du_fichier : binaire qui va être crée pour contenir l'erreur sérialisée
+code : code de l'erreur
+contexte : contexte de l'erreur d'execution (doit tenir en une chaine de caractères)
 
 exemple:
 cargo run fichier_test 52 Je_Suis_Un_Contexte
