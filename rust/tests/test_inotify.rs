@@ -1,12 +1,12 @@
 /**
- *  J'utilise dans un fichier a part car c'est une boucle infinie
+ *  Tests with infinite loop (ctrl+c) to end it.
  */
 
-use rust_proc_ctrl::monitoring_tools::poll::read_events_non_blocking;
+use rust_proc_ctrl::monitoring_tools::inotify_tool::read_events_inotify;
 use std::env;
 
 
-// J'ai créer un bin pour ce test
+// Bin created in Cargo.toml
 #[tokio::main]
 async fn main() {
     let args : Vec<String> = env::args().collect();
@@ -16,8 +16,8 @@ async fn main() {
 
     println!("We watch in the path : {}", args[1]);
 
-    // Par exemple je met que je veux être notifié si la taille dépasse les 100 octets
-    read_events_non_blocking(&args[1], 100)
+    // Notify when create dir / file in args[1] and file reach size of 5000 in the same dir
+    read_events_inotify(&args[1], 5000)
         .await
         .expect("error read_event_non_blocking");
 

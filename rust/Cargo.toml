@@ -33,5 +33,9 @@ name = "Start_TCP_socket"
 path = "src/monitoring_tools/start_tcp_socket.rs"
 
 [[bin]]
-name = "test_poll"
-path = "tests/test_poll.rs"
+name = "test_inotify"
+path = "tests/test_inotify.rs"
+
+[[bin]]
+name = "test_signal"
+path = "tests/test_signal.rs"
