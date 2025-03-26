@@ -8,12 +8,13 @@ Le fonctionnement est le suivant :
 -Le programme désérialise l'erreur et l'affiche (cette partie ne fonctionne pas encore)
 
 La commande pour l'executer est : 
-./main <nom_du_fichier> <code> <contexte>
+./main <nom_du_fichier.fb> <code> <contexte>
 
 avec :
-nom_du_fichier : celui de celui qui va être crée pour contenir l'erreur sérialisée
+nom_du_fichier.fb : celui de celui qui va être crée pour contenir l'erreur sérialisée. On veut que ce
+soit un fichier .fb (Flatbuffers Binary) afin d'optimiser le protocole de sérialisation/dé-sérialisation
 code : code d'erreur
 contexte : contexte de l'erreur d'execution (doit tenir en une chaine de caractère)
 
 exemple:
-./main fichier_test 52 "Some context"
+./main fichier_test.fb 52 "Some context"
