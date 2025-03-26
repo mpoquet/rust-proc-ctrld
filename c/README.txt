@@ -1,0 +1,19 @@
+Ce prototype est un test pour sérialiser et désérialiser une erreur typée depuis un fichier.
+
+Le fonctionnement est le suivant :
+-L'utilisateur renseigne le nom du fichier, le code d'erreur et le contexte
+-Le programme sérialise l'erreur
+-La sérialisation est écrite dans un fichier nouvellement crée
+-Le programme lit le contenue du fichier
+-Le programme désérialise l'erreur et l'affiche (cette partie ne fonctionne pas encore)
+
+La commande pour l'executer est : 
+./main <nom_du_fichier> <code> <contexte>
+
+avec :
+nom_du_fichier : celui de celui qui va être crée pour contenir l'erreur sérialisée
+code : code d'erreur
+contexte : contexte de l'erreur d'execution (doit tenir en une chaine de caractère)
+
+exemple:
+./main fichier_test 52 "Some context"

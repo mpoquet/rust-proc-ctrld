@@ -9,12 +9,12 @@
 #include "flatbuffers_common_builder.h"
 #include "flatbuffers_common_reader.h"
 
-/*#undef ns
-#define ns(x) FLATBUFFERS_WRAP_NAMESPACE(erreurs, x) */
+#ifndef flatcc_builder_add_offset
+#define flatcc_builder_add_offset flatcc_builder_add_reference
+#endif
 
-/* Helper function to read an entire file into memory.
-   Returns a pointer to a buffer allocated with malloc() (or NULL on error).
-   The caller must free() the buffer. */
+
+// Function to read a file with error handling
 unsigned char *read_file(const char *file_path, size_t *out_size) {
     FILE *file = fopen(file_path, "rb");
     if (!file) {
@@ -47,22 +47,30 @@ static inline const char *get_string_chars(flatbuffers_string_t s) {
 }
 
 /* Function to deserialize an error from a FlatBuffer.
-   It verifies the buffer and then extracts the error code and context. */
-void deserialize_error(const void *buffer, size_t size, int16_t *out_code, const char **out_context) {
-    if (!erreurs_Erreur_verify_as_root(buffer, size)) {
+   It verifies the buffer and then extracts the error code and context. 
+   NOT WORKING YET*/
+uint64_t deserialize_error(const void *buffer, size_t size, const char **out_context) {
+    printf("Buffer address: %p, Size: %zu\n", buffer, size);
+    int verify_result = erreurs_Erreur_verify_as_root(buffer, size);
+    printf("Verification result: %d\n", verify_result);
+    
+    if (!verify_result) {
         fprintf(stderr, "Error buffer verification failed\n");
-        *out_code = 0;
         *out_context = "";
-        return;
+        return 0;
     }
     erreurs_Erreur_table_t error = erreurs_Erreur_as_root(buffer);
-    *out_code = erreurs_Erreur_code(error);
+    printf("Table pointer: %p (offset from buffer: %td)\n", 
+       (void*)error, (char*)error - (char*)buffer);
+    uint64_t out_code_r = erreurs_Erreur_code(error);
+
     if (erreurs_Erreur_contexte_is_present(error)) {
         flatbuffers_string_t contexte = erreurs_Erreur_contexte(error);
         *out_context = get_string_chars(contexte);
     } else {
         *out_context = "";
     }
+    return out_code_r;
 }
 
 int main(int argc, char *argv[]) {
@@ -71,7 +79,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     const char *filename = argv[1];
-    int16_t code = (int16_t)atoi(argv[2]);
+    uint64_t code = (uint64_t)atoi(argv[2]);
     const char *context = argv[3];
 
     // Initialize the FlatCC builder.
@@ -79,7 +87,7 @@ int main(int argc, char *argv[]) {
     B = &builder;
     flatcc_builder_init(B);
 
-    // Create the FlatBuffer string for the context.
+    // Transform context string in FlatBuffers format
     flatbuffers_string_ref_t context_ref = flatcc_builder_create_string_str(B, context);
 
     //Create erreur table
@@ -100,7 +108,7 @@ int main(int argc, char *argv[]) {
     fwrite(buffer, size, 1, file);
     fclose(file);
 
-    // Read the file back.
+    // Read the serialised file to start deserialisation protocol
     size_t read_size;
     unsigned char *read_buffer = read_file(filename, &read_size);
     if (!read_buffer) {
@@ -108,16 +116,23 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Deserialize the error.
-    int16_t out_code;
+    /*DEBUG PRINT
+    printf("First 16 bytes of buffer:");
+    for (int i = 0; i < 16 && i < read_size; i++) {
+        printf(" %02x", read_buffer[i]);
+    }
+    printf("\n"); */
+
+    /* DESERIALIZE FUNCTION CALL
     const char *out_context;
-    //deserialize_error(read_buffer, read_size, &out_code, &out_context);
+    uint64_t out_code = deserialize_error(read_buffer, read_size, &out_context); */
 
-    // Print results.
-    printf("Prototype terminé.\ncode = %d\ncontexte = %s\nlongueur de la sérialisation = %zu\n",
-           out_code, out_context, size);
 
-    // Clean up.
+    /* Print results.
+    printf("Prototype terminé.\ncode = %llu\ncontexte = %s\nlongueur de la sérialisation = %zu\n",
+           (unsigned long long)out_code, out_context, size);*/
+
+    // Clean memory
     free(buffer);
     free(read_buffer);
     flatcc_builder_clear(B);
