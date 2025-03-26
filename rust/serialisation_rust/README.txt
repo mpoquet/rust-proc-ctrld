@@ -11,7 +11,7 @@ La commande pour l'executer est :
 cargo run [nom_du_fichier] [code] [contexte]
 
 avec :
-nom_du_fichier : binaire qui va être crée pour contenir l'erreur sérialisée
+nom_du_fichier : fichier qui va être crée pour contenir l'erreur sérialisée
 code : code de l'erreur
 contexte : contexte de l'erreur d'execution (doit tenir en une chaine de caractères)
 
