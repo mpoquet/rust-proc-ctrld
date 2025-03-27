@@ -9,7 +9,7 @@ use rust_proc_ctrl::monitoring_tools::signal_tool::*;
 #[tokio::main]
 async fn main() {
     // Will send a message on ctrl+c
-    read_events_signal_epoll().await.expect("error reading events signals");
+    read_events_signal_sighook().await.expect("error reading events signals");
 
     loop {
         println!("Test de non bloquage");
