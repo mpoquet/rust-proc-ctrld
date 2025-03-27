@@ -1,4 +1,4 @@
-use nix::libc::{self, epoll_create1, epoll_ctl, epoll_event, fcntl, EPOLLIN, EPOLL_CTL_ADD, F_SETFL, O_NONBLOCK};
+use nix::libc::{self, epoll_create1, epoll_ctl, epoll_event, epoll_wait, fcntl, EPOLLIN, EPOLL_CTL_ADD, F_SETFL, O_NONBLOCK};
 
 pub fn set_non_blocking(fd: i32) -> Result<(), ()>{
     let flags = unsafe {
@@ -17,7 +17,7 @@ pub fn set_non_blocking(fd: i32) -> Result<(), ()>{
 
 pub fn add_fd_to_epoll(epoll_fd: i32, watch_fd: i32) -> Result<(), ()> {
     let mut event = epoll_event {
-        events: EPOLLIN as u32,
+        events: (EPOLLIN) as u32,
         u64: watch_fd as u64,
     };
 
@@ -36,4 +36,8 @@ pub fn create_epoll() -> Result<i32, ()> {
         return Err(());
     }
     Ok(epoll_fd)
+}
+
+pub fn epoll_event_empty() -> epoll_event {
+    epoll_event { events: 0, u64: 0 }
 }
