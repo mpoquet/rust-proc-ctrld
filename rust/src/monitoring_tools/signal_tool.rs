@@ -1,15 +1,22 @@
-use nix::libc::{epoll_ctl, epoll_event, epoll_wait, EPOLLIN, EPOLL_CTL_ADD};
+use nix::sys::signalfd::SignalFd;
+use nix::sys::signal::{Signal, SigSet};
+use std::os::unix::io::RawFd;
 use std::io;
-use std::sync::Arc;
-use tokio::signal::unix::{signal, SignalKind};
-use nix::unistd::read;
-use std::os::fd::{AsRawFd, RawFd};
-use nix::sys::signalfd::{SignalFd, SigSet, SfdFlags};
-use nix::sys::signal::{Signal, SigmaskHow, pthread_sigmask};
-use std::process;
-use tokio::task;
 
-use crate::monitoring_tools::epoll::{self, *};
+use std::process;
+use nix::libc::{epoll_ctl, epoll_event, EPOLLIN, EPOLL_CTL_ADD};
+use tokio::signal::unix::signal;
+use tokio::task;
+use tokio::signal::unix::SignalKind;
+
+// For SignalHook
+use signal_hook::{consts::SIGINT, iterator::Signals};
+use std::{error::Error, thread};
+
+// Using channel (crossbeam-channel = "0.5")
+use crossbeam_channel::{bounded, tick, Receiver, select};
+
+
 
 enum TypeFd {
     SIGNALFD = 1,
@@ -27,11 +34,9 @@ pub fn create_signalfd() -> io::Result<SignalFd> {
     
     mask.add(Signal::SIGINT);
 
-    nix::sys::signal::pthread_sigmask(nix::sys::signal::SigmaskHow::SIG_BLOCK, Some(&mask), None)
-        .map_err(|_| io::Error::new(io::ErrorKind::Other, "Failed to block SIGINT"))?;
+    mask.thread_block().expect("error blocking signal");
 
-    SignalFd::with_flags(&mask, SfdFlags::SFD_NONBLOCK)
-        .map_err(|_| io::Error::new(io::ErrorKind::Other, "Failed to create signalfd"))
+    Ok(SignalFd::new(&mask).expect("error making instance of SignalFd"))
 }
 
 
@@ -70,42 +75,32 @@ pub async fn read_events_signal_tokio() -> Result<(), ()>{
     Ok(())
 }
 
-pub async fn read_events_signal_epoll() -> Result<(), ()>{
+pub async fn read_events_signal_ctrlc() -> Result<(), ctrlc::Error>{
     println!("PID = {}", process::id());
+    ctrlc::set_handler(|| {
+        println!("GOT SIGINT")
+    })
+}
 
-    let epoll_fd = create_epoll().expect("error creating epoll file descriptor");
-    let signal_fd = create_signalfd().expect("error creating signal file descriptor");
+pub async fn read_events_signal_sighook() -> Result<(), Box<dyn Error>> {
+    let mut signals = Signals::new([SIGINT])?;
 
-    println!("Signalfd created: fd = {}", signal_fd.as_raw_fd());
-    let signal_raw_fd = signal_fd.as_raw_fd();
-    add_signalfd_to_epoll(signal_raw_fd, epoll_fd);
-
-    let mut events = [epoll_event_empty(); 10];
-
-    task::spawn({
-        async move {
-            loop {
-                let num_events = unsafe {
-                    epoll_wait(epoll_fd, events.as_mut_ptr(), 10, -1)
-                };
-                println!("here");
-                    
-                for i in 0..num_events as usize {
-                    if events[i].u64 == signal_raw_fd as u64 {
-                        let mut buffer = [0u8; 128];
-                        let res = read(signal_raw_fd, &mut buffer);
-                        match res {
-                            Ok(_) => println!("GOT SIGINT"),
-                            Err(_) => {
-                                eprintln!("failed to read signal file descriptor");
-                                break
-                            }
-                        }
-                    }
-                }
-            }
+    thread::spawn(move || {
+        println!("PID = {}", process::id());
+        for sig in signals.forever() {
+            println!("Receive signal {:?}", sig);
         }
     });
 
     Ok(())
+}
+
+
+pub fn ctrl_channel() -> Result<Receiver<()>, ctrlc::Error> {
+    let (sender, receiver) = bounded(100);
+    ctrlc::set_handler(move || {
+        let _ = sender.send(());
+    })?;
+
+    Ok(receiver)
 }
