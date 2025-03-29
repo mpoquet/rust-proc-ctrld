@@ -11,7 +11,6 @@
 #include <poll.h>
 #include <signal.h>
 #include <sys/signalfd.h>
-#include <sched.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
 
