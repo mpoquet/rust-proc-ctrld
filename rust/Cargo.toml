@@ -5,3 +5,45 @@ edition = "2024"
 
 [dependencies]
 flatbuffers = "*"
+daemonize = "0.5"
+tokio = { version = "1", features = ["full"] }
+nix = { version = "0.29", features = ["signal", "process", "fs", "ptrace"] }
+colored = "3.0"
+inotify = "0.11.0"
+mio = "1.0.3"
+netstat2 = "0.11.1"
+ctrlc = "3.4"
+signal-hook = "=0.3.17"
+crossbeam-channel = "0.5"
+
+[lib]
+name = "rust_proc_ctrl"
+path = "src/lib.rs"
+
+[[bin]]
+name = "clone"
+path = "src/monitoring_tools/clone.rs"
+
+[[bin]]
+name = "foo"
+path = "src/monitoring_tools/foo.rs"
+
+[[bin]]
+name = "TCP_socket"
+path = "src/monitoring_tools/tcp_socket.rs"
+
+[[bin]]
+name = "Start_TCP_socket"
+path = "src/monitoring_tools/start_tcp_socket.rs"
+
+[[bin]]
+name = "test_inotify"
+path = "tests/test_inotify.rs"
+
+[[bin]]
+name = "test_signal"
+path = "tests/test_signal.rs"
+
+[[bin]]
+name = "test_signal_select"
+path = "tests/test_signal_select.rs"
