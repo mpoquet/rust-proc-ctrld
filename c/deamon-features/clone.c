@@ -19,7 +19,7 @@ int child_function(void *arg) {
         printf("Something went wrong when opening executing program");
         perror("execve");
     };
-
+    
     return 0;
 }
 
