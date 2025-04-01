@@ -7,56 +7,45 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/signalfd.h>
+#include "../include/Errors.h"
+
+error_data Error_data[128];
+int nb_groups=0;
 
 /*Returns a signalfd catching I/O signals to the file created
 We use signalf + fcntl beacause we want to know who wrote into the file
 without forcing on to developper a specific scheme they need to follow when
 sending errors.*/
-int initialize_errors_tracer(const char* name){
-    int fd = open(name, O_RDWR | O_CREAT | O_TRUNC | O_APPEND, S_IRWXU);
-    if (fd ==-1){
+
+void initialize_error_data(int group_id, const char* filepath){
+    for(int i=0;i<128;i++){
+        if (i>=nb_groups || Error_data[i].group_id==group_id){
+            initialize_error_file(Error_data[i],filepath);
+            Error_data[i].group_id=group_id;
+            initialize_error_channel(Error_data[i]);
+        }
+    }
+    nb_groups++;
+}
+
+void initialize_error_file(error_data data, const char* filepath){
+    int fd = open(filepath, O_APPEND | O_CREAT, S_IRWXU);
+    if(fd==-1){
         perror("open");
-        return -1;
+        exit(1);
     }
+    data.fd=fd;
+}
 
-    // Set owner process that is to receive "I/O possible" signal
+/*Return NULL if creation of tube failed*/
+void initialize_error_channel(error_data data){
+    int pipefd[2];
 
-    if (fcntl(fd, F_SETOWN, getpid()) == -1) {
-        perror("fcntl(F_SETOWN)");
-    }
-
-    // Enable "I/O possible" signaling and make I/O nonblocking for file descriptor 
-
-    int flags = fcntl(fd, F_GETFL);
-    if (fcntl(fd, F_SETFL, flags | O_ASYNC | O_NONBLOCK) == -1) {
-        perror("fcntl(F_SETFL)");
-    }
-
-    sigset_t mask;
-    int sfd;
-    ssize_t s;
-
-    sigemptyset(&mask);
-    sigaddset(&mask, SIGIO);
-
-    if (sigprocmask(SIG_BLOCK,&mask,NULL)==-1){
-        perror("sigprocmask");
+    if(pipe2(pipefd,O_DIRECT)==-1){ //O_DIRETC to interpret each message individually 
+        perror("pipe");
         exit(1);
     }
 
-    sfd=signalfd(-1,&mask,0);
-    if(sfd == -1){
-        perror("signalfd");
-        exit(3);
-    }
-
-
-    if(dup2(fd, STDOUT_FILENO)==-1){
-        perror("dup2");
-        close(fd);
-        return -2;
-    }
-    close(fd);
-    return sfd;
+    data.pfd=pipefd;
 }
 

@@ -7,7 +7,7 @@ int nb_groups = 0;
 
 /*Returns NULL if nothing found*/
 health_status* get_group_health_stat(int group_id){
-    for (int i=1; i<128; i++){
+    for (int i=0; i<128; i++){
         if(groups_health[i]->group_id==group_id){
             return groups_health[i];
         }
@@ -29,8 +29,8 @@ int get_health_status(int group_id){
 }
 
 void add_group_health_status(health_status* status){
-    for (int i=1; i<128; i++){
-        if(groups_health[i]->state==TERMINATED || i>=nb_groups){
+    for (int i=0; i<128; i++){
+        if(i>=nb_groups || groups_health[i]->state==TERMINATED ){
             groups_health[i]=status;
             break;
         }
@@ -39,7 +39,7 @@ void add_group_health_status(health_status* status){
 }
 
 void delete_group_health_status(int group_id){
-    for (int i=1; i<128; i++){
+    for (int i=0; i<128; i++){
         if(groups_health[i]->group_id==group_id){
             groups_health[i]->state=TERMINATED;
             break;

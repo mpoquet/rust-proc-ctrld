@@ -16,7 +16,7 @@
 #include "./include/healthcheck.h"
 #include "./include/Errors.h"
 
-int error_fd;
+#define MAX_PROCESS_GROUPS 128
 
 int main(){
     //Commenting to simplify testing
@@ -39,8 +39,6 @@ int main(){
 
     sleep(60);
     */
-
-    error_fd= initialize_errors_tracer("Daemon.txt");
 
     initialize_health_status(0);
 
