@@ -16,7 +16,11 @@
 #include "./include/healthcheck.h"
 #include "./include/Errors.h"
 
+
 #define MAX_PROCESS_GROUPS 128
+
+int current_groups_id[MAX_PROCESS_GROUPS]={0};
+int last_group_id;
 
 int main(){
     //Commenting to simplify testing
@@ -32,7 +36,7 @@ int main(){
     if(daemon(nochdir, noclose))
         perror("daemon");
 
-    // sleep to verify the demon is working. To verify, execute :
+    // sleep to give us time to verify the demon is working. To verify, execute :
     // pgrep daemon-core
     // ps -p pid -o "user pid ppid pgid sid tty command"
     // lsof -p pid
@@ -41,6 +45,10 @@ int main(){
     */
 
     initialize_health_status(0);
+
+    initialize_error_data(0,"Demon_errors_trace.txt");
+
+    int epollfd = epoll_create1(0);
 
 
     return 0;

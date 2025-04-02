@@ -10,13 +10,15 @@
 #define TERMINATED 0
 
 typedef struct s_health_status{
-    int group_id; //0 for daemon
+    __uint8_t group_id; //0 for daemon
     int health_point;
-    int state;
+    __uint8_t state;
 }health_status;
 
 int get_health_status(int group_id);
 
 void initialize_health_status(int group_id);
+
+void delete_group_health_status(int group_id);
 
 #endif

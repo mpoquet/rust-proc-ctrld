@@ -11,10 +11,8 @@
 #include <sys/signalfd.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
-
 #include "../include/clone.h"
 #include "../include/events.h"
-
 
 #define INOTIFYFD 1
 #define SIGNALFD 2
@@ -83,6 +81,18 @@ void handle_inotify_event(int fd){
 
 }
 
+void handle_SIGCHLD(struct signalfd_siginfo fdsi){
+    //printf("Got SIGCHLD\n");
+    //printf("Processus parent : PID = %d, Fils = %d\n", getpid(), fdsi.ssi_pid);
+    waitpid(fdsi.ssi_pid, NULL, 0);  // Attente de la fin du fils
+    for (int i=0; i<running_process;i++){
+        if(child_infos[i].child_id==fdsi.ssi_pid){
+            free(child_infos[i].stack_p);
+            child_infos[i].child_id=-1;
+        }
+    }
+}
+
 void handle_signalfd_event(int fd){
     ssize_t s;
     struct signalfd_siginfo fdsi;
@@ -91,19 +101,17 @@ void handle_signalfd_event(int fd){
         if (s != sizeof(fdsi)){
             perror("read");
             exit(2);
-        } else if (fdsi.ssi_signo == SIGCHLD) {
-            //printf("Got SIGCHLD\n");
-            //printf("Processus parent : PID = %d, Fils = %d\n", getpid(), fdsi.ssi_pid);
-            waitpid(fdsi.ssi_pid, NULL, 0);  // Attente de la fin du fils
-            for (int i=0; i<running_process;i++){
-                if(child_infos[i].child_id==fdsi.ssi_pid){
-                    free(child_infos[i].stack_p);
-                    child_infos[i].child_id=-1;
-                }
-            }
+            
+        } 
+        switch (fdsi.ssi_signo)
+        {
+        case SIGCHLD:
+            handle_SIGCHLD(fdsi);
             break;
-        } else {
+        
+        default:
             printf("Read unexpected signal\n");
+            break;
         }
     }
 }
@@ -142,12 +150,13 @@ int add_event_inotifyFd(int fd, int epollfd){
     num_open_fds++;
 }
 
-/*
-int add_event_errorFd(int fd, int epollfd){
+
+int add_event_errorFd(int fd, int epollfd, int group_id){
     struct epoll_event* ev = malloc(sizeof(struct epoll_event));
     event_data_t *edata = malloc(sizeof(event_data_t));
     edata->fd = fd;
     edata->type = ERRORFD;
+    edata->group_id=group_id;
     ev->events=EPOLLIN;
     ev->data.ptr=edata;
     printf("adding file descriptor : %d\n", fd);
@@ -156,7 +165,7 @@ int add_event_errorFd(int fd, int epollfd){
         return -1;
     }
     num_open_fds++;
-}*/
+}
 
 int add_event_signalFd(int fd, int epollfd){
     struct epoll_event* ev = malloc(sizeof(struct epoll_event));
@@ -171,4 +180,11 @@ int add_event_signalFd(int fd, int epollfd){
         return -1;
     }
     num_open_fds++;
+}
+
+
+
+int initialize_event_handler(int argc, char** argv){
+    
+    
 }

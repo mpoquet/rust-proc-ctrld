@@ -8,7 +8,8 @@
 
 typedef struct {
     int fd;
-    uint32_t type; // INOTIFYFD ou SIGNALFD
+    uint8_t type; // INOTIFYFD or SIGNALFD or ERRORFD
+    int group_id;
 } event_data_t;
 
 #endif
