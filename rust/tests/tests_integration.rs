@@ -56,7 +56,7 @@ mod test {
         #[test]
         fn test_ck_is_port_open() {
             let addr = "127.0.0.1";
-            let port = "80800000";
+            let port = 65535;
             let res = is_port_open(addr, port);
 
             assert!(!res)
@@ -65,7 +65,7 @@ mod test {
         #[test]
         fn test_ck_is_port_open_v2() {
             let addr = "127.0.0.1";
-            let port = "8080";
+            let port = 8080;
             let listener = open_port(addr, port)
                 .expect("error test : socket failed open.");
             let res = is_port_open(addr, port);
@@ -84,13 +84,13 @@ mod test {
         fn test_is_port_listening_v2() {
             let port = 8080;
 
-            if is_port_open("127.0.0.1", &port.to_string()) {
+            if is_port_open("127.0.0.1", port) {
                 eprintln!("Le port {} est déja ouvert", port);
                 return;
             }
 
             // Démarrer un serveur temporaire sur ce port
-            let listener = open_port("127.0.0.1", &port.to_string())
+            let listener = open_port("127.0.0.1", port)
                 .expect("Impossible d'ouvrir le port");
 
             thread::spawn(move || {
