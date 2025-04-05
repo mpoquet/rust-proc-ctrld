@@ -15,6 +15,7 @@ ctrlc = "3.4"
 signal-hook = "=0.3.17"
 crossbeam-channel = "0.5"
 port_scanner = "0.1.5"
+flatbuffers = "25.2.10"
 
 [lib]
 name = "rust_proc_ctrl"
@@ -51,3 +52,7 @@ path = "tests/test_signal_select.rs"
 [[bin]]
 name = "test_socketfd"
 path = "tests/test_socketfd.rs"
+
+[[bin]]
+name = "main_serialisation"
+path = "serialisation_rust/src/main.rs"
