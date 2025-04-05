@@ -1,13 +1,12 @@
 [package]
-name = "Rust"
+name = "rust_proc_ctrl"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-flatbuffers = "*"
 daemonize = "0.5"
 tokio = { version = "1", features = ["full"] }
-nix = { version = "0.29", features = ["signal", "process", "fs", "ptrace"] }
+nix = { version = "0.29", features = ["signal", "process", "fs", "ptrace", "socket", "event"] }
 colored = "3.0"
 inotify = "0.11.0"
 mio = "1.0.3"
@@ -15,6 +14,7 @@ netstat2 = "0.11.1"
 ctrlc = "3.4"
 signal-hook = "=0.3.17"
 crossbeam-channel = "0.5"
+port_scanner = "0.1.5"
 
 [lib]
 name = "rust_proc_ctrl"
@@ -49,5 +49,5 @@ name = "test_signal_select"
 path = "tests/test_signal_select.rs"
 
 [[bin]]
-name = "demon"
-path = "src/proto/demon.rs"
+name = "test_socketfd"
+path = "tests/test_socketfd.rs"
