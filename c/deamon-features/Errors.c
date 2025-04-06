@@ -16,18 +16,6 @@ void initialize_error_file(error_data data, const char* filepath){
     data.fd=fd;
 }
 
-/*Return NULL if creation of tube failed*/
-void initialize_error_channel(error_data data){
-    int pipefd[2];
-
-    if(pipe2(pipefd,O_DIRECT)==-1){ //O_DIRETC to interpret each message individually 
-        perror("pipe");
-        exit(1);
-    }
-
-    data.pfd=pipefd;
-}
-
 /*Initialize all the info necessary to handle error messages. A tube to communicate with the childs
 and a file to store error information.*/
 void initialize_error_data(int group_id, const char* filepath){
@@ -35,7 +23,6 @@ void initialize_error_data(int group_id, const char* filepath){
         if (i>=nb_groups || Error_data[i].state==UNACTIVE){
             initialize_error_file(Error_data[i],filepath);
             Error_data[i].group_id=group_id;
-            initialize_error_channel(Error_data[i]);
             Error_data[i].state=ACTIVE;
         }
     }

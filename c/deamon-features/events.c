@@ -14,9 +14,6 @@
 #include "../include/clone.h"
 #include "../include/events.h"
 
-#define INOTIFYFD 1
-#define SIGNALFD 2
-#define ERRORFD 3
 #define MAX_EVENTS 128
 
 info_child child_infos[512];
@@ -116,25 +113,6 @@ void handle_signalfd_event(int fd){
     }
 }
 
-/*
-void handle_errorfd_event(int fd){
-    ssize_t s;
-    struct signalfd_siginfo fdsi;
-    for (;;) {
-        s = read(fd, &fdsi, sizeof(fdsi));
-        if (s != sizeof(fdsi)){
-            perror("read");
-            exit(2);
-        } else if (fdsi.ssi_signo == SIGIO) {
-            char buf[512];
-            ssize_t elem_red = read(STDOUT_FILENO,&buf,sizeof(buf));
-            break;
-        } else {
-            printf("Read unexpected signal\n");
-        }
-    }
-}*/
-
 int add_event_inotifyFd(int fd, int epollfd){
     struct epoll_event* ev = malloc(sizeof(struct epoll_event));
     event_data_t *edata = malloc(sizeof(event_data_t));
@@ -145,26 +123,11 @@ int add_event_inotifyFd(int fd, int epollfd){
     printf("adding file descriptor : %d\n", fd);
     if (epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, ev)==-1){
         printf("error while trying to add file descriptor to epoll interest list");
+        free(edata);
+        free(ev);
         return -1;
     }
-    num_open_fds++;
-}
-
-
-int add_event_errorFd(int fd, int epollfd, int group_id){
-    struct epoll_event* ev = malloc(sizeof(struct epoll_event));
-    event_data_t *edata = malloc(sizeof(event_data_t));
-    edata->fd = fd;
-    edata->type = ERRORFD;
-    edata->group_id=group_id;
-    ev->events=EPOLLIN;
-    ev->data.ptr=edata;
-    printf("adding file descriptor : %d\n", fd);
-    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, ev)==-1){
-        printf("error while trying to add file descriptor to epoll interest list");
-        return -1;
-    }
-    num_open_fds++;
+    return 0;
 }
 
 int add_event_signalFd(int fd, int epollfd){
@@ -177,14 +140,9 @@ int add_event_signalFd(int fd, int epollfd){
     printf("adding file descriptor : %d\n", fd);
     if (epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, ev)==-1){
         printf("error while trying to add file descriptor to epoll interest list");
+        free(edata);
+        free(ev);
         return -1;
     }
-    num_open_fds++;
-}
-
-
-
-int initialize_event_handler(int argc, char** argv){
-    
-    
+    return 0;
 }

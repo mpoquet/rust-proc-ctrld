@@ -7,7 +7,6 @@
 #define UNACTIVE 0
 
 typedef struct s_error{
-    int* pfd; //pipe fd in read mode to read errors message of the group
     int fd; //fd of error file that keeps track of all errors
     u_int8_t group_id;
     u_int8_t state;
