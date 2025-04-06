@@ -7,23 +7,31 @@
 #include "../include/clone.h"
 #include <sys/signalfd.h>
 #include <signal.h>
-
-#define STACK_SIZE 1024*1024
+#include <errno.h>
+#include <fcntl.h>
 
 
 int child_function(void *arg) {
     printf("Processus enfant : PID = %d, PPID = %d\n", getpid(), getppid());
-    parameter_clone* params = (parameter_clone *)arg;
+    execve_parameter* params = (execve_parameter *)arg;
+    
+    if (dup2(params->error_file,STDOUT_FILENO)==-1) {
+        perror("dup2");
+        exit(EXIT_FAILURE);
+    }
 
-    if (execve((const char*) params->filepath, (char* const*) params->args, NULL)==-1){
+    if (execve((const char*) params->filepath, (char* const*) params->args, (char* const*) params->envp)==-1){
         printf("Something went wrong when opening executing program");
-        perror("execve");
+        exit(errno);
     };
     
-    return 0;
+    exit(0);
 }
 
-info_child* launch_process(int stack_size, parameter_clone* parameters, int flags){
+//TODO : Gérer le retourn d'erreur de clone.
+//args and envp must be NULL terminated. It may lead to some issu and 
+// it may be necessarie de append NULL to the argument given by the user
+info_child* launch_process(int stack_size, execve_parameter* parameters, int flags){
     info_child* info_c = malloc(sizeof(info_child));
     if (!info_c){
         perror("malloc");
@@ -44,6 +52,8 @@ info_child* launch_process(int stack_size, parameter_clone* parameters, int flag
         free(stack);
         exit(EXIT_FAILURE);
     }
+
+    free(parameters);
 
     info_c->child_id=child_pid;
 
@@ -75,7 +85,7 @@ int main() {
     }
 
     const char* filepath = "./foo";
-    parameter_clone* param = malloc(sizeof(parameter_clone));
+    execve_parameter* param = malloc(sizeof(execve_parameter));
     if (!param) {
         perror("malloc");
         exit(EXIT_FAILURE);

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <sys/epoll.h>
 #include <sys/types.h>
+#include "./Network.h"
 
 enum eventType{
     SIGNALFD,
@@ -18,11 +19,13 @@ typedef struct {
     int group_id;
 } event_data_t;
 
+info_child* handle_clone_event(command* com, int errorfd);
+
 int add_event_signalFd(int fd, int epollfd);
 
 int add_event_inotifyFd(int fd, int epollfd);
 
-void handle_signalfd_event(int fd);
+int handle_signalfd_event(int fd);
 
 void handle_inotify_event(int fd);
 

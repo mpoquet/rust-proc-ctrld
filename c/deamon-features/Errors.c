@@ -8,7 +8,7 @@ error_data Error_data[128]; //Containes error information for all groups
 int nb_groups=0;
 
 void initialize_error_file(error_data data, const char* filepath){
-    int fd = open(filepath, O_APPEND | O_CREAT | O_NONBLOCK, S_IRWXU); //The permission are temporary and may be modified
+    int fd = open(filepath, O_APPEND | O_CREAT , S_IRWXU); //The permission are temporary and may be modified
     if(fd==-1){
         perror("open");
         exit(1);

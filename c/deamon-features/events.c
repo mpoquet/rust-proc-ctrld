@@ -13,13 +13,13 @@
 #include <sys/stat.h>
 #include "../include/clone.h"
 #include "../include/events.h"
+#include <errno.h>
+#include "../include/Errors.h"
 
 #define MAX_EVENTS 128
 
 info_child child_infos[512];
 int running_process = 0;
-int num_open_fds = 0;
-struct epoll_event events[MAX_EVENTS];
 
 int findSize(char file_name[]) {
     struct stat statbuf;
@@ -29,6 +29,23 @@ int findSize(char file_name[]) {
         printf("File Not Found!\n");
         return -1;
     }
+}
+
+//TODO gérer la remontée d'erreur
+info_child* handle_clone_event(command* com, int errorfd){
+    struct clone_parameters* param = extract_clone_info(com);
+    execve_parameter* p = malloc(sizeof(execve_parameter));
+    if(p==NULL){
+        return NULL;
+    }
+    p->filepath=param->pathname;
+    p->args=param->args;
+    p->envp=param->envp;
+    p->error_file=errorfd;
+    info_child* res = launch_process(param->stack_size,p,param->flags);
+    free(param);
+    free(p);
+    return res;
 }
 
 static void displayInotifyEvent(struct inotify_event *i)
@@ -65,8 +82,6 @@ static void displayInotifyEvent(struct inotify_event *i)
 
 void handle_inotify_event(int fd){
     char buf[4096];
-    printf("reading\n");
-    fflush(stdout);
     ssize_t s = read(fd, buf, sizeof(buf));
     printf("    read %zd bytes: %.*s\n",
         s, (int) s, buf);
@@ -78,21 +93,30 @@ void handle_inotify_event(int fd){
 
 }
 
-void handle_SIGCHLD(struct signalfd_siginfo fdsi){
-    //printf("Got SIGCHLD\n");
-    //printf("Processus parent : PID = %d, Fils = %d\n", getpid(), fdsi.ssi_pid);
-    waitpid(fdsi.ssi_pid, NULL, 0);  // Attente de la fin du fils
+//TODO modifer pour utiliser autre chose que running process et child info.
+int handle_SIGCHLD(struct signalfd_siginfo fdsi){
+    int wstatus;
+    int exit_status;
+    waitpid(fdsi.ssi_pid, &wstatus, 0);  // Attente de la fin du fils
+    
+    if(WIFEXITED(wstatus)){
+        exit_status = WEXITSTATUS(wstatus);
+    }else if (WIFSIGNALED(wstatus)){
+        exit_status= WTERMSIG(wstatus);
+    }
     for (int i=0; i<running_process;i++){
         if(child_infos[i].child_id==fdsi.ssi_pid){
             free(child_infos[i].stack_p);
             child_infos[i].child_id=-1;
         }
     }
+    return exit_status;
 }
 
-void handle_signalfd_event(int fd){
+int handle_signalfd_event(int fd){
     ssize_t s;
     struct signalfd_siginfo fdsi;
+    int exit_status;
     for (;;) {
         s = read(fd, &fdsi, sizeof(fdsi));
         if (s != sizeof(fdsi)){
@@ -103,7 +127,7 @@ void handle_signalfd_event(int fd){
         switch (fdsi.ssi_signo)
         {
         case SIGCHLD:
-            handle_SIGCHLD(fdsi);
+            exit_status = handle_SIGCHLD(fdsi);
             break;
         
         default:
@@ -111,6 +135,7 @@ void handle_signalfd_event(int fd){
             break;
         }
     }
+    return exit_status;
 }
 
 int add_event_inotifyFd(int fd, int epollfd){

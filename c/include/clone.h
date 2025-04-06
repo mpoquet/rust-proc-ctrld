@@ -3,16 +3,18 @@
 
 #include <unistd.h>
 
-typedef struct parameter {
+typedef struct s_execve_paramter {
     char* filepath;
     char* const* args;
-} parameter_clone;
+    int error_file;
+    char* const* envp;
+} execve_parameter;
 
 typedef struct info {
     void * stack_p;
     pid_t child_id;
 } info_child;
   
-info_child* launch_process(int stack_size, parameter_clone* parameters, int flags);
+info_child* launch_process(int stack_size, execve_parameter* parameters, int flags);
 
 #endif
