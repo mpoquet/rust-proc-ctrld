@@ -2,18 +2,33 @@
 #define __ERRORS_C__
 
 #include <unistd.h>
+#include "./Network.h"
 
-#define ACTIVE 1
-#define UNACTIVE 0
+enum error_type{
+    CHILD_EXITED,
+    CHILD_SIGNALED,
+    CLONE_ERR,
+    FILE_CREATION,
+};
 
-typedef struct s_error{
-    int fd; //fd of error file that keeps track of all errors
-    u_int8_t group_id;
-    u_int8_t state;
-} error_data;
+struct child_err{
+    int pid;
+    command* com;
+    int group_id;
+};
 
-void initialize_error_data(int group_id, const char* filepath);
+struct clone_err{
+    
+};
 
-void delete_error_data(int group_id);
+struct file_err{
+    char* filepath;
+    int group_id;
+    int pid;
+};
+
+int initialize_error_file(const char* filepath);
+
+int send_error(enum error_type type, void* err_data);
 
 #endif

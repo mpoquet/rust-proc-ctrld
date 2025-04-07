@@ -20,7 +20,7 @@
 
 
 #define MAX_PROCESS_GROUPS 128
-#define MAX_PROCESS_BY_GROUPS 32
+#define MAX_PROCESS_BY_GROUPS 8
 #define MAX_EVENTS 128
 
 struct process_info{
@@ -30,14 +30,15 @@ struct process_info{
 };
 
 typedef struct s_group_info{
-    error_data* err_data;
-    health_status* hp_stats;
-    int group_id;
+    int health_points;
+    int nb_process;
     struct process_info group_process[MAX_PROCESS_BY_GROUPS];
+    int err_file;
+    int group_id;
 }group_info;
 
 group_info infos_current_groups[MAX_PROCESS_GROUPS];
-int last_group_id;
+int next_group_id=0;
 int num_inotifyFD=0;
 int nfds;
 struct epoll_event events[MAX_EVENTS];
@@ -71,9 +72,27 @@ int main(int argc, char** argv){
 
     int communication_socket = establish_connection(destPort);
 
-    initialize_health_status(0);
+    infos_current_groups[next_group_id].group_id=0;
+    infos_current_groups[next_group_id].health_points=20;
 
-    initialize_error_data(0,"Demon_errors_trace.txt");
+    int err_file;
+
+    if ((err_file=initialize_error_file("Demon_errors_trace.txt"))==-1){
+        struct file_err* data = malloc(sizeof(struct file_err));
+        if (data==NULL){
+            printf("Unable to allocate memory for error message");
+        }else{
+            data->filepath="Demon_errors_trace.txt";
+            data->group_id=0;
+            data->pid=0;
+            send_error(FILE_CREATION,(void*)data);
+        }
+    }else{
+        infos_current_groups[next_group_id].err_file=err_file;
+        dup2(err_file,STDOUT_FILENO);
+    }
+
+    next_group_id++;
 
     int epollfd = epoll_create1(0);
 
@@ -134,13 +153,16 @@ int main(int argc, char** argv){
                         break;
                     
                     case SIGNALFD:
-                        error_code = handle_signalfd_event(edata->fd);
+                        if (handle_signalfd_event(edata->fd) == -1){
+                            printf("Unable to read signalfd\n");
+                        }
                         break;
                     
                     case SOCKFD:
                         instruction_mess = receive_message();
-                        if(instruction_mess!=NULL){
+                        if(instruction_mess==NULL){
                             printf("An error has occured while trying to read the communication socket\n");
+                            break;
                         }
                         switch (instruction_mess->type){
                             case INOTIFY:
@@ -150,8 +172,13 @@ int main(int argc, char** argv){
                                 break;
                     
                             case CLONE:
-                                
-                                //handle_clone_event(instruction_mess);
+                                char buffer[20]="errFile";
+                                //On créer un fichier avec un nom unique normalement. Pours ça il faut que les valeurs soit proprement initalisé.
+                                if(snprintf(buffer, sizeof(buffer), "%d-%d", infos_current_groups[next_group_id].group_id,infos_current_groups[next_group_id].nb_process)){
+                                    printf("Error while formatting the name of the errFile for the process %d in the group %d\n", infos_current_groups[next_group_id].nb_process,infos_current_groups[next_group_id].group_id);
+                                }
+                                int err_file = initialize_error_file(buffer);
+                                handle_clone_event(instruction_mess,err_file);
                                 break;
                     
                             default :

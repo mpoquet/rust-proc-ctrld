@@ -35,13 +35,14 @@ info_child* launch_process(int stack_size, execve_parameter* parameters, int fla
     info_child* info_c = malloc(sizeof(info_child));
     if (!info_c){
         perror("malloc");
-        exit(EXIT_FAILURE);
+        return NULL;
     }
 
     void *stack = malloc(stack_size);
     if (!stack) {
         perror("malloc");
-        exit(EXIT_FAILURE);
+        free(info_c);
+        return NULL;
     }
 
     info_c->stack_p=stack;
@@ -50,10 +51,9 @@ info_child* launch_process(int stack_size, execve_parameter* parameters, int fla
     if (child_pid == -1) {
         perror("clone");
         free(stack);
-        exit(EXIT_FAILURE);
+        free(info_c);
+        return NULL;
     }
-
-    free(parameters);
 
     info_c->child_id=child_pid;
 

@@ -99,10 +99,29 @@ int handle_SIGCHLD(struct signalfd_siginfo fdsi){
     int exit_status;
     waitpid(fdsi.ssi_pid, &wstatus, 0);  // Attente de la fin du fils
     
+    //TODO Gérer le renvoi d'érreur dans les deux cas. Il faut une fonction pour trouver un groupe a partir d'un pid pour pouvoir envoyer les bonnes infos.
     if(WIFEXITED(wstatus)){
         exit_status = WEXITSTATUS(wstatus);
+        struct child_err* data = malloc(sizeof(struct child_err));
+        if (data==NULL){
+            printf("Unable to allocate memory for error message");
+        }else{
+            data->com=NULL;
+            data->group_id=0;
+            data->pid=0;
+            send_error(CHILD_EXITED,(void*)data);
+        }
     }else if (WIFSIGNALED(wstatus)){
         exit_status= WTERMSIG(wstatus);
+        struct child_err* data = malloc(sizeof(struct child_err));
+        if (data==NULL){
+            printf("Unable to allocate memory for error message");
+        }else{
+            data->com=NULL;
+            data->group_id=0;
+            data->pid=0;
+            send_error(CHILD_SIGNALED,(void*)data);
+        }        
     }
     for (int i=0; i<running_process;i++){
         if(child_infos[i].child_id==fdsi.ssi_pid){
@@ -121,7 +140,7 @@ int handle_signalfd_event(int fd){
         s = read(fd, &fdsi, sizeof(fdsi));
         if (s != sizeof(fdsi)){
             perror("read");
-            exit(2);
+            return -1;
             
         } 
         switch (fdsi.ssi_signo)
