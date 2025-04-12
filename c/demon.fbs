@@ -3,27 +3,27 @@ namespace demon;
 enum NetworkEventType : byte {INOTIFY, CLONE, WATCH_SOCKET} 
 
 table Command {
-    command_name: string
-    arg1: string
-    arg2: string
-    arg3: string
-    type : NetworkEventType
+    command_name: string;
+    arg1: string;
+    arg2: string;
+    arg3: string;
+    type : NetworkEventType;
 }
 
 table InotifyEvent {
-    pathname: string
-    flags: int32
-    size_target: int32
+    pathname: string;
+    flags: int32;
+    size_target: int32;
 
 } 
 
 table CloneEvent {
-    stack_size: int32
-    pathname: string
-    flags: int32
-    args: string
-    envp: string
-    group_id: int
+    stack_size: int32;
+    pathname: string;
+    flags: int32;
+    args: string;
+    envp: string;
+    group_id: int;
 }
 
 table WatchSocketEvent {
@@ -31,19 +31,19 @@ table WatchSocketEvent {
 }
 
 table ChildErrorEvent {
-    pid: int32
-    command: [Command]
-    group_id: int32
+    pid: int32;
+    command: [Command];
+    group_id: int32;
 }
 
 table CloneErrorEvent {
 
 }
 
-table FileCreationError {
-    filepath: string
-    group_id: int32
-    pid: int32
+table FileCreationEvent {
+    filepath: string;
+    group_id: int32;
+    pid: int32;
 }
 
 ///
@@ -61,8 +61,8 @@ union Event {
 }
 
 table Message {
-    code: ubyte
-    events: Event
+    code: ubyte;
+    events: Event;
 }
 
 root_type Message;
