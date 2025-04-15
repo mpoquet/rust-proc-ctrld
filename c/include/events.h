@@ -19,7 +19,7 @@ typedef struct {
     int group_id;
 } event_data_t;
 
-info_child* handle_clone_event(command* com, int errorfd);
+info_child* handle_clone_event(struct clone_parameters* param, int errorfd);
 
 int add_event_signalFd(int fd, int epollfd);
 

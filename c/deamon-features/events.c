@@ -31,9 +31,7 @@ int findSize(char file_name[]) {
     }
 }
 
-//TODO gérer la remontée d'erreur
-info_child* handle_clone_event(command* com, int errorfd){
-    struct clone_parameters* param = extract_clone_info(com);
+info_child* handle_clone_event(struct clone_parameters* param, int errorfd){
     execve_parameter* p = malloc(sizeof(execve_parameter));
     if(p==NULL){
         return NULL;

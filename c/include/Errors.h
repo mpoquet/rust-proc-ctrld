@@ -9,6 +9,8 @@ enum error_type{
     CHILD_SIGNALED,
     CLONE_ERR,
     FILE_CREATION,
+    GROUP_FULL,
+    GROUP_PROCESS_FULL,
 };
 
 struct child_err{
@@ -18,7 +20,19 @@ struct child_err{
 };
 
 struct clone_err{
-    
+    int group_id;
+    command* com;
+};
+
+struct group_full{
+    int group_id;
+    command* com;
+};
+
+struct group_process_full{
+    int group_id;
+    command* com;
+    int pid;
 };
 
 struct file_err{

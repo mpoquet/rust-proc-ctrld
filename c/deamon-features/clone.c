@@ -9,6 +9,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <fcntl.h>
+#include "../include/Errors.h"
 
 
 int child_function(void *arg) {
@@ -28,7 +29,6 @@ int child_function(void *arg) {
     exit(0);
 }
 
-//TODO : Gérer le retourn d'erreur de clone.
 //args and envp must be NULL terminated. It may lead to some issu and 
 // it may be necessarie de append NULL to the argument given by the user
 info_child* launch_process(int stack_size, execve_parameter* parameters, int flags){

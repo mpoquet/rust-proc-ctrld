@@ -17,28 +17,13 @@
 #include "./include/Errors.h"
 #include "./include/Network.h"
 #include "./include/events.h"
+#include "./include/group_manager.h"
 
 
 #define MAX_PROCESS_GROUPS 128
 #define MAX_PROCESS_BY_GROUPS 8
 #define MAX_EVENTS 128
 
-struct process_info{
-    void * stack_p;
-    pid_t child_id;
-    command proc_command;
-};
-
-typedef struct s_group_info{
-    int health_points;
-    int nb_process;
-    struct process_info group_process[MAX_PROCESS_BY_GROUPS];
-    int err_file;
-    int group_id;
-}group_info;
-
-group_info infos_current_groups[MAX_PROCESS_GROUPS];
-int next_group_id=0;
 int num_inotifyFD=0;
 int nfds;
 struct epoll_event events[MAX_EVENTS];
@@ -69,15 +54,11 @@ int main(int argc, char** argv){
 
     sleep(60);
     */
+    group_info** group_manager = create_group_manager(MAX_PROCESS_GROUPS);
 
     int communication_socket = establish_connection(destPort);
 
-    infos_current_groups[next_group_id].group_id=0;
-    infos_current_groups[next_group_id].health_points=20;
-
-    int err_file;
-
-    if ((err_file=initialize_error_file("Demon_errors_trace.txt"))==-1){
+    if(manager_add_group(0,group_manager,MAX_PROCESS_GROUPS, "Demon_errors_trace.txt")==-1){
         struct file_err* data = malloc(sizeof(struct file_err));
         if (data==NULL){
             printf("Unable to allocate memory for error message");
@@ -87,12 +68,9 @@ int main(int argc, char** argv){
             data->pid=0;
             send_error(FILE_CREATION,(void*)data);
         }
-    }else{
-        infos_current_groups[next_group_id].err_file=err_file;
-        dup2(err_file,STDOUT_FILENO);
-    }
 
-    next_group_id++;
+    }
+    dup2(group_manager[0]->err_file,STDOUT_FILENO);
 
     int epollfd = epoll_create1(0);
 
@@ -172,13 +150,50 @@ int main(int argc, char** argv){
                                 break;
                     
                             case CLONE:
+                                struct clone_parameters* param = extract_clone_info(instruction_mess);
                                 char buffer[20]="errFile";
                                 //On créer un fichier avec un nom unique normalement. Pours ça il faut que les valeurs soit proprement initalisé.
-                                if(snprintf(buffer, sizeof(buffer), "%d-%d", infos_current_groups[next_group_id].group_id,infos_current_groups[next_group_id].nb_process)){
-                                    printf("Error while formatting the name of the errFile for the process %d in the group %d\n", infos_current_groups[next_group_id].nb_process,infos_current_groups[next_group_id].group_id);
+                                if(snprintf(buffer, sizeof(buffer), "%d", param->group_id)){
+                                    printf("Error while formatting the name of the errFile for the group %d\n", param->group_id);
                                 }
-                                int err_file = initialize_error_file(buffer);
-                                handle_clone_event(instruction_mess,err_file);
+                                int n = manager_add_group(param->group_id,group_manager,MAX_PROCESS_GROUPS,buffer);
+                                if (n==-1){
+                                    struct group_full* data = malloc(sizeof(struct group_full));
+                                    if (data==NULL){
+                                        printf("Unable to allocate memory for error message");
+                                    }else{
+                                        data->com=instruction_mess;
+                                        data->group_id=0;
+                                        send_error(GROUP_FULL,(void*)data);
+                                    }
+                                }else{
+                                    info_child* res = handle_clone_event(param,group_manager[n]->err_file);
+                                    if(res==NULL){
+                                        struct clone_err* data = malloc(sizeof(struct clone_err));
+                                        if (data==NULL){
+                                            printf("Unable to allocate memory for error message");
+                                        }else{
+                                            data->com=instruction_mess;
+                                            data->group_id=0;
+                                            send_error(CLONE_ERR,(void*)data);
+                                        }
+                                    }else{
+                                        if(manager_add_process(res->child_id,group_manager[n],*instruction_mess,res->stack_p)==-1){
+                                            struct group_process_full* data = malloc(sizeof(struct group_process_full));
+                                            if (data==NULL){
+                                                printf("Unable to allocate memory for error message");
+                                            }else{
+                                                data->com=instruction_mess;
+                                                data->group_id=0;
+                                                data->pid=res->child_id;
+                                                send_error(GROUP_PROCESS_FULL,(void*)data);
+                                            }
+                                        }
+
+                                    }
+                                    free(res);
+                                }
+                                free(param);
                                 break;
                     
                             default :
