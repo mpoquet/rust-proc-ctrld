@@ -133,7 +133,7 @@ int handle_SIGCHLD(struct signalfd_siginfo fdsi){
 int handle_signalfd_event(int fd){
     ssize_t s;
     struct signalfd_siginfo fdsi;
-    int exit_status;
+    int exit_status=-1;
     for (;;) {
         s = read(fd, &fdsi, sizeof(fdsi));
         if (s != sizeof(fdsi)){

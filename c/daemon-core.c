@@ -58,6 +58,8 @@ int main(int argc, char** argv){
 
     int communication_socket = establish_connection(destPort);
 
+    //TODO : Once the establish function is written do not forget to add the socket to inotify
+
     if(manager_add_group(0,group_manager,MAX_PROCESS_GROUPS, "Demon_errors_trace.txt")==-1){
         struct file_err* data = malloc(sizeof(struct file_err));
         if (data==NULL){

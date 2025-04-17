@@ -2,103 +2,28 @@ CC  = gcc
 SYS = -std=gnu11 -Wall -Wextra -O2
 PTHREAD_SYS = $(SYS) -lpthread
 
-SRCDIR = src
+SRCDIR = daemon-features
 OBJDIR = obj
 BINDIR = bin
-FILESDIR = fichiers
+DAEMONDIR = .
 
-SYM_CRYPT = $(BINDIR)/sym_crypt
+DAEMON = $(BINDIR)/daemon
 
-LOGICIEL = $(BINDIR)/logiciel
+OBJ_COMMON = $(OBJDIR)/clone.o $(OBJDIR)/Errors.o $(OBJDIR)/events.o $(OBJDIR)/group_manager.o $(OBJDIR)/healthcheck.o $(OBJDIR)/Network.o 
 
-CRACK_MASK = $(BINDIR)/crack_mask
-
-BREAK_CODE = $(BINDIR)/break_code
-
-BREAK_CODE_PERFORMANCE = $(BINDIR)/break_code_performance
-
-OBJ_COMMON = $(OBJDIR)/chiffrement.o $(OBJDIR)/utils.o $(OBJDIR)/dh_prime.o $(OBJDIR)/stats.o
-
-OBJ_COMMON2 = $(OBJDIR)/utils.o $(OBJDIR)/list.o $(OBJDIR)/dh_prime.o $(OBJDIR)/stats.o $(OBJDIR)/break_code_c1.o $(OBJDIR)/break_code_c2.o $(OBJDIR)/break_code_c3.o
-
-OBJ_COMMON3 = $(OBJDIR)/utils.o $(OBJDIR)/dh_prime.o $(OBJDIR)/chiffrement.o
-
-OBJ_COMMON4 = $(OBJDIR)/utils.o $(OBJDIR)/list.o $(OBJDIR)/dh_prime.o $(OBJDIR)/stats.o $(OBJDIR)/break_code_c1_multi_threaded.o $(OBJDIR)/break_code_c2_multi_threaded.o $(OBJDIR)/break_code_c3_multi_threaded.o
-
-OBJ_COMMON5 = $(OBJDIR)/utils.o $(OBJDIR)/dh_prime.o
-
-OBJ_CRYPT = $(OBJDIR)/sym_crypt.o
-
-OBJ_CRACK = $(OBJDIR)/break_code_main.o
-
-OBJ_CRACK_MASK = $(OBJDIR)/crack_mask.o
-
-OBJ_CRACK_PERFORMANCE = $(OBJDIR)/break_code_main_multi_threaded.o
-
-OBJ_LOGICIEL = $(OBJDIR)/Logiciel.o
+OBJ_DAEMON = $(DAEMONDIR)/daemon-core.o
 
 
-# make crypt
+# make daemon
 # -------
-crypt: dirs $(OBJ_COMMON)
-	$(eval export OBJ_CRYPT = $(OBJ_CRYPT))
-	make $(SYM_CRYPT)
+daemon: dirs $(OBJ_COMMON)
+	$(eval export OBJ_CRYPT = $(OBJ_DAEMON))
+	make $(DAEMON)
 
-# make crack
-# -------
-crack: dirs $(OBJ_COMMON2)
-	$(eval export OBJ_CRYPT = $(OBJ_CRACK))
-	make $(BREAK_CODE)
-
-# make crack performance
-# -------
-crack_p: dirs $(OBJ_COMMON4)
-	$(eval export OBJ_CRYPT = $(OBJ_CRACK_PERFORMANCE))
-	make $(BREAK_CODE_PERFORMANCE)
-
-# make crack_mask
-# -------
-crack_mask: dirs $(OBJ_COMMON3)
-	$(eval export OBJ_CRYPT = $(OBJ_CRACK_MASK))
-	make $(CRACK_MASK)
-
-
-# make logiciel
-# -------
-logiciel: dirs $(OBJ_COMMON5) crypt crack
-	$(eval export OBJ_CRYPT = $(OBJ_LOGICIEL))
-	make $(LOGICIEL)
-
-# EXEC Crypt
+# EXEC daemon
 # -----
-$(SYM_CRYPT): $(OBJ_COMMON) $(OBJ_CRYPT)
-	$(CC) -o $(SYM_CRYPT) $(OBJ_COMMON) $(OBJ_CRYPT)
-
-# EXEC Crack
-# -----
-$(BREAK_CODE): $(OBJ_COMMON2) $(OBJ_CRACK)
-	$(CC) -o $(BREAK_CODE) $(OBJ_COMMON2) $(OBJ_CRACK)
-
-# EXEC Crack Performance
-# -----
-$(BREAK_CODE_PERFORMANCE): $(OBJ_COMMON4) $(OBJ_CRACK_PERFORMANCE)
-	$(CC) -o $(BREAK_CODE_PERFORMANCE) $(OBJ_COMMON4) $(OBJ_CRACK_PERFORMANCE)
-
-# EXEC Crack_mask
-# -----
-$(CRACK_MASK): $(OBJ_COMMON3) $(OBJ_CRACK_MASK)
-	$(CC) -o $(CRACK_MASK) $(OBJ_COMMON3) $(OBJ_CRACK_MASK)
-
-# EXEC Logiciel
-# -----
-$(LOGICIEL): $(OBJ_COMMON5) $(OBJ_LOGICIEL)
-	$(CC) -o $(LOGICIEL) $(OBJ_COMMON5) $(OBJ_LOGICIEL)
-
-$(OBJDIR)/break_code_c2_multi_threaded.o: $(SRCDIR)/break_code_c2_multi_threaded.c
-	$(CC) -o $@ -c $< $(PTHREAD_SYS)
-
-$(OBJDIR)/break_code_c3_multi_threaded.o: $(SRCDIR)/break_code_c3_multi_threaded.c
-	$(CC) -o $@ -c $< $(PTHREAD_SYS)
+$(DAEMON): $(OBJ_COMMON) $(OBJ_DAEMON)
+	$(CC) -o $(DAEMON) $(OBJ_COMMON) $(OBJ_DAEMON)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) -o $@ -c $< $(SYS)
@@ -110,4 +35,4 @@ dirs:
 
 clean:
 	rm -f $(OBJDIR)/*.o
-	rm -f $(BINDIR)/* $(FILESDIR)/out.*
+	rm -f $(BINDIR)/* 

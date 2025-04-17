@@ -106,6 +106,7 @@ int manager_add_process(pid_t pid, group_info* manager, command com, void* stack
                 return 0;
             }
         }
+        return -1;
     }else{
         printf("The group %d is allready full\n", manager->group_id);
         return -1;
