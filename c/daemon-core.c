@@ -195,7 +195,7 @@ int main(int argc, char** argv){
                                 }
                                 free(param);
                                 break;
-                    
+
                             default :
                                 printf("unexpected type of message received\n");
                                 break;
