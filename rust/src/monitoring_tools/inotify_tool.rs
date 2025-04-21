@@ -19,6 +19,9 @@ pub fn create_inotify_watch_file(path: &str) -> Inotify {
             WatchMask::CREATE
             | WatchMask::CLOSE_NOWRITE
             | WatchMask::CLOSE_WRITE
+            | WatchMask::DELETE
+            | WatchMask::ACCESS
+            | WatchMask::MODIFY
         )
         .expect("error adding file watch");
 
@@ -48,7 +51,7 @@ pub fn get_size_file(path: &String) -> std::io::Result<u64> {
 }
 
 // reach_size = size maximum of file for being notify
-pub async fn read_events_inotify(path: &str, reach_size: u64) -> Result<(), ()>{
+pub async fn read_events_inotify(path: &str, vec: Vec<EventMask>, reach_size: u64) -> Result<(), ()>{
     let epoll_fd = create_epoll()
         .expect("error creating epoll_fd");
 
@@ -85,22 +88,36 @@ pub async fn read_events_inotify(path: &str, reach_size: u64) -> Result<(), ()>{
                                     .to_string();
                             }
 
-                            if event_mask.contains(EventMask::CLOSE_WRITE)
-                            || event_mask.contains(EventMask::CLOSE_NOWRITE) {
-                                let file_path = format!("{}/{}", path, name_file);
-                                let file_size = get_size_file(&file_path)
-                                    .expect("error to get file size");
-                                
-                                if file_size > reach_size {
-                                    println!("File {} reached size {} o.", name_file, file_size);
+                            if vec.iter().any(|&mask| event_mask.contains(mask)) {
+                                if event_mask.contains(EventMask::CLOSE_WRITE)
+                                || event_mask.contains(EventMask::CLOSE_NOWRITE) {
+                                    let file_path = format!("{}/{}", path, name_file);
+                                    let file_size = get_size_file(&file_path)
+                                        .expect("error to get file size");
+                                    
+                                    if file_size > reach_size {
+                                        println!("File {} reached size {} o.", name_file, file_size);
+                                    }
                                 }
-                            }
-                            if event_mask.contains(EventMask::CREATE) {
-                                print!("CREATE ");
-                                if event_mask.contains(EventMask::ISDIR) {
-                                    print!("| DIR ");
+                                if event_mask.contains(EventMask::CREATE) {
+                                    print!("CREATE ");
+                                    if event_mask.contains(EventMask::ISDIR) {
+                                        print!("| DIR ");
+                                    }
+                                    println!("named = {}", name_file);
                                 }
-                                println!("named = {}", name_file);
+                                if event_mask.contains(EventMask::ACCESS) {
+                                    print!("ACCESS ");
+                                    println!("named = {}", name_file);
+                                }
+                                if event_mask.contains(EventMask::DELETE) {
+                                    print!("DELETE ");
+                                    println!("named = {}", name_file);
+                                }
+                                if event_mask.contains(EventMask::MODIFY) {
+                                    print!("MODIFY");
+                                    println!("named = {}", name_file);
+                                }
                             }
                         }
                     }

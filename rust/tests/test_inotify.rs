@@ -1,3 +1,4 @@
+use inotify::{Event, EventMask};
 /**
  *  Tests with infinite loop (ctrl+c) to end it.
  */
@@ -17,7 +18,8 @@ async fn main() {
     println!("We watch in the path : {}", args[1]);
 
     // Notify when create dir / file in args[1] and file reach size of 5000 in the same dir
-    read_events_inotify(&args[1], 5000)
+    let trigger = vec![EventMask::CREATE, EventMask::ACCESS, EventMask::DELETE];
+    read_events_inotify(&args[1], trigger, 5000)
         .await
         .expect("error read_event_non_blocking");
 

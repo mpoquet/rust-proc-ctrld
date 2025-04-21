@@ -17,10 +17,10 @@ async fn handle_message(buf: &[u8]) {
 
     match msg.events_type() {
         Event::EstablishTCPConnection => {
-            println!("Handling EventType2");
+            // TODO
         }
         Event::EstablishUnixConnection => {
-            println!("Handling EventType2");
+            // TODO
         }
         Event::InotifyPathUpdated => {
             let reach_size = 400;                           // TODO
@@ -55,16 +55,16 @@ async fn handle_message(buf: &[u8]) {
             read_events_inotify(path, trig_events, reach_size).await.expect("error reading inotify events");
         }
         Event::KillProcess => {
-            println!("Handling EventType2");
+            // TODO
         }
         Event::ProcessLaunched => {
-            println!("Handling EventType2");
+            // TODO
         }
         Event::ProcessTerminated => {
-            println!("Handling EventType2");
+            // TODO
         }
         Event::RunCommand => {
-            println!("Handling EventType2");
+            // TODO
         }
         Event::TCPSocketListening => {
             println!("Handling EventType2");
