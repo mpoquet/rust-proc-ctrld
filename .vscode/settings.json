@@ -1,0 +1,8 @@
+{
+    "C_Cpp.errorSquiggles": "disabled",
+    "files.associations": {
+        "inet.h": "c",
+        "sched.h": "c",
+        "clone.h": "c"
+    }
+}

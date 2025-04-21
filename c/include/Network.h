@@ -18,7 +18,6 @@ struct clone_parameters{
     int flags;
     char* const* args;
     char* const* envp;
-    int group_id;
 };
 
 struct inotify_parameters{

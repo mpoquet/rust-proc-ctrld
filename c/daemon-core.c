@@ -17,17 +17,16 @@
 #include "./include/Errors.h"
 #include "./include/Network.h"
 #include "./include/events.h"
-#include "./include/group_manager.h"
+#include "./include/process_manager.h"
 
 
-#define MAX_PROCESS_GROUPS 128
-#define MAX_PROCESS_BY_GROUPS 8
 #define MAX_EVENTS 128
 
 int num_inotifyFD=0;
 int nfds;
 struct epoll_event events[MAX_EVENTS];
 command* instruction_mess;
+int nb_process=0;
 
 int main(int argc, char** argv){
     if (argc<2){
@@ -54,25 +53,17 @@ int main(int argc, char** argv){
 
     sleep(60);
     */
-    group_info** group_manager = create_group_manager(MAX_PROCESS_GROUPS);
+    process_info** process_manager = create_process_manager(MAX_PROCESS);
 
     int communication_socket = establish_connection(destPort);
 
     //TODO : Once the establish function is written do not forget to add the socket to inotify
 
-    if(manager_add_group(0,group_manager,MAX_PROCESS_GROUPS, "Demon_errors_trace.txt")==-1){
-        struct file_err* data = malloc(sizeof(struct file_err));
-        if (data==NULL){
-            printf("Unable to allocate memory for error message");
-        }else{
-            data->filepath="Demon_errors_trace.txt";
-            data->group_id=0;
-            data->pid=0;
-            send_error(FILE_CREATION,(void*)data);
-        }
+    int err_file = initialize_error_file("daemon_trace.txt");
 
+    if (err_file!=-1){
+        dup2(err_file,STDOUT_FILENO);
     }
-    dup2(group_manager[0]->err_file,STDOUT_FILENO);
 
     int epollfd = epoll_create1(0);
 
@@ -122,7 +113,6 @@ int main(int argc, char** argv){
         }
 
         for (int i = 0; i<nfds; i++){
-            error_code=0;
             if (events[i].events != 0) {
                 event_data_t* edata = (event_data_t*)events[i].data.ptr;
                 if (events[i].events & EPOLLIN) {
@@ -155,46 +145,30 @@ int main(int argc, char** argv){
                                 struct clone_parameters* param = extract_clone_info(instruction_mess);
                                 char buffer[20]="errFile";
                                 //On créer un fichier avec un nom unique normalement. Pours ça il faut que les valeurs soit proprement initalisé.
-                                if(snprintf(buffer, sizeof(buffer), "%d", param->group_id)){
-                                    printf("Error while formatting the name of the errFile for the group %d\n", param->group_id);
+                                if(snprintf(buffer, sizeof(buffer), "%d-%s", nb_process, param->pathname)){
+                                    printf("Error while formatting the name of the errFile for the process %s\n", param->pathname);
                                 }
-                                int n = manager_add_group(param->group_id,group_manager,MAX_PROCESS_GROUPS,buffer);
-                                if (n==-1){
-                                    struct group_full* data = malloc(sizeof(struct group_full));
+                                err_file = initialize_error_file(buffer);
+                                info_child* res;
+                                if (err_file!=-1){
+                                    res = handle_clone_event(param,err_file);
+                                }else{
+                                    res = handle_clone_event(param,STDOUT_FILENO);
+                                }
+                                if(res==NULL){
+                                    struct clone_err* data = malloc(sizeof(struct clone_err));
                                     if (data==NULL){
                                         printf("Unable to allocate memory for error message");
                                     }else{
                                         data->com=instruction_mess;
-                                        data->group_id=0;
-                                        send_error(GROUP_FULL,(void*)data);
+                                        send_error(CLONE_ERR,(void*)data);
                                     }
                                 }else{
-                                    info_child* res = handle_clone_event(param,group_manager[n]->err_file);
-                                    if(res==NULL){
-                                        struct clone_err* data = malloc(sizeof(struct clone_err));
-                                        if (data==NULL){
-                                            printf("Unable to allocate memory for error message");
-                                        }else{
-                                            data->com=instruction_mess;
-                                            data->group_id=0;
-                                            send_error(CLONE_ERR,(void*)data);
-                                        }
-                                    }else{
-                                        if(manager_add_process(res->child_id,group_manager[n],*instruction_mess,res->stack_p)==-1){
-                                            struct group_process_full* data = malloc(sizeof(struct group_process_full));
-                                            if (data==NULL){
-                                                printf("Unable to allocate memory for error message");
-                                            }else{
-                                                data->com=instruction_mess;
-                                                data->group_id=0;
-                                                data->pid=res->child_id;
-                                                send_error(GROUP_PROCESS_FULL,(void*)data);
-                                            }
-                                        }
-
+                                    if(manager_add_process(res->child_id, process_manager, *param, res->stack_p, nb_process)){
+                                        nb_process++;
                                     }
-                                    free(res);
                                 }
+                                free(res);
                                 free(param);
                                 break;
 

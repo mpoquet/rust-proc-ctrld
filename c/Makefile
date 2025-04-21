@@ -9,7 +9,7 @@ DAEMONDIR = .
 
 DAEMON = $(BINDIR)/daemon
 
-OBJ_COMMON = $(OBJDIR)/clone.o $(OBJDIR)/Errors.o $(OBJDIR)/events.o $(OBJDIR)/group_manager.o $(OBJDIR)/healthcheck.o $(OBJDIR)/Network.o 
+OBJ_COMMON = $(OBJDIR)/clone.o $(OBJDIR)/Errors.o $(OBJDIR)/events.o $(OBJDIR)/process_manager.o $(OBJDIR)/healthcheck.o $(OBJDIR)/Network.o 
 
 OBJ_DAEMON = $(DAEMONDIR)/daemon-core.o
 
