@@ -1,13 +1,17 @@
 use std::env;
+use inotify::{EventMask, Inotify};
 use tokio::io::AsyncReadExt;
 use std::error::Error;
 
+// monitoring tools
+use crate::monitoring_tools::inotify_tool::read_events_inotify;
 
-use crate::proto::demon_generated::demon::{root_as_message, Event};
+// flatbuffers
+use crate::proto::demon_generated::demon::{root_as_message, Event, InotifyEvent};
 
 use tokio::net::TcpListener;
 
-fn handle_message(buf: &[u8]) {
+async fn handle_message(buf: &[u8]) {
     let msg = root_as_message(buf).expect("error root_as_message");
 
     match msg.events_type() {
@@ -21,7 +25,36 @@ fn handle_message(buf: &[u8]) {
             println!("Handling EventType2");
         }
         Event::inotify_path_updated => {
-            println!("Handling EventType2");
+            let reach_size = 400;                           // TODO
+            let from_message =
+                msg.events_as_inotify_path_updated().expect("error events_as_inotify...");
+            let path = from_message.path().expect("No path from the message");
+            let trigger_events = from_message.trigger_events().expect("No vector of trigger events for inotify");
+
+            // new vector of "real" Inotify Event not from flatbuffer
+            let mut trig_events = Vec::<EventMask>::new();
+
+            for event in trigger_events {
+                match event {
+                    InotifyEvent::access => trig_events.push(EventMask::ACCESS),
+                    InotifyEvent::creation => {
+                        trig_events.push(EventMask::CREATE);
+                        trig_events.push(EventMask::ISDIR);                        
+                    }
+                    InotifyEvent::deletion => trig_events.push(EventMask::DELETE),
+                    InotifyEvent::modification => trig_events.push(EventMask::MODIFY),
+                    // when we want to know the size of a file, we watch when the file is Close
+                    InotifyEvent::size => {
+                        trig_events.push(EventMask::CLOSE_NOWRITE);
+                        trig_events.push(EventMask::CLOSE_WRITE);
+                    }
+                    _ => {
+                        eprintln!("flags error for inotify events");
+                    }
+                }
+            }
+
+            read_events_inotify(path, trig_events, reach_size).await.expect("error reading inotify events");
         }
         Event::kill_process => {
             println!("Handling EventType2");
