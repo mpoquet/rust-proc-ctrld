@@ -1,49 +1,77 @@
 namespace demon;
 
-enum NetworkEventType : byte {INOTIFY, CLONE, WATCH_SOCKET} 
-
-table Command {
-    command_name: string;
-    arg1: string;
-    arg2: string;
-    arg3: string;
-    type : NetworkEventType;
+table Size{
+    size : int32;
 }
 
-table InotifyEvent {
-    pathname: string;
-    flags: int32;
-    size_target: int32;
+enum Inotify_event : byte {
+    Modification,
+    Creation,
+    Size,
+    Deletion,
+    Access
+}
 
+table Inotify {
+    root_paths: string;
+    trigger_event : [Inotify_event];
+
+}
+
+table TCPSocket {
+    destport: int32;
+}
+
+union Surveillance {
+    Inotify,
+    TCPSocket,
 } 
 
-table CloneEvent {
-    stack_size: int32;
-    pathname: string;
-    flags: int32;
-    args: string;
-    envp: string;
-    group_id: int;
+table surveillance_event {
+    event: Surveillance;
 }
 
-table WatchSocketEvent {
-
+table RunCommand {
+    path: string;
+    args: [string];
+    envp: [string];
+    flags : int32;
+    stack_size : int32;
+    to_watch: [surveillance_event];
 }
 
-table ChildErrorEvent {
+table KillProcess{
+    pid : int32;
+}
+
+table ProcessLaunched {
     pid: int32;
-    command: [Command];
-    group_id: int32;
 }
 
-table CloneErrorEvent {
-
+table ChildCreationError {
+    errno: int32;
 }
 
-table FileCreationEvent {
-    filepath: string;
-    group_id: int32;
+table ProcessTerminated {
     pid: int32;
+}
+
+table TCPSocketListening {
+    port: int32;
+}
+
+table InotifyPathUpdated {
+    path: string;
+    trigger_event : [Inotify_event];
+}
+
+
+table EstablishTCPConnection{
+    destport : int32;
+}
+
+table EstablishUnixConnection{
+    path : string;
 }
 
 ///
@@ -51,18 +79,19 @@ table FileCreationEvent {
 ///
 
 union Event {
-    InotifyEvent,
-    CloneEvent,
-    WatchSocketEvent,
+    RunCommand,
+    KillProcess,
+    EstablishTCPConnection,
+    EstablishUnixConnection,
 
-    ChildErrorEvent,
-    CloneErrorEvent,
-    FileCreationEvent,
+    ProcessLaunched,
+    ChildCreationError,
+    ProcessTerminated,
+    TCPSocketListening,
+    InotifyPathUpdated,
+ 
 }
 
 table Message {
-    code: ubyte;
     events: Event;
 }
-
-root_type Message;
