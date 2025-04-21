@@ -5,6 +5,7 @@ use std::error::Error;
 
 // monitoring tools
 use crate::monitoring_tools::inotify_tool::read_events_inotify;
+use crate::monitoring_tools::network::read_events_port_tokio;
 
 // flatbuffers
 use crate::proto::demon_generated::demon::{root_as_message, Event, InotifyEvent};
@@ -15,16 +16,13 @@ async fn handle_message(buf: &[u8]) {
     let msg = root_as_message(buf).expect("error root_as_message");
 
     match msg.events_type() {
-        Event::child_creation_error => {
-            println!("Handling child creation error");
-        }
-        Event::establish_tcp_connection => {
+        Event::EstablishTCPConnection => {
             println!("Handling EventType2");
         }
-        Event::establish_unix_connection => {
+        Event::EstablishUnixConnection => {
             println!("Handling EventType2");
         }
-        Event::inotify_path_updated => {
+        Event::InotifyPathUpdated => {
             let reach_size = 400;                           // TODO
             let from_message =
                 msg.events_as_inotify_path_updated().expect("error events_as_inotify...");
@@ -56,20 +54,24 @@ async fn handle_message(buf: &[u8]) {
 
             read_events_inotify(path, trig_events, reach_size).await.expect("error reading inotify events");
         }
-        Event::kill_process => {
+        Event::KillProcess => {
             println!("Handling EventType2");
         }
-        Event::process_launched => {
+        Event::ProcessLaunched => {
             println!("Handling EventType2");
         }
-        Event::process_terminated => {
+        Event::ProcessTerminated => {
             println!("Handling EventType2");
         }
-        Event::run_command => {
+        Event::RunCommand => {
             println!("Handling EventType2");
         }
-        Event::tcp_socket_listening => {
+        Event::TCPSocketListening => {
             println!("Handling EventType2");
+            let from_mess = msg.events_as_tcpsocket_listening().expect("error from receiving message");
+            let port = from_mess.port();
+
+            read_events_port_tokio(port).await.expect("error read_events_port");
         }
         _ => {
             println!("Unknown event type");

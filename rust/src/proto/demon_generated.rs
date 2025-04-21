@@ -214,15 +214,15 @@ pub const ENUM_MAX_EVENT: u8 = 9;
 #[allow(non_camel_case_types)]
 pub const ENUM_VALUES_EVENT: [Event; 10] = [
   Event::NONE,
-  Event::run_command,
-  Event::kill_process,
-  Event::establish_tcp_connection,
-  Event::establish_unix_connection,
-  Event::process_launched,
-  Event::child_creation_error,
-  Event::process_terminated,
-  Event::tcp_socket_listening,
-  Event::inotify_path_updated,
+  Event::RunCommand,
+  Event::KillProcess,
+  Event::EstablishTCPConnection,
+  Event::EstablishUnixConnection,
+  Event::ProcessLaunched,
+  Event::ChildCreationError,
+  Event::ProcessTerminated,
+  Event::TCPSocketListening,
+  Event::InotifyPathUpdated,
 ];
 
 ///
@@ -234,43 +234,43 @@ pub struct Event(pub u8);
 #[allow(non_upper_case_globals)]
 impl Event {
   pub const NONE: Self = Self(0);
-  pub const run_command: Self = Self(1);
-  pub const kill_process: Self = Self(2);
-  pub const establish_tcp_connection: Self = Self(3);
-  pub const establish_unix_connection: Self = Self(4);
-  pub const process_launched: Self = Self(5);
-  pub const child_creation_error: Self = Self(6);
-  pub const process_terminated: Self = Self(7);
-  pub const tcp_socket_listening: Self = Self(8);
-  pub const inotify_path_updated: Self = Self(9);
+  pub const RunCommand: Self = Self(1);
+  pub const KillProcess: Self = Self(2);
+  pub const EstablishTCPConnection: Self = Self(3);
+  pub const EstablishUnixConnection: Self = Self(4);
+  pub const ProcessLaunched: Self = Self(5);
+  pub const ChildCreationError: Self = Self(6);
+  pub const ProcessTerminated: Self = Self(7);
+  pub const TCPSocketListening: Self = Self(8);
+  pub const InotifyPathUpdated: Self = Self(9);
 
   pub const ENUM_MIN: u8 = 0;
   pub const ENUM_MAX: u8 = 9;
   pub const ENUM_VALUES: &'static [Self] = &[
     Self::NONE,
-    Self::run_command,
-    Self::kill_process,
-    Self::establish_tcp_connection,
-    Self::establish_unix_connection,
-    Self::process_launched,
-    Self::child_creation_error,
-    Self::process_terminated,
-    Self::tcp_socket_listening,
-    Self::inotify_path_updated,
+    Self::RunCommand,
+    Self::KillProcess,
+    Self::EstablishTCPConnection,
+    Self::EstablishUnixConnection,
+    Self::ProcessLaunched,
+    Self::ChildCreationError,
+    Self::ProcessTerminated,
+    Self::TCPSocketListening,
+    Self::InotifyPathUpdated,
   ];
   /// Returns the variant's name or "" if unknown.
   pub fn variant_name(self) -> Option<&'static str> {
     match self {
       Self::NONE => Some("NONE"),
-      Self::run_command => Some("run_command"),
-      Self::kill_process => Some("kill_process"),
-      Self::establish_tcp_connection => Some("establish_tcp_connection"),
-      Self::establish_unix_connection => Some("establish_unix_connection"),
-      Self::process_launched => Some("process_launched"),
-      Self::child_creation_error => Some("child_creation_error"),
-      Self::process_terminated => Some("process_terminated"),
-      Self::tcp_socket_listening => Some("tcp_socket_listening"),
-      Self::inotify_path_updated => Some("inotify_path_updated"),
+      Self::RunCommand => Some("RunCommand"),
+      Self::KillProcess => Some("KillProcess"),
+      Self::EstablishTCPConnection => Some("EstablishTCPConnection"),
+      Self::EstablishUnixConnection => Some("EstablishUnixConnection"),
+      Self::ProcessLaunched => Some("ProcessLaunched"),
+      Self::ChildCreationError => Some("ChildCreationError"),
+      Self::ProcessTerminated => Some("ProcessTerminated"),
+      Self::TCPSocketListening => Some("TCPSocketListening"),
+      Self::InotifyPathUpdated => Some("InotifyPathUpdated"),
       _ => None,
     }
   }
@@ -362,11 +362,11 @@ impl<'a> Size<'a> {
 
 
   #[inline]
-  pub fn size(&self) -> i32 {
+  pub fn size(&self) -> u32 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<i32>(Size::VT_SIZE, Some(0)).unwrap()}
+    unsafe { self._tab.get::<u32>(Size::VT_SIZE, Some(0)).unwrap()}
   }
 }
 
@@ -377,13 +377,13 @@ impl flatbuffers::Verifiable for Size<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<i32>("size", Self::VT_SIZE, false)?
+     .visit_field::<u32>("size", Self::VT_SIZE, false)?
      .finish();
     Ok(())
   }
 }
 pub struct SizeArgs {
-    pub size: i32,
+    pub size: u32,
 }
 impl<'a> Default for SizeArgs {
   #[inline]
@@ -400,8 +400,8 @@ pub struct SizeBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
 }
 impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> SizeBuilder<'a, 'b, A> {
   #[inline]
-  pub fn add_size(&mut self, size: i32) {
-    self.fbb_.push_slot::<i32>(Size::VT_SIZE, size, 0);
+  pub fn add_size(&mut self, size: u32) {
+    self.fbb_.push_slot::<u32>(Size::VT_SIZE, size, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> SizeBuilder<'a, 'b, A> {
@@ -573,11 +573,11 @@ impl<'a> TCPSocket<'a> {
 
 
   #[inline]
-  pub fn destport(&self) -> i32 {
+  pub fn destport(&self) -> u8 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<i32>(TCPSocket::VT_DESTPORT, Some(0)).unwrap()}
+    unsafe { self._tab.get::<u8>(TCPSocket::VT_DESTPORT, Some(0)).unwrap()}
   }
 }
 
@@ -588,13 +588,13 @@ impl flatbuffers::Verifiable for TCPSocket<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<i32>("destport", Self::VT_DESTPORT, false)?
+     .visit_field::<u8>("destport", Self::VT_DESTPORT, false)?
      .finish();
     Ok(())
   }
 }
 pub struct TCPSocketArgs {
-    pub destport: i32,
+    pub destport: u8,
 }
 impl<'a> Default for TCPSocketArgs {
   #[inline]
@@ -611,8 +611,8 @@ pub struct TCPSocketBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
 }
 impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> TCPSocketBuilder<'a, 'b, A> {
   #[inline]
-  pub fn add_destport(&mut self, destport: i32) {
-    self.fbb_.push_slot::<i32>(TCPSocket::VT_DESTPORT, destport, 0);
+  pub fn add_destport(&mut self, destport: u8) {
+    self.fbb_.push_slot::<u8>(TCPSocket::VT_DESTPORT, destport, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> TCPSocketBuilder<'a, 'b, A> {
@@ -869,18 +869,18 @@ impl<'a> RunCommand<'a> {
     unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>>>(RunCommand::VT_ENVP, None)}
   }
   #[inline]
-  pub fn flags(&self) -> i32 {
+  pub fn flags(&self) -> u32 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<i32>(RunCommand::VT_FLAGS, Some(0)).unwrap()}
+    unsafe { self._tab.get::<u32>(RunCommand::VT_FLAGS, Some(0)).unwrap()}
   }
   #[inline]
-  pub fn stack_size(&self) -> i32 {
+  pub fn stack_size(&self) -> u32 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<i32>(RunCommand::VT_STACK_SIZE, Some(0)).unwrap()}
+    unsafe { self._tab.get::<u32>(RunCommand::VT_STACK_SIZE, Some(0)).unwrap()}
   }
   #[inline]
   pub fn to_watch(&self) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<SurveillanceEvent<'a>>>> {
@@ -901,8 +901,8 @@ impl flatbuffers::Verifiable for RunCommand<'_> {
      .visit_field::<flatbuffers::ForwardsUOffset<&str>>("path", Self::VT_PATH, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<&'_ str>>>>("args", Self::VT_ARGS, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<&'_ str>>>>("envp", Self::VT_ENVP, false)?
-     .visit_field::<i32>("flags", Self::VT_FLAGS, false)?
-     .visit_field::<i32>("stack_size", Self::VT_STACK_SIZE, false)?
+     .visit_field::<u32>("flags", Self::VT_FLAGS, false)?
+     .visit_field::<u32>("stack_size", Self::VT_STACK_SIZE, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<SurveillanceEvent>>>>("to_watch", Self::VT_TO_WATCH, false)?
      .finish();
     Ok(())
@@ -912,8 +912,8 @@ pub struct RunCommandArgs<'a> {
     pub path: Option<flatbuffers::WIPOffset<&'a str>>,
     pub args: Option<flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>>>,
     pub envp: Option<flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>>>,
-    pub flags: i32,
-    pub stack_size: i32,
+    pub flags: u32,
+    pub stack_size: u32,
     pub to_watch: Option<flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<SurveillanceEvent<'a>>>>>,
 }
 impl<'a> Default for RunCommandArgs<'a> {
@@ -948,12 +948,12 @@ impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> RunCommandBuilder<'a, 'b, A> {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(RunCommand::VT_ENVP, envp);
   }
   #[inline]
-  pub fn add_flags(&mut self, flags: i32) {
-    self.fbb_.push_slot::<i32>(RunCommand::VT_FLAGS, flags, 0);
+  pub fn add_flags(&mut self, flags: u32) {
+    self.fbb_.push_slot::<u32>(RunCommand::VT_FLAGS, flags, 0);
   }
   #[inline]
-  pub fn add_stack_size(&mut self, stack_size: i32) {
-    self.fbb_.push_slot::<i32>(RunCommand::VT_STACK_SIZE, stack_size, 0);
+  pub fn add_stack_size(&mut self, stack_size: u32) {
+    self.fbb_.push_slot::<u32>(RunCommand::VT_STACK_SIZE, stack_size, 0);
   }
   #[inline]
   pub fn add_to_watch(&mut self, to_watch: flatbuffers::WIPOffset<flatbuffers::Vector<'b , flatbuffers::ForwardsUOffset<SurveillanceEvent<'b >>>>) {
@@ -1020,11 +1020,11 @@ impl<'a> KillProcess<'a> {
 
 
   #[inline]
-  pub fn pid(&self) -> i32 {
+  pub fn pid(&self) -> u32 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<i32>(KillProcess::VT_PID, Some(0)).unwrap()}
+    unsafe { self._tab.get::<u32>(KillProcess::VT_PID, Some(0)).unwrap()}
   }
 }
 
@@ -1035,13 +1035,13 @@ impl flatbuffers::Verifiable for KillProcess<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<i32>("pid", Self::VT_PID, false)?
+     .visit_field::<u32>("pid", Self::VT_PID, false)?
      .finish();
     Ok(())
   }
 }
 pub struct KillProcessArgs {
-    pub pid: i32,
+    pub pid: u32,
 }
 impl<'a> Default for KillProcessArgs {
   #[inline]
@@ -1058,8 +1058,8 @@ pub struct KillProcessBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
 }
 impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> KillProcessBuilder<'a, 'b, A> {
   #[inline]
-  pub fn add_pid(&mut self, pid: i32) {
-    self.fbb_.push_slot::<i32>(KillProcess::VT_PID, pid, 0);
+  pub fn add_pid(&mut self, pid: u32) {
+    self.fbb_.push_slot::<u32>(KillProcess::VT_PID, pid, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> KillProcessBuilder<'a, 'b, A> {
@@ -1117,11 +1117,11 @@ impl<'a> ProcessLaunched<'a> {
 
 
   #[inline]
-  pub fn pid(&self) -> i32 {
+  pub fn pid(&self) -> u32 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<i32>(ProcessLaunched::VT_PID, Some(0)).unwrap()}
+    unsafe { self._tab.get::<u32>(ProcessLaunched::VT_PID, Some(0)).unwrap()}
   }
 }
 
@@ -1132,13 +1132,13 @@ impl flatbuffers::Verifiable for ProcessLaunched<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<i32>("pid", Self::VT_PID, false)?
+     .visit_field::<u32>("pid", Self::VT_PID, false)?
      .finish();
     Ok(())
   }
 }
 pub struct ProcessLaunchedArgs {
-    pub pid: i32,
+    pub pid: u32,
 }
 impl<'a> Default for ProcessLaunchedArgs {
   #[inline]
@@ -1155,8 +1155,8 @@ pub struct ProcessLaunchedBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
 }
 impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ProcessLaunchedBuilder<'a, 'b, A> {
   #[inline]
-  pub fn add_pid(&mut self, pid: i32) {
-    self.fbb_.push_slot::<i32>(ProcessLaunched::VT_PID, pid, 0);
+  pub fn add_pid(&mut self, pid: u32) {
+    self.fbb_.push_slot::<u32>(ProcessLaunched::VT_PID, pid, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> ProcessLaunchedBuilder<'a, 'b, A> {
@@ -1214,11 +1214,11 @@ impl<'a> ChildCreationError<'a> {
 
 
   #[inline]
-  pub fn errno(&self) -> i32 {
+  pub fn errno(&self) -> u32 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<i32>(ChildCreationError::VT_ERRNO, Some(0)).unwrap()}
+    unsafe { self._tab.get::<u32>(ChildCreationError::VT_ERRNO, Some(0)).unwrap()}
   }
 }
 
@@ -1229,13 +1229,13 @@ impl flatbuffers::Verifiable for ChildCreationError<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<i32>("errno", Self::VT_ERRNO, false)?
+     .visit_field::<u32>("errno", Self::VT_ERRNO, false)?
      .finish();
     Ok(())
   }
 }
 pub struct ChildCreationErrorArgs {
-    pub errno: i32,
+    pub errno: u32,
 }
 impl<'a> Default for ChildCreationErrorArgs {
   #[inline]
@@ -1252,8 +1252,8 @@ pub struct ChildCreationErrorBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a>
 }
 impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ChildCreationErrorBuilder<'a, 'b, A> {
   #[inline]
-  pub fn add_errno(&mut self, errno: i32) {
-    self.fbb_.push_slot::<i32>(ChildCreationError::VT_ERRNO, errno, 0);
+  pub fn add_errno(&mut self, errno: u32) {
+    self.fbb_.push_slot::<u32>(ChildCreationError::VT_ERRNO, errno, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> ChildCreationErrorBuilder<'a, 'b, A> {
@@ -1311,11 +1311,11 @@ impl<'a> ProcessTerminated<'a> {
 
 
   #[inline]
-  pub fn pid(&self) -> i32 {
+  pub fn pid(&self) -> u32 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<i32>(ProcessTerminated::VT_PID, Some(0)).unwrap()}
+    unsafe { self._tab.get::<u32>(ProcessTerminated::VT_PID, Some(0)).unwrap()}
   }
 }
 
@@ -1326,13 +1326,13 @@ impl flatbuffers::Verifiable for ProcessTerminated<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<i32>("pid", Self::VT_PID, false)?
+     .visit_field::<u32>("pid", Self::VT_PID, false)?
      .finish();
     Ok(())
   }
 }
 pub struct ProcessTerminatedArgs {
-    pub pid: i32,
+    pub pid: u32,
 }
 impl<'a> Default for ProcessTerminatedArgs {
   #[inline]
@@ -1349,8 +1349,8 @@ pub struct ProcessTerminatedBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> 
 }
 impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ProcessTerminatedBuilder<'a, 'b, A> {
   #[inline]
-  pub fn add_pid(&mut self, pid: i32) {
-    self.fbb_.push_slot::<i32>(ProcessTerminated::VT_PID, pid, 0);
+  pub fn add_pid(&mut self, pid: u32) {
+    self.fbb_.push_slot::<u32>(ProcessTerminated::VT_PID, pid, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> ProcessTerminatedBuilder<'a, 'b, A> {
@@ -1408,11 +1408,11 @@ impl<'a> TCPSocketListening<'a> {
 
 
   #[inline]
-  pub fn port(&self) -> i32 {
+  pub fn port(&self) -> u16 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<i32>(TCPSocketListening::VT_PORT, Some(0)).unwrap()}
+    unsafe { self._tab.get::<u16>(TCPSocketListening::VT_PORT, Some(0)).unwrap()}
   }
 }
 
@@ -1423,13 +1423,13 @@ impl flatbuffers::Verifiable for TCPSocketListening<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<i32>("port", Self::VT_PORT, false)?
+     .visit_field::<u16>("port", Self::VT_PORT, false)?
      .finish();
     Ok(())
   }
 }
 pub struct TCPSocketListeningArgs {
-    pub port: i32,
+    pub port: u16,
 }
 impl<'a> Default for TCPSocketListeningArgs {
   #[inline]
@@ -1446,8 +1446,8 @@ pub struct TCPSocketListeningBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a>
 }
 impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> TCPSocketListeningBuilder<'a, 'b, A> {
   #[inline]
-  pub fn add_port(&mut self, port: i32) {
-    self.fbb_.push_slot::<i32>(TCPSocketListening::VT_PORT, port, 0);
+  pub fn add_port(&mut self, port: u16) {
+    self.fbb_.push_slot::<u16>(TCPSocketListening::VT_PORT, port, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> TCPSocketListeningBuilder<'a, 'b, A> {
@@ -1619,11 +1619,11 @@ impl<'a> EstablishTCPConnection<'a> {
 
 
   #[inline]
-  pub fn destport(&self) -> i32 {
+  pub fn destport(&self) -> u8 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<i32>(EstablishTCPConnection::VT_DESTPORT, Some(0)).unwrap()}
+    unsafe { self._tab.get::<u8>(EstablishTCPConnection::VT_DESTPORT, Some(0)).unwrap()}
   }
 }
 
@@ -1634,13 +1634,13 @@ impl flatbuffers::Verifiable for EstablishTCPConnection<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<i32>("destport", Self::VT_DESTPORT, false)?
+     .visit_field::<u8>("destport", Self::VT_DESTPORT, false)?
      .finish();
     Ok(())
   }
 }
 pub struct EstablishTCPConnectionArgs {
-    pub destport: i32,
+    pub destport: u8,
 }
 impl<'a> Default for EstablishTCPConnectionArgs {
   #[inline]
@@ -1657,8 +1657,8 @@ pub struct EstablishTCPConnectionBuilder<'a: 'b, 'b, A: flatbuffers::Allocator +
 }
 impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> EstablishTCPConnectionBuilder<'a, 'b, A> {
   #[inline]
-  pub fn add_destport(&mut self, destport: i32) {
-    self.fbb_.push_slot::<i32>(EstablishTCPConnection::VT_DESTPORT, destport, 0);
+  pub fn add_destport(&mut self, destport: u8) {
+    self.fbb_.push_slot::<u8>(EstablishTCPConnection::VT_DESTPORT, destport, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> EstablishTCPConnectionBuilder<'a, 'b, A> {
@@ -1831,7 +1831,7 @@ impl<'a> Message<'a> {
   #[inline]
   #[allow(non_snake_case)]
   pub fn events_as_run_command(&self) -> Option<RunCommand<'a>> {
-    if self.events_type() == Event::run_command {
+    if self.events_type() == Event::RunCommand {
       self.events().map(|t| {
        // Safety:
        // Created from a valid Table for this object
@@ -1846,7 +1846,7 @@ impl<'a> Message<'a> {
   #[inline]
   #[allow(non_snake_case)]
   pub fn events_as_kill_process(&self) -> Option<KillProcess<'a>> {
-    if self.events_type() == Event::kill_process {
+    if self.events_type() == Event::KillProcess {
       self.events().map(|t| {
        // Safety:
        // Created from a valid Table for this object
@@ -1860,8 +1860,8 @@ impl<'a> Message<'a> {
 
   #[inline]
   #[allow(non_snake_case)]
-  pub fn events_as_establish_tcp_connection(&self) -> Option<EstablishTCPConnection<'a>> {
-    if self.events_type() == Event::establish_tcp_connection {
+  pub fn events_as_establish_tcpconnection(&self) -> Option<EstablishTCPConnection<'a>> {
+    if self.events_type() == Event::EstablishTCPConnection {
       self.events().map(|t| {
        // Safety:
        // Created from a valid Table for this object
@@ -1876,7 +1876,7 @@ impl<'a> Message<'a> {
   #[inline]
   #[allow(non_snake_case)]
   pub fn events_as_establish_unix_connection(&self) -> Option<EstablishUnixConnection<'a>> {
-    if self.events_type() == Event::establish_unix_connection {
+    if self.events_type() == Event::EstablishUnixConnection {
       self.events().map(|t| {
        // Safety:
        // Created from a valid Table for this object
@@ -1891,7 +1891,7 @@ impl<'a> Message<'a> {
   #[inline]
   #[allow(non_snake_case)]
   pub fn events_as_process_launched(&self) -> Option<ProcessLaunched<'a>> {
-    if self.events_type() == Event::process_launched {
+    if self.events_type() == Event::ProcessLaunched {
       self.events().map(|t| {
        // Safety:
        // Created from a valid Table for this object
@@ -1906,7 +1906,7 @@ impl<'a> Message<'a> {
   #[inline]
   #[allow(non_snake_case)]
   pub fn events_as_child_creation_error(&self) -> Option<ChildCreationError<'a>> {
-    if self.events_type() == Event::child_creation_error {
+    if self.events_type() == Event::ChildCreationError {
       self.events().map(|t| {
        // Safety:
        // Created from a valid Table for this object
@@ -1921,7 +1921,7 @@ impl<'a> Message<'a> {
   #[inline]
   #[allow(non_snake_case)]
   pub fn events_as_process_terminated(&self) -> Option<ProcessTerminated<'a>> {
-    if self.events_type() == Event::process_terminated {
+    if self.events_type() == Event::ProcessTerminated {
       self.events().map(|t| {
        // Safety:
        // Created from a valid Table for this object
@@ -1935,8 +1935,8 @@ impl<'a> Message<'a> {
 
   #[inline]
   #[allow(non_snake_case)]
-  pub fn events_as_tcp_socket_listening(&self) -> Option<TCPSocketListening<'a>> {
-    if self.events_type() == Event::tcp_socket_listening {
+  pub fn events_as_tcpsocket_listening(&self) -> Option<TCPSocketListening<'a>> {
+    if self.events_type() == Event::TCPSocketListening {
       self.events().map(|t| {
        // Safety:
        // Created from a valid Table for this object
@@ -1951,7 +1951,7 @@ impl<'a> Message<'a> {
   #[inline]
   #[allow(non_snake_case)]
   pub fn events_as_inotify_path_updated(&self) -> Option<InotifyPathUpdated<'a>> {
-    if self.events_type() == Event::inotify_path_updated {
+    if self.events_type() == Event::InotifyPathUpdated {
       self.events().map(|t| {
        // Safety:
        // Created from a valid Table for this object
@@ -1974,15 +1974,15 @@ impl flatbuffers::Verifiable for Message<'_> {
     v.visit_table(pos)?
      .visit_union::<Event, _>("events_type", Self::VT_EVENTS_TYPE, "events", Self::VT_EVENTS, false, |key, v, pos| {
         match key {
-          Event::run_command => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RunCommand>>("Event::run_command", pos),
-          Event::kill_process => v.verify_union_variant::<flatbuffers::ForwardsUOffset<KillProcess>>("Event::kill_process", pos),
-          Event::establish_tcp_connection => v.verify_union_variant::<flatbuffers::ForwardsUOffset<EstablishTCPConnection>>("Event::establish_tcp_connection", pos),
-          Event::establish_unix_connection => v.verify_union_variant::<flatbuffers::ForwardsUOffset<EstablishUnixConnection>>("Event::establish_unix_connection", pos),
-          Event::process_launched => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ProcessLaunched>>("Event::process_launched", pos),
-          Event::child_creation_error => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ChildCreationError>>("Event::child_creation_error", pos),
-          Event::process_terminated => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ProcessTerminated>>("Event::process_terminated", pos),
-          Event::tcp_socket_listening => v.verify_union_variant::<flatbuffers::ForwardsUOffset<TCPSocketListening>>("Event::tcp_socket_listening", pos),
-          Event::inotify_path_updated => v.verify_union_variant::<flatbuffers::ForwardsUOffset<InotifyPathUpdated>>("Event::inotify_path_updated", pos),
+          Event::RunCommand => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RunCommand>>("Event::RunCommand", pos),
+          Event::KillProcess => v.verify_union_variant::<flatbuffers::ForwardsUOffset<KillProcess>>("Event::KillProcess", pos),
+          Event::EstablishTCPConnection => v.verify_union_variant::<flatbuffers::ForwardsUOffset<EstablishTCPConnection>>("Event::EstablishTCPConnection", pos),
+          Event::EstablishUnixConnection => v.verify_union_variant::<flatbuffers::ForwardsUOffset<EstablishUnixConnection>>("Event::EstablishUnixConnection", pos),
+          Event::ProcessLaunched => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ProcessLaunched>>("Event::ProcessLaunched", pos),
+          Event::ChildCreationError => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ChildCreationError>>("Event::ChildCreationError", pos),
+          Event::ProcessTerminated => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ProcessTerminated>>("Event::ProcessTerminated", pos),
+          Event::TCPSocketListening => v.verify_union_variant::<flatbuffers::ForwardsUOffset<TCPSocketListening>>("Event::TCPSocketListening", pos),
+          Event::InotifyPathUpdated => v.verify_union_variant::<flatbuffers::ForwardsUOffset<InotifyPathUpdated>>("Event::InotifyPathUpdated", pos),
           _ => Ok(()),
         }
      })?
@@ -2037,63 +2037,63 @@ impl core::fmt::Debug for Message<'_> {
     let mut ds = f.debug_struct("Message");
       ds.field("events_type", &self.events_type());
       match self.events_type() {
-        Event::run_command => {
+        Event::RunCommand => {
           if let Some(x) = self.events_as_run_command() {
             ds.field("events", &x)
           } else {
             ds.field("events", &"InvalidFlatbuffer: Union discriminant does not match value.")
           }
         },
-        Event::kill_process => {
+        Event::KillProcess => {
           if let Some(x) = self.events_as_kill_process() {
             ds.field("events", &x)
           } else {
             ds.field("events", &"InvalidFlatbuffer: Union discriminant does not match value.")
           }
         },
-        Event::establish_tcp_connection => {
-          if let Some(x) = self.events_as_establish_tcp_connection() {
+        Event::EstablishTCPConnection => {
+          if let Some(x) = self.events_as_establish_tcpconnection() {
             ds.field("events", &x)
           } else {
             ds.field("events", &"InvalidFlatbuffer: Union discriminant does not match value.")
           }
         },
-        Event::establish_unix_connection => {
+        Event::EstablishUnixConnection => {
           if let Some(x) = self.events_as_establish_unix_connection() {
             ds.field("events", &x)
           } else {
             ds.field("events", &"InvalidFlatbuffer: Union discriminant does not match value.")
           }
         },
-        Event::process_launched => {
+        Event::ProcessLaunched => {
           if let Some(x) = self.events_as_process_launched() {
             ds.field("events", &x)
           } else {
             ds.field("events", &"InvalidFlatbuffer: Union discriminant does not match value.")
           }
         },
-        Event::child_creation_error => {
+        Event::ChildCreationError => {
           if let Some(x) = self.events_as_child_creation_error() {
             ds.field("events", &x)
           } else {
             ds.field("events", &"InvalidFlatbuffer: Union discriminant does not match value.")
           }
         },
-        Event::process_terminated => {
+        Event::ProcessTerminated => {
           if let Some(x) = self.events_as_process_terminated() {
             ds.field("events", &x)
           } else {
             ds.field("events", &"InvalidFlatbuffer: Union discriminant does not match value.")
           }
         },
-        Event::tcp_socket_listening => {
-          if let Some(x) = self.events_as_tcp_socket_listening() {
+        Event::TCPSocketListening => {
+          if let Some(x) = self.events_as_tcpsocket_listening() {
             ds.field("events", &x)
           } else {
             ds.field("events", &"InvalidFlatbuffer: Union discriminant does not match value.")
           }
         },
-        Event::inotify_path_updated => {
+        Event::InotifyPathUpdated => {
           if let Some(x) = self.events_as_inotify_path_updated() {
             ds.field("events", &x)
           } else {
