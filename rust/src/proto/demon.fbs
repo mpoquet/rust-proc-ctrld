@@ -40,11 +40,11 @@ table RunCommand {
 }
 
 table KillProcess {
-    pid: uint32;
+    pid: int32;
 }
 
 table ProcessLaunched {
-    pid: uint32;
+    pid: int32;
 }
 
 table ChildCreationError {
@@ -52,7 +52,7 @@ table ChildCreationError {
 }
 
 table ProcessTerminated {
-    pid: uint32;
+    pid: int32;
 }
 
 table TCPSocketListening {

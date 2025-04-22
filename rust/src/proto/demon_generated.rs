@@ -1020,11 +1020,11 @@ impl<'a> KillProcess<'a> {
 
 
   #[inline]
-  pub fn pid(&self) -> u32 {
+  pub fn pid(&self) -> i32 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<u32>(KillProcess::VT_PID, Some(0)).unwrap()}
+    unsafe { self._tab.get::<i32>(KillProcess::VT_PID, Some(0)).unwrap()}
   }
 }
 
@@ -1035,13 +1035,13 @@ impl flatbuffers::Verifiable for KillProcess<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<u32>("pid", Self::VT_PID, false)?
+     .visit_field::<i32>("pid", Self::VT_PID, false)?
      .finish();
     Ok(())
   }
 }
 pub struct KillProcessArgs {
-    pub pid: u32,
+    pub pid: i32,
 }
 impl<'a> Default for KillProcessArgs {
   #[inline]
@@ -1058,8 +1058,8 @@ pub struct KillProcessBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
 }
 impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> KillProcessBuilder<'a, 'b, A> {
   #[inline]
-  pub fn add_pid(&mut self, pid: u32) {
-    self.fbb_.push_slot::<u32>(KillProcess::VT_PID, pid, 0);
+  pub fn add_pid(&mut self, pid: i32) {
+    self.fbb_.push_slot::<i32>(KillProcess::VT_PID, pid, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> KillProcessBuilder<'a, 'b, A> {
@@ -1117,11 +1117,11 @@ impl<'a> ProcessLaunched<'a> {
 
 
   #[inline]
-  pub fn pid(&self) -> u32 {
+  pub fn pid(&self) -> i32 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<u32>(ProcessLaunched::VT_PID, Some(0)).unwrap()}
+    unsafe { self._tab.get::<i32>(ProcessLaunched::VT_PID, Some(0)).unwrap()}
   }
 }
 
@@ -1132,13 +1132,13 @@ impl flatbuffers::Verifiable for ProcessLaunched<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<u32>("pid", Self::VT_PID, false)?
+     .visit_field::<i32>("pid", Self::VT_PID, false)?
      .finish();
     Ok(())
   }
 }
 pub struct ProcessLaunchedArgs {
-    pub pid: u32,
+    pub pid: i32,
 }
 impl<'a> Default for ProcessLaunchedArgs {
   #[inline]
@@ -1155,8 +1155,8 @@ pub struct ProcessLaunchedBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
 }
 impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ProcessLaunchedBuilder<'a, 'b, A> {
   #[inline]
-  pub fn add_pid(&mut self, pid: u32) {
-    self.fbb_.push_slot::<u32>(ProcessLaunched::VT_PID, pid, 0);
+  pub fn add_pid(&mut self, pid: i32) {
+    self.fbb_.push_slot::<i32>(ProcessLaunched::VT_PID, pid, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> ProcessLaunchedBuilder<'a, 'b, A> {
@@ -1311,11 +1311,11 @@ impl<'a> ProcessTerminated<'a> {
 
 
   #[inline]
-  pub fn pid(&self) -> u32 {
+  pub fn pid(&self) -> i32 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<u32>(ProcessTerminated::VT_PID, Some(0)).unwrap()}
+    unsafe { self._tab.get::<i32>(ProcessTerminated::VT_PID, Some(0)).unwrap()}
   }
 }
 
@@ -1326,13 +1326,13 @@ impl flatbuffers::Verifiable for ProcessTerminated<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<u32>("pid", Self::VT_PID, false)?
+     .visit_field::<i32>("pid", Self::VT_PID, false)?
      .finish();
     Ok(())
   }
 }
 pub struct ProcessTerminatedArgs {
-    pub pid: u32,
+    pub pid: i32,
 }
 impl<'a> Default for ProcessTerminatedArgs {
   #[inline]
@@ -1349,8 +1349,8 @@ pub struct ProcessTerminatedBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> 
 }
 impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ProcessTerminatedBuilder<'a, 'b, A> {
   #[inline]
-  pub fn add_pid(&mut self, pid: u32) {
-    self.fbb_.push_slot::<u32>(ProcessTerminated::VT_PID, pid, 0);
+  pub fn add_pid(&mut self, pid: i32) {
+    self.fbb_.push_slot::<i32>(ProcessTerminated::VT_PID, pid, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> ProcessTerminatedBuilder<'a, 'b, A> {

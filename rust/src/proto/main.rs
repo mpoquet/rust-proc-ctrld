@@ -6,6 +6,7 @@ use std::error::Error;
 // monitoring tools
 use crate::monitoring_tools::inotify_tool::read_events_inotify;
 use crate::monitoring_tools::network::read_events_port_tokio;
+use crate::monitoring_tools::signal_tool::{block_all_signals, send_sigkill};
 
 // flatbuffers
 use crate::proto::demon_generated::demon::{root_as_message, Event, InotifyEvent};
@@ -55,7 +56,10 @@ async fn handle_message(buf: &[u8]) {
             read_events_inotify(path, trig_events, reach_size).await.expect("error reading inotify events");
         }
         Event::KillProcess => {
-            // TODO
+            let from_mess = msg.events_as_kill_process().expect("error events_as_kill_process");
+            let pid = from_mess.pid();
+
+            send_sigkill(pid).expect("error while sending SIGKILL");
         }
         Event::ProcessLaunched => {
             // TODO
@@ -81,6 +85,7 @@ async fn handle_message(buf: &[u8]) {
 
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn Error>> {
+    block_all_signals().expect("error while blocking all the signals");
     let mut args = env::args();
     if args.len() != 2 {
         println!("Usage : {:?} <PortId>", args.next())
@@ -117,7 +122,7 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
                     break;
                 }
 
-                handle_message(&buf);
+                handle_message(&buf).await;
             }
         });
     }
