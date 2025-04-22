@@ -17,6 +17,8 @@ typedef struct s_process_info{
 
 process_info** create_process_manager(int size);
 
+int search_process(int pid, int size, process_info** group);
+
 int manager_remove_process(int pid, process_info** manager, int size);
 
 int manager_add_process(pid_t pid, process_info** manager, struct clone_parameters param, void* stack, int nb_process);

@@ -16,6 +16,7 @@
 #include <errno.h>
 #include "../include/Errors.h"
 
+
 #define MAX_EVENTS 128
 
 info_child child_infos[512];
@@ -92,7 +93,7 @@ void handle_inotify_event(int fd){
 }
 
 //TODO modifer pour utiliser autre chose que running process et child info.
-int handle_SIGCHLD(struct signalfd_siginfo fdsi){
+int handle_SIGCHLD(struct signalfd_siginfo fdsi, process_info** manager, int size){
     int wstatus;
     int exit_status;
     waitpid(fdsi.ssi_pid, &wstatus, 0);  // Attente de la fin du fils
@@ -104,9 +105,8 @@ int handle_SIGCHLD(struct signalfd_siginfo fdsi){
         if (data==NULL){
             printf("Unable to allocate memory for error message");
         }else{
-            data->com=NULL;
-            data->group_id=0;
-            data->pid=0;
+            data->com=manager[search_process(fdsi.ssi_pid,size, manager)]->param;
+            data->pid=fdsi.ssi_pid;
             send_error(CHILD_EXITED,(void*)data);
         }
     }else if (WIFSIGNALED(wstatus)){
@@ -115,9 +115,8 @@ int handle_SIGCHLD(struct signalfd_siginfo fdsi){
         if (data==NULL){
             printf("Unable to allocate memory for error message");
         }else{
-            data->com=NULL;
-            data->group_id=0;
-            data->pid=0;
+            data->com=manager[search_process(fdsi.ssi_pid,size, manager)]->param;
+            data->pid=fdsi.ssi_pid;
             send_error(CHILD_SIGNALED,(void*)data);
         }        
     }
@@ -130,10 +129,10 @@ int handle_SIGCHLD(struct signalfd_siginfo fdsi){
     return exit_status;
 }
 
-int handle_signalfd_event(int fd){
+int handle_signalfd_event(int fd, process_info** manager, int size){
     ssize_t s;
     struct signalfd_siginfo fdsi;
-    int exit_status=-1;
+    int pid=-1;
     for (;;) {
         s = read(fd, &fdsi, sizeof(fdsi));
         if (s != sizeof(fdsi)){
@@ -144,7 +143,8 @@ int handle_signalfd_event(int fd){
         switch (fdsi.ssi_signo)
         {
         case SIGCHLD:
-            exit_status = handle_SIGCHLD(fdsi);
+            pid = handle_SIGCHLD(fdsi, manager, size);
+            manager_remove_process(pid,manager,size);
             break;
         
         default:
@@ -152,7 +152,7 @@ int handle_signalfd_event(int fd){
             break;
         }
     }
-    return exit_status;
+    return pid;
 }
 
 int add_event_inotifyFd(int fd, int epollfd){
