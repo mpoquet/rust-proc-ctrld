@@ -1,9 +1,5 @@
 namespace demon;
 
-table Size {
-    size: uint32;
-}
-
 enum InotifyEvent : byte {
     modification,
     creation,
@@ -15,6 +11,7 @@ enum InotifyEvent : byte {
 table Inotify {
     root_paths: string;
     trigger_events: [InotifyEvent];
+    size: uint32;
 }
 
 table TCPSocket {
@@ -22,8 +19,8 @@ table TCPSocket {
 }
 
 union Surveillance {
-    inotify: Inotify,
-    tcp_socket: TCPSocket
+    Inotify,
+    TCPSocket
 }
 
 table SurveillanceEvent {

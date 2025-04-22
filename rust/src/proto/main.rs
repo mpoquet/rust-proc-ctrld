@@ -6,7 +6,7 @@ use std::error::Error;
 // monitoring tools
 use crate::monitoring_tools::inotify_tool::read_events_inotify;
 use crate::monitoring_tools::network::read_events_port_tokio;
-use crate::monitoring_tools::signal_tool::{block_all_signals, send_sigkill};
+use crate::monitoring_tools::signal_tool::send_sigkill;
 
 // flatbuffers
 use crate::proto::demon_generated::demon::{root_as_message, Event, InotifyEvent};
@@ -24,11 +24,11 @@ async fn handle_message(buf: &[u8]) {
             // TODO
         }
         Event::InotifyPathUpdated => {
-            let reach_size = 400;                           // TODO
             let from_message =
                 msg.events_as_inotify_path_updated().expect("error events_as_inotify...");
             let path = from_message.path().expect("No path from the message");
             let trigger_events = from_message.trigger_events().expect("No vector of trigger events for inotify");
+            let reach_size = 500;                           // TODO
 
             // new vector of "real" Inotify Event not from flatbuffer
             let mut trig_events = Vec::<EventMask>::new();
@@ -62,12 +62,23 @@ async fn handle_message(buf: &[u8]) {
             send_sigkill(pid).expect("error while sending SIGKILL");
         }
         Event::ProcessLaunched => {
+            let from_mess = msg.events_as_process_launched().expect("error events_as_process_launched");
+            let pid = from_mess.pid();
             // TODO
         }
         Event::ProcessTerminated => {
+            let from_mess = msg.events_as_process_terminated().expect("error events_as_process_terminated");
+            let pid = from_mess.pid();
             // TODO
         }
         Event::RunCommand => {
+            let from_mess = msg.events_as_run_command().expect("error events_as_run_command");
+            let path = from_mess.path().expect("failed to get path");
+            let args = from_mess.args().expect("failed to get args");
+            let envp = from_mess.envp().expect("failed to get envp");
+            let flags = from_mess.flags();
+            let stack_size = from_mess.stack_size();
+            let to_watch = from_mess.to_watch().expect("error to get to_watch");
             // TODO
         }
         Event::TCPSocketListening => {

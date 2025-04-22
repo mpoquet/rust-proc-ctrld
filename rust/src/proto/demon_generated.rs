@@ -123,8 +123,8 @@ pub const ENUM_MAX_SURVEILLANCE: u8 = 2;
 #[allow(non_camel_case_types)]
 pub const ENUM_VALUES_SURVEILLANCE: [Surveillance; 3] = [
   Surveillance::NONE,
-  Surveillance::inotify,
-  Surveillance::tcp_socket,
+  Surveillance::Inotify,
+  Surveillance::TCPSocket,
 ];
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
@@ -133,22 +133,22 @@ pub struct Surveillance(pub u8);
 #[allow(non_upper_case_globals)]
 impl Surveillance {
   pub const NONE: Self = Self(0);
-  pub const inotify: Self = Self(1);
-  pub const tcp_socket: Self = Self(2);
+  pub const Inotify: Self = Self(1);
+  pub const TCPSocket: Self = Self(2);
 
   pub const ENUM_MIN: u8 = 0;
   pub const ENUM_MAX: u8 = 2;
   pub const ENUM_VALUES: &'static [Self] = &[
     Self::NONE,
-    Self::inotify,
-    Self::tcp_socket,
+    Self::Inotify,
+    Self::TCPSocket,
   ];
   /// Returns the variant's name or "" if unknown.
   pub fn variant_name(self) -> Option<&'static str> {
     match self {
       Self::NONE => Some("NONE"),
-      Self::inotify => Some("inotify"),
-      Self::tcp_socket => Some("tcp_socket"),
+      Self::Inotify => Some("Inotify"),
+      Self::TCPSocket => Some("TCPSocket"),
       _ => None,
     }
   }
@@ -443,6 +443,7 @@ impl<'a> flatbuffers::Follow<'a> for Inotify<'a> {
 impl<'a> Inotify<'a> {
   pub const VT_ROOT_PATHS: flatbuffers::VOffsetT = 4;
   pub const VT_TRIGGER_EVENTS: flatbuffers::VOffsetT = 6;
+  pub const VT_SIZE: flatbuffers::VOffsetT = 8;
 
   #[inline]
   pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
@@ -454,6 +455,7 @@ impl<'a> Inotify<'a> {
     args: &'args InotifyArgs<'args>
   ) -> flatbuffers::WIPOffset<Inotify<'bldr>> {
     let mut builder = InotifyBuilder::new(_fbb);
+    builder.add_size(args.size);
     if let Some(x) = args.trigger_events { builder.add_trigger_events(x); }
     if let Some(x) = args.root_paths { builder.add_root_paths(x); }
     builder.finish()
@@ -474,6 +476,13 @@ impl<'a> Inotify<'a> {
     // which contains a valid value in this slot
     unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'a, InotifyEvent>>>(Inotify::VT_TRIGGER_EVENTS, None)}
   }
+  #[inline]
+  pub fn size(&self) -> u32 {
+    // Safety:
+    // Created from valid Table for this object
+    // which contains a valid value in this slot
+    unsafe { self._tab.get::<u32>(Inotify::VT_SIZE, Some(0)).unwrap()}
+  }
 }
 
 impl flatbuffers::Verifiable for Inotify<'_> {
@@ -485,6 +494,7 @@ impl flatbuffers::Verifiable for Inotify<'_> {
     v.visit_table(pos)?
      .visit_field::<flatbuffers::ForwardsUOffset<&str>>("root_paths", Self::VT_ROOT_PATHS, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, InotifyEvent>>>("trigger_events", Self::VT_TRIGGER_EVENTS, false)?
+     .visit_field::<u32>("size", Self::VT_SIZE, false)?
      .finish();
     Ok(())
   }
@@ -492,6 +502,7 @@ impl flatbuffers::Verifiable for Inotify<'_> {
 pub struct InotifyArgs<'a> {
     pub root_paths: Option<flatbuffers::WIPOffset<&'a str>>,
     pub trigger_events: Option<flatbuffers::WIPOffset<flatbuffers::Vector<'a, InotifyEvent>>>,
+    pub size: u32,
 }
 impl<'a> Default for InotifyArgs<'a> {
   #[inline]
@@ -499,6 +510,7 @@ impl<'a> Default for InotifyArgs<'a> {
     InotifyArgs {
       root_paths: None,
       trigger_events: None,
+      size: 0,
     }
   }
 }
@@ -515,6 +527,10 @@ impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> InotifyBuilder<'a, 'b, A> {
   #[inline]
   pub fn add_trigger_events(&mut self, trigger_events: flatbuffers::WIPOffset<flatbuffers::Vector<'b , InotifyEvent>>) {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(Inotify::VT_TRIGGER_EVENTS, trigger_events);
+  }
+  #[inline]
+  pub fn add_size(&mut self, size: u32) {
+    self.fbb_.push_slot::<u32>(Inotify::VT_SIZE, size, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> InotifyBuilder<'a, 'b, A> {
@@ -536,6 +552,7 @@ impl core::fmt::Debug for Inotify<'_> {
     let mut ds = f.debug_struct("Inotify");
       ds.field("root_paths", &self.root_paths());
       ds.field("trigger_events", &self.trigger_events());
+      ds.field("size", &self.size());
       ds.finish()
   }
 }
@@ -688,7 +705,7 @@ impl<'a> SurveillanceEvent<'a> {
   #[inline]
   #[allow(non_snake_case)]
   pub fn event_as_inotify(&self) -> Option<Inotify<'a>> {
-    if self.event_type() == Surveillance::inotify {
+    if self.event_type() == Surveillance::Inotify {
       self.event().map(|t| {
        // Safety:
        // Created from a valid Table for this object
@@ -702,8 +719,8 @@ impl<'a> SurveillanceEvent<'a> {
 
   #[inline]
   #[allow(non_snake_case)]
-  pub fn event_as_tcp_socket(&self) -> Option<TCPSocket<'a>> {
-    if self.event_type() == Surveillance::tcp_socket {
+  pub fn event_as_tcpsocket(&self) -> Option<TCPSocket<'a>> {
+    if self.event_type() == Surveillance::TCPSocket {
       self.event().map(|t| {
        // Safety:
        // Created from a valid Table for this object
@@ -726,8 +743,8 @@ impl flatbuffers::Verifiable for SurveillanceEvent<'_> {
     v.visit_table(pos)?
      .visit_union::<Surveillance, _>("event_type", Self::VT_EVENT_TYPE, "event", Self::VT_EVENT, false, |key, v, pos| {
         match key {
-          Surveillance::inotify => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Inotify>>("Surveillance::inotify", pos),
-          Surveillance::tcp_socket => v.verify_union_variant::<flatbuffers::ForwardsUOffset<TCPSocket>>("Surveillance::tcp_socket", pos),
+          Surveillance::Inotify => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Inotify>>("Surveillance::Inotify", pos),
+          Surveillance::TCPSocket => v.verify_union_variant::<flatbuffers::ForwardsUOffset<TCPSocket>>("Surveillance::TCPSocket", pos),
           _ => Ok(()),
         }
      })?
@@ -782,15 +799,15 @@ impl core::fmt::Debug for SurveillanceEvent<'_> {
     let mut ds = f.debug_struct("SurveillanceEvent");
       ds.field("event_type", &self.event_type());
       match self.event_type() {
-        Surveillance::inotify => {
+        Surveillance::Inotify => {
           if let Some(x) = self.event_as_inotify() {
             ds.field("event", &x)
           } else {
             ds.field("event", &"InvalidFlatbuffer: Union discriminant does not match value.")
           }
         },
-        Surveillance::tcp_socket => {
-          if let Some(x) = self.event_as_tcp_socket() {
+        Surveillance::TCPSocket => {
+          if let Some(x) = self.event_as_tcpsocket() {
             ds.field("event", &x)
           } else {
             ds.field("event", &"InvalidFlatbuffer: Union discriminant does not match value.")
