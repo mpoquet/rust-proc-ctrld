@@ -7,6 +7,7 @@ use std::error::Error;
 use crate::monitoring_tools::inotify_tool::read_events_inotify;
 use crate::monitoring_tools::network::read_events_port_tokio;
 use crate::monitoring_tools::signal_tool::send_sigkill;
+use crate::monitoring_tools::command::exec_command;
 
 // flatbuffers
 use crate::proto::demon_generated::demon::{root_as_message, Event, InotifyEvent};
@@ -73,13 +74,11 @@ async fn handle_message(buf: &[u8]) {
         }
         Event::RunCommand => {
             let from_mess = msg.events_as_run_command().expect("error events_as_run_command");
-            let path = from_mess.path().expect("failed to get path");
-            let args = from_mess.args().expect("failed to get args");
-            let envp = from_mess.envp().expect("failed to get envp");
             let flags = from_mess.flags();
             let stack_size = from_mess.stack_size();
             let to_watch = from_mess.to_watch().expect("error to get to_watch");
-            // TODO
+            
+            exec_command(&from_mess).await;
         }
         Event::TCPSocketListening => {
             println!("Handling EventType2");

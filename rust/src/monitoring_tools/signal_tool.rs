@@ -1,10 +1,12 @@
+use nix::errno::Errno;
 use nix::sys::signalfd::SignalFd;
-use nix::sys::signal::{Signal, SigSet};
+use nix::sys::signal::{sigprocmask, SigSet, SigmaskHow, Signal};
+use nix::unistd::Pid;
 use std::os::unix::io::RawFd;
 use std::io;
 
 use std::process;
-use nix::libc::{epoll_ctl, epoll_event, EPOLLIN, EPOLL_CTL_ADD};
+use nix::libc::{self, epoll_ctl, epoll_event, EPOLLIN, EPOLL_CTL_ADD};
 use tokio::signal::unix::signal;
 use tokio::task;
 use tokio::signal::unix::SignalKind;
@@ -103,4 +105,12 @@ pub fn ctrl_channel() -> Result<Receiver<()>, ctrlc::Error> {
     })?;
 
     Ok(receiver)
+}
+
+pub fn send_sigkill(pid : i32) -> Result<(), Errno> {
+    let pid = Pid::from_raw(pid);
+    if let Err(e) = nix::sys::signal::kill(pid, Signal::SIGKILL) {
+        return Err(e);
+    }
+    Ok(())
 }
