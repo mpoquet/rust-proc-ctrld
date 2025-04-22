@@ -85,7 +85,6 @@ async fn handle_message(buf: &[u8]) {
 
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn Error>> {
-    block_all_signals().expect("error while blocking all the signals");
     let mut args = env::args();
     if args.len() != 2 {
         println!("Usage : {:?} <PortId>", args.next())
