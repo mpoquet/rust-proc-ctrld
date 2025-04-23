@@ -92,6 +92,22 @@ void handle_inotify_event(int fd){
 
 }
 
+struct clone_parameters* extract_clone_parameters(command* com){
+    struct clone_parameters* param = malloc(sizeof(struct clone_parameters));
+    if(param==NULL){
+        perror("malloc");
+        return NULL;
+    }
+
+    param->args=com->args;
+    param->envp=com->envp;
+    param->flags=com->flags;
+    param->pathname=com->path;
+    param->stack_size=com->stack_size;
+
+    return param;
+}
+
 //TODO modifer pour utiliser autre chose que running process et child info.
 int handle_SIGCHLD(struct signalfd_siginfo fdsi, process_info** manager, int size){
     int wstatus;

@@ -12,7 +12,7 @@ enum error_type{
 
 struct child_err{
     int pid;
-    struct clone_parameters com;
+    command com;
 };
 
 struct clone_err{

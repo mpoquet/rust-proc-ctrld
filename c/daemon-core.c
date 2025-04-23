@@ -55,7 +55,7 @@ int main(int argc, char** argv){
     */
     process_info** process_manager = create_process_manager(MAX_PROCESS);
 
-    int communication_socket = establish_connection(destPort);
+    struct socket_info* communication_socket = establish_connection(destPort);
 
     //TODO : Once the establish function is written do not forget to add the socket to inotify
 
@@ -69,12 +69,13 @@ int main(int argc, char** argv){
 
     //Add our communication socket to the event list
     struct epoll_event* ev = malloc(sizeof(struct epoll_event));
-    event_data_t *edata = malloc(sizeof(event_data_t));
-    edata->fd = communication_socket;
-    edata->type = SOCKFD;
+    event_data_sock *edata = malloc(sizeof(event_data_sock));
+    edata->fd = communication_socket->sockfd;
+    edata->type = SOCK_CONNEXION;
+    edata->sock_info=communication_socket;
     ev->events=EPOLLIN;
     ev->data.ptr=edata;
-    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, communication_socket, ev)==-1){
+    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, communication_socket->sockfd, ev)==-1){
         printf("error while trying to add file descriptor to epoll interest list");
         free(ev);
         free(edata);
@@ -123,20 +124,22 @@ int main(int argc, char** argv){
                         break;
                     
                     case SIGNALFD:
-                        if (handle_signalfd_event(edata->fd, process_manager, size) == -1){
+                        if (handle_signalfd_event(edata->fd, process_manager, nb_process) == -1){
                             printf("Unable to read signalfd\n");
                         }
                         break;
                     
-                    case SOCKFD:
-                        instruction_mess = receive_message();
-                        if(instruction_mess==NULL){
+                    case SOCK_MESSAGE:
+                        char buffer[1024];
+                        int size = read_socket(edata->fd, buffer);
+                        if(size==0){
                             printf("An error has occured while trying to read the communication socket\n");
                             break;
                         }
-                        switch (instruction_mess->type){
+                        switch (receive_message_from_user(buffer, size)){
                             case RUN_COMMAND:
-                                struct clone_parameters* param = extract_clone_info(instruction_mess);
+                                command* com= receive_command(buffer,size);
+                                struct clone_parameters* param = extract_clone_parameters(com);
                                 char buffer[20]="errFile";
                                 //On créer un fichier avec un nom unique normalement. Pours ça il faut que les valeurs soit proprement initalisé.
                                 if(snprintf(buffer, sizeof(buffer), "%d-%s", nb_process, param->pathname)){
@@ -158,7 +161,7 @@ int main(int argc, char** argv){
                                         send_error(CLONE_ERR,(void*)data);
                                     }
                                 }else{
-                                    if(manager_add_process(res->child_id, process_manager, *param, res->stack_p, nb_process)){
+                                    if(manager_add_process(res->child_id, process_manager, *com, res->stack_p, nb_process)){
                                         nb_process++;
                                     }
                                 }
@@ -166,11 +169,32 @@ int main(int argc, char** argv){
                                 free(param);
                                 break;
 
+                            case KILL_PROCESS:
+                                break;
+
                             default :
                                 printf("unexpected type of message received\n");
                                 break;
                     
                         }
+                    case SOCK_CONNEXION:
+                        event_data_sock* edata_sock = (event_data_sock*)events[i].data.ptr;
+                        int new_connexion = accept_new_connexion(edata_sock->sock_info);
+                        //Add our communication socket to the event list
+                        struct epoll_event* ev = malloc(sizeof(struct epoll_event));
+                        event_data_t *edata = malloc(sizeof(event_data_t));
+                        edata->fd = new_connexion;
+                        edata->type = SOCK_MESSAGE;
+                        ev->events=EPOLLIN;
+                        ev->data.ptr=edata;
+                        if (epoll_ctl(epollfd, EPOLL_CTL_ADD, new_connexion, ev)==-1){
+                            printf("error while trying to add file descriptor to epoll interest list");
+                            free(ev);
+                            free(edata);
+                            return -1;
+                        }
+                        num_inotifyFD++;
+                        break;
 
                     default:
                         break;

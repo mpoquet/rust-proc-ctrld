@@ -1,20 +1,27 @@
-#ifndef __NETWORK_C__
-#define __NETWORK_C__
+#ifndef __NETWORK_H__
+#define __NETWORK_H__
 
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/epoll.h>
 #include <sys/types.h>
-#include "./events.h"
+#include <sys/socket.h>
+#include <arpa/inet.h>
 
 struct tcp_socket{
     uint8_t destport;
 };
 
+struct socket_info{
+    int port;
+    struct sockaddr_in* address;
+    int sockfd;
+};
+
 struct inotify_parameters{
     char *root_paths;
-    InotifyEvent* i_events;
-    uint32_t size = 0;
+    enum InotifyEvent* i_events;
+    uint32_t size;
 };
 
 enum SurveillanceEventType{
@@ -23,20 +30,20 @@ enum SurveillanceEventType{
 };
 
 struct surveillance {
-    SurveillanceEventType event;
+    enum SurveillanceEventType event;
     void *ptr_event;
 };
 
 typedef struct s_command{ //template for deserialized struct which contained all the info for all possible command. CAN BE MODIFIED
     char *path;
-    char *args[];
-    size_t args_size;
-    char *envp[];
+    size_t args_size; 
     size_t envp_size;
     uint32_t flags;
     uint32_t stack_size;
     struct surveillance *to_watch; //pointer to array of structs (can be null)
     size_t to_watch_size;
+    char **envp;
+    char **args;
 }command;
 
 
@@ -53,10 +60,16 @@ enum Event {
 };
 
 
-int establish_connection(int port); //exemple of function i want for the daemon 
+struct socket_info* establish_connection(int port); //exemple of function i want for the daemon 
+
+int accept_new_connexion(struct socket_info* info);
 
 void send_command(command *cmd);
 
-static struct command* receive_command(void *buffer, size_t size);    //exemple of function i want for the daemon; Return NULL in case of failure 
+int read_socket(int serveur_fd, char* buffer);
 
-#endif
+enum Event receive_message_from_user(void *buffer, size_t size);
+
+static command* receive_command(void *buffer, size_t size);    //exemple of function i want for the daemon; Return NULL in case of failure 
+
+#endif 

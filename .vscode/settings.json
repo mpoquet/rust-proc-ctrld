@@ -3,6 +3,7 @@
     "files.associations": {
         "inet.h": "c",
         "sched.h": "c",
-        "clone.h": "c"
+        "clone.h": "c",
+        "demon_reader.h": "c"
     }
 }

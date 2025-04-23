@@ -50,7 +50,7 @@ int manager_remove_process(int pid, process_info** manager, int size){
 
 }
 
-int manager_add_process(pid_t pid, process_info** manager, struct clone_parameters param, void* stack, int nb_process){
+int manager_add_process(pid_t pid, process_info** manager, command param, void* stack, int nb_process){
     if(nb_process<MAX_PROCESS){
         for (int j=0; j<MAX_PROCESS; j++){
             if(manager[j]->stack_p==NULL){

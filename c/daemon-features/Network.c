@@ -15,10 +15,6 @@ static inline const char *get_string_chars(flatbuffers_string_t s) {
     return s ? (const char *)s : "";
 }
 
-int establish_connection(int port){
-    return 0;
-}
-
 //
 ///PARTIE USER->DEMON
 //
@@ -135,7 +131,7 @@ static struct tcp_socket* extract_tcp_socket(demon_TCPSocket_table_t socket) {
 }
 
 //désérialisation RunCommand
-static struct command* receive_command(void *buffer, size_t size) {
+static command* receive_command(void *buffer, size_t size) {
     //on vérifie que le buffer est valide
     int verify_result = demon_Message_verify_as_root(buffer, size);
     if (!verify_result) {
@@ -195,7 +191,7 @@ int32_t receive_kill(void *buffer, size_t size) {
 }
 
 //permet au démon de savoir si le message reçu est une commande ou un killprocess
-Event receive_message_from_user(void *buffer, size_t size) {
+enum Event receive_message_from_user(void *buffer, size_t size) {
     if(demon_Message_events_type(message) == demon_Event_RunCommand) {
         return RUN_COMMAND;
     }
@@ -334,3 +330,63 @@ Event receive_message_from_demon(void *buffer, size_t size) {
     }
     return NULL;
 }
+
+
+/*===============================================PART TCP CONNEXION======================================================*/
+
+
+struct socket_info* establish_connection(int port){
+    int server_fd;
+    struct sockaddr_in address;
+    int opt = 1;
+
+    struct socket_info* info = malloc(sizeof(struct socket_info));
+    if(info==NULL){
+        perror("malloc");
+        exit(1);
+    }
+
+    // Creating socket file descriptor
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        perror("socket failed");
+        exit(EXIT_FAILURE);
+    }
+
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(port);
+
+    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
+        perror("bind failed");
+        exit(EXIT_FAILURE);
+    }
+
+    if (listen(server_fd, 3) < 0) {
+        perror("listen");
+        exit(EXIT_FAILURE);
+    }
+
+    info->address=&address;
+    info->port=port;
+    info->sockfd=server_fd;
+
+    return info;
+}
+
+int accept_new_connexion(struct socket_info* info){
+    int new_socket;
+    if ((new_socket = accept(info->port, info->address, sizeof(info->address))) < 0) {
+        perror("accept");
+        exit(EXIT_FAILURE);
+    }
+    return new_socket;
+}
+
+int read_socket(int serveur_fd, char* buffer){
+
+    // Subtract 1 for the null terminator at the end
+    int valread = read(new_socket, buffer, sizeof(buffer));
+
+    return valread;
+}
+

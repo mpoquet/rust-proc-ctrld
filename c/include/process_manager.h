@@ -1,5 +1,5 @@
-#ifndef __PROCESS_MANAGER_C__
-#define __PROCESS_MANAGER_C__
+#ifndef __PROCESS_MANAGER_H__
+#define __PROCESS_MANAGER_H__
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -12,8 +12,10 @@
 typedef struct s_process_info{
     void * stack_p;
     pid_t child_id;
-    struct clone_parameters param;
+    command param;
 }process_info;
+
+typedef struct s_command command;
 
 process_info** create_process_manager(int size);
 
@@ -21,6 +23,6 @@ int search_process(int pid, int size, process_info** group);
 
 int manager_remove_process(int pid, process_info** manager, int size);
 
-int manager_add_process(pid_t pid, process_info** manager, struct clone_parameters param, void* stack, int nb_process);
+int manager_add_process(pid_t pid, process_info** manager, command param, void* stack, int nb_process);
 
 #endif

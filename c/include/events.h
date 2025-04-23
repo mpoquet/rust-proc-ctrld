@@ -1,17 +1,19 @@
-#ifndef __EVENTS_C__
-#define __EVENTS_C__
+#ifndef __EVENTS_H__
+#define __EVENTS_H__
 
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/epoll.h>
 #include <sys/types.h>
 #include "./Network.h"
-#include "../include/process_manager.h"
+#include "./clone.h"
+#include "./process_manager.h"
 
 enum eventType{
     SIGNALFD,
     INOTIFYFD,
-    SOCKFD,
+    SOCK_CONNEXION,
+    SOCK_MESSAGE,
 };
 
 enum InotifyEvent{
@@ -19,13 +21,29 @@ enum InotifyEvent{
     CREATE,
     DELETE,
     ACCESS,
-}
+};
+
+struct clone_parameters{
+    int stack_size;
+    char *pathname;
+    int flags;
+    char* const* args;
+    char* const* envp;
+};
 
 typedef struct {
     int fd;
     enum eventType type;
-    int group_id;
+
 } event_data_t;
+
+typedef struct {
+    int fd;
+    enum eventType type;
+    struct socket_info* sock_info;
+} event_data_sock;
+
+typedef struct s_process_info process_info;
 
 info_child* handle_clone_event(struct clone_parameters* param, int errorfd);
 
@@ -36,5 +54,7 @@ int add_event_inotifyFd(int fd, int epollfd);
 int handle_signalfd_event(int fd, process_info** manager, int size);
 
 void handle_inotify_event(int fd);
+
+struct clone_parameters* extract_clone_parameters(command* com);
 
 #endif
