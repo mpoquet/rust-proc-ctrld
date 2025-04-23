@@ -6,6 +6,7 @@
 
 
 int initialize_error_file(const char* filepath){
+    printf("initializing file");
     int fd = open(filepath, O_APPEND | O_CREAT , S_IRWXU); //The permission are temporary and may be modified
     if(fd==-1){
         perror("open");
@@ -28,14 +29,11 @@ int send_error(enum error_type type, void* err_data){
     case CLONE_ERR:
         struct clone_err* cdata= (struct clone_err*) err_data;
         break;
-
-    case FILE_CREATION:
-        struct file_err* fdata= (struct file_err*) err_data;
-        break;
     
     default:
         break;
     }
+    return 0;
 }
 
 /*Initialize all the info necessary to handle error messages. A tube to communicate with the childs
