@@ -162,6 +162,6 @@ static struct command* receive_command(void *buffer, size_t size) {
         }
     }
     command final_command;
-    final_command = {path, args, args_size, envp, envp_size, flags, stack_size, to_watch, to_watch_size};
+    final_command = {path, args, args_size, envp, envp_size, flags, stack_size, to_watch_array, to_watch_size};
     return final_command;
 }
