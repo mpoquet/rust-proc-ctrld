@@ -76,7 +76,7 @@ __flatbuffers_build_table(flatbuffers_, demon_TCPSocketListening, 1)
 static const flatbuffers_voffset_t __demon_InotifyPathUpdated_required[] = { 0 };
 typedef flatbuffers_ref_t demon_InotifyPathUpdated_ref_t;
 static demon_InotifyPathUpdated_ref_t demon_InotifyPathUpdated_clone(flatbuffers_builder_t *B, demon_InotifyPathUpdated_table_t t);
-__flatbuffers_build_table(flatbuffers_, demon_InotifyPathUpdated, 2)
+__flatbuffers_build_table(flatbuffers_, demon_InotifyPathUpdated, 3)
 
 static const flatbuffers_voffset_t __demon_EstablishTCPConnection_required[] = { 0 };
 typedef flatbuffers_ref_t demon_EstablishTCPConnection_ref_t;
@@ -140,8 +140,8 @@ __flatbuffers_build_table_prolog(flatbuffers_, demon_ProcessTerminated, demon_Pr
 static inline demon_TCPSocketListening_ref_t demon_TCPSocketListening_create(flatbuffers_builder_t *B __demon_TCPSocketListening_formal_args);
 __flatbuffers_build_table_prolog(flatbuffers_, demon_TCPSocketListening, demon_TCPSocketListening_file_identifier, demon_TCPSocketListening_type_identifier)
 
-#define __demon_InotifyPathUpdated_formal_args , flatbuffers_string_ref_t v0, demon_InotifyEvent_vec_ref_t v1
-#define __demon_InotifyPathUpdated_call_args , v0, v1
+#define __demon_InotifyPathUpdated_formal_args , flatbuffers_string_ref_t v0, demon_InotifyEvent_vec_ref_t v1, uint32_t v2
+#define __demon_InotifyPathUpdated_call_args , v0, v1, v2
 static inline demon_InotifyPathUpdated_ref_t demon_InotifyPathUpdated_create(flatbuffers_builder_t *B __demon_InotifyPathUpdated_formal_args);
 __flatbuffers_build_table_prolog(flatbuffers_, demon_InotifyPathUpdated, demon_InotifyPathUpdated_file_identifier, demon_InotifyPathUpdated_type_identifier)
 
@@ -430,12 +430,14 @@ static demon_TCPSocketListening_ref_t demon_TCPSocketListening_clone(flatbuffers
 
 __flatbuffers_build_string_field(0, flatbuffers_, demon_InotifyPathUpdated_path, demon_InotifyPathUpdated)
 __flatbuffers_build_vector_field(1, flatbuffers_, demon_InotifyPathUpdated_trigger_events, demon_InotifyEvent, demon_InotifyEvent_enum_t, demon_InotifyPathUpdated)
+__flatbuffers_build_scalar_field(2, flatbuffers_, demon_InotifyPathUpdated_size, flatbuffers_uint32, uint32_t, 4, 4, UINT32_C(0), demon_InotifyPathUpdated)
 
 static inline demon_InotifyPathUpdated_ref_t demon_InotifyPathUpdated_create(flatbuffers_builder_t *B __demon_InotifyPathUpdated_formal_args)
 {
     if (demon_InotifyPathUpdated_start(B)
         || demon_InotifyPathUpdated_path_add(B, v0)
-        || demon_InotifyPathUpdated_trigger_events_add(B, v1)) {
+        || demon_InotifyPathUpdated_trigger_events_add(B, v1)
+        || demon_InotifyPathUpdated_size_add(B, v2)) {
         return 0;
     }
     return demon_InotifyPathUpdated_end(B);
@@ -446,7 +448,8 @@ static demon_InotifyPathUpdated_ref_t demon_InotifyPathUpdated_clone(flatbuffers
     __flatbuffers_memoize_begin(B, t);
     if (demon_InotifyPathUpdated_start(B)
         || demon_InotifyPathUpdated_path_pick(B, t)
-        || demon_InotifyPathUpdated_trigger_events_pick(B, t)) {
+        || demon_InotifyPathUpdated_trigger_events_pick(B, t)
+        || demon_InotifyPathUpdated_size_pick(B, t)) {
         return 0;
     }
     __flatbuffers_memoize_end(B, t, demon_InotifyPathUpdated_end(B));

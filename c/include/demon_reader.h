@@ -396,6 +396,7 @@ __flatbuffers_table_as_root(demon_InotifyPathUpdated)
 
 __flatbuffers_define_string_field(0, demon_InotifyPathUpdated, path, 0)
 __flatbuffers_define_vector_field(1, demon_InotifyPathUpdated, trigger_events, demon_InotifyEvent_vec_t, 0)
+__flatbuffers_define_scalar_field(2, demon_InotifyPathUpdated, size, flatbuffers_uint32, uint32_t, UINT32_C(0))
 
 struct demon_EstablishTCPConnection_table { uint8_t unused__; };
 

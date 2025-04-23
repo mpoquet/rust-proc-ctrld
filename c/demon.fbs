@@ -59,6 +59,7 @@ table TCPSocketListening {
 table InotifyPathUpdated {
     path: string;
     trigger_events: [InotifyEvent];
+    size: uint32;
 }
 
 table EstablishTCPConnection {
