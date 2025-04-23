@@ -6,43 +6,56 @@
 #include <sys/epoll.h>
 #include <sys/types.h>
 
-enum NetworkEventType{
-    INOTIFY, //template for multiple type to recognize the type of messages 
-    CLONE,
+struct tcp_socket{
+    uint8_t destport;
+}
+
+struct inotify_parameters{
+    char *root_paths
+    InotifyEvent* i_events
+    uint32_t size = 0;
+};
+
+enum SurveillanceEventType{
+    INOTIFY,
     WATCH_SOCKET,
 };
 
-struct clone_parameters{
-    int stack_size;
-    char *pathname;
-    int flags;
-    char* const* args;
-    char* const* envp;
-    int group_id;
-};
-
-struct inotify_parameters{
-    char *pathname;
-    int flags;
-    int size_target; //once the file reach that size a notification will be sent
-};
+struct surveillance {
+    SurveillanceEventType event;
+    void *ptr_event;
+}
 
 typedef struct s_command{ //template for deserialized struct which contained all the info for all possible command. CAN BE MODIFIED
-    char* command_name;
-    char* arg1;
-    char* arg2;
-    char* arg3;
-    enum NetworkEventType type;
+    char *path;
+    char *args[];
+    size_t args_size;
+    char *envp[];
+    size_t envp_size;
+    uint32_t flags;
+    uint32_t stack_size;
+    surveillance *to_watch; //pointer to array of structs (can be null)
+    size_t to_watch_size;
 }command;
+
+
+enum Event {
+    RUN_COMMAND,
+    KILL_PROCESS,
+    ESTABLISH_TCP_CONNECTION,
+    ESTABLISH_UNIX_CONNECTION,
+    PROCESS_LAUNCHED,
+    CHILD_CREATION_ERROR,
+    PROCESS_TERMINATED,
+    TCP_SOCKET_LISTENING,
+    INOTIFY_PATH_UPDATED,
+}
+
 
 int establish_connection(int port); //exemple of function i want for the daemon 
 
-command* receive_message(); //exemple of function i want for the daemon; Return NULL in case of failure 
+void send_command(command *cmd)
 
-void send_message(); //exemple of function i want for the daemon 
-
-struct inotify_parameters* extract_inotify_info(command* com);
-
-struct clone_parameters* extract_clone_info(command* com);
+static struct command* receive_command(void *buffer, size_t size)    //exemple of function i want for the daemon; Return NULL in case of failure 
 
 #endif

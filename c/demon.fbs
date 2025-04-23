@@ -1,33 +1,29 @@
 namespace demon;
 
-table Size{
-    size : int32;
-}
-
-enum Inotify_event : byte {
-    Modification,
-    Creation,
-    Size,
-    Deletion,
-    Access
+enum InotifyEvent : byte {
+    modification,
+    creation,
+    size,
+    deletion,
+    access
 }
 
 table Inotify {
     root_paths: string;
-    trigger_event : [Inotify_event];
-
+    trigger_events: [InotifyEvent];
+    size: uint32;
 }
 
 table TCPSocket {
-    destport: int32;
+    destport: uint8;
 }
 
 union Surveillance {
     Inotify,
-    TCPSocket,
-} 
+    TCPSocket
+}
 
-table surveillance_event {
+table SurveillanceEvent {
     event: Surveillance;
 }
 
@@ -35,13 +31,13 @@ table RunCommand {
     path: string;
     args: [string];
     envp: [string];
-    flags : int32;
-    stack_size : int32;
-    to_watch: [surveillance_event];
+    flags: uint32;
+    stack_size: uint32;
+    to_watch: [SurveillanceEvent];
 }
 
-table KillProcess{
-    pid : int32;
+table KillProcess {
+    pid: int32;
 }
 
 table ProcessLaunched {
@@ -49,7 +45,7 @@ table ProcessLaunched {
 }
 
 table ChildCreationError {
-    errno: int32;
+    errno: uint32;
 }
 
 table ProcessTerminated {
@@ -57,25 +53,24 @@ table ProcessTerminated {
 }
 
 table TCPSocketListening {
-    port: int32;
+    port: uint16;
 }
 
 table InotifyPathUpdated {
     path: string;
-    trigger_event : [Inotify_event];
+    trigger_events: [InotifyEvent];
 }
 
-
-table EstablishTCPConnection{
-    destport : int32;
+table EstablishTCPConnection {
+    destport: uint8;
 }
 
-table EstablishUnixConnection{
-    path : string;
+table EstablishUnixConnection {
+    path: string;
 }
 
 ///
-///Main message table
+/// Main message table
 ///
 
 union Event {
@@ -88,10 +83,11 @@ union Event {
     ChildCreationError,
     ProcessTerminated,
     TCPSocketListening,
-    InotifyPathUpdated,
- 
+    InotifyPathUpdated
 }
 
 table Message {
     events: Event;
 }
+
+root_type Message;
