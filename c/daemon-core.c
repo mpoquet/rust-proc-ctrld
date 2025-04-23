@@ -123,7 +123,7 @@ int main(int argc, char** argv){
                         break;
                     
                     case SIGNALFD:
-                        if (handle_signalfd_event(edata->fd) == -1){
+                        if (handle_signalfd_event(edata->fd, process_manager, size) == -1){
                             printf("Unable to read signalfd\n");
                         }
                         break;
@@ -135,13 +135,7 @@ int main(int argc, char** argv){
                             break;
                         }
                         switch (instruction_mess->type){
-                            case INOTIFY:
-                                break;
-                    
-                            case WATCH_SOCKET:
-                                break;
-                    
-                            case CLONE:
+                            case RUN_COMMAND:
                                 struct clone_parameters* param = extract_clone_info(instruction_mess);
                                 char buffer[20]="errFile";
                                 //On créer un fichier avec un nom unique normalement. Pours ça il faut que les valeurs soit proprement initalisé.

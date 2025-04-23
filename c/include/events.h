@@ -14,6 +14,13 @@ enum eventType{
     SOCKFD,
 };
 
+enum InotifyEvent{
+    MODIFY,
+    CREATE,
+    DELETE,
+    ACCESS,
+}
+
 typedef struct {
     int fd;
     enum eventType type;

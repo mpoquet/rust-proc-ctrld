@@ -10,7 +10,7 @@ void free_manager(process_info** manager, int size){
     free(manager);
 }
 
-process_info** create_group_manager(int size){
+process_info** create_process_manager(int size){
     process_info** group = malloc(sizeof(process_info*)*size);
     if(group==NULL){
         perror("malloc");
