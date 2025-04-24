@@ -516,6 +516,16 @@ struct socket_info* establish_connection(int port){
         exit(EXIT_FAILURE);
     }
 
+    // Récupère l'IP locale associée à cette socket
+    if (getsockname(server_fd, (struct sockaddr *)&address, (socklen_t*) sizeof(address)) == -1) {
+        perror("getsockname");
+        exit(EXIT_FAILURE);
+    }
+
+    char ip_str[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &(address.sin_addr), ip_str, INET_ADDRSTRLEN);
+    printf("Serveur en écoute sur %s:%d\n", ip_str, ntohs(address.sin_port));
+
     info->address=&address;
     info->port=port;
     info->sockfd=server_fd;
@@ -525,7 +535,7 @@ struct socket_info* establish_connection(int port){
 
 int accept_new_connexion(struct socket_info* info){
     int new_socket;
-    if ((new_socket = accept(info->port, info->address, sizeof(info->address))) < 0) {
+    if ((new_socket = accept(info->port, info->address, (socklen_t*) sizeof(info->address))) < 0) {
         perror("accept");
         exit(EXIT_FAILURE);
     }
@@ -535,7 +545,7 @@ int accept_new_connexion(struct socket_info* info){
 int read_socket(int serveur_fd, char* buffer){
 
     // Subtract 1 for the null terminator at the end
-    int valread = read(new_socket, buffer, sizeof(buffer));
+    int valread = read(serveur_fd, buffer, sizeof(buffer));
 
     return valread;
 }
