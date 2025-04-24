@@ -388,6 +388,7 @@ static int demon_ProcessTerminated_verify_table(flatcc_table_verifier_descriptor
 {
     int ret;
     if ((ret = flatcc_verify_field(td, 0, 4, 4) /* pid */)) return ret;
+    if ((ret = flatcc_verify_field(td, 1, 4, 4) /* errno */)) return ret;
     return flatcc_verify_ok;
 }
 

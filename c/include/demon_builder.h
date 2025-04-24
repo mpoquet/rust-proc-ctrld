@@ -66,7 +66,7 @@ __flatbuffers_build_table(flatbuffers_, demon_ChildCreationError, 1)
 static const flatbuffers_voffset_t __demon_ProcessTerminated_required[] = { 0 };
 typedef flatbuffers_ref_t demon_ProcessTerminated_ref_t;
 static demon_ProcessTerminated_ref_t demon_ProcessTerminated_clone(flatbuffers_builder_t *B, demon_ProcessTerminated_table_t t);
-__flatbuffers_build_table(flatbuffers_, demon_ProcessTerminated, 1)
+__flatbuffers_build_table(flatbuffers_, demon_ProcessTerminated, 2)
 
 static const flatbuffers_voffset_t __demon_TCPSocketListening_required[] = { 0 };
 typedef flatbuffers_ref_t demon_TCPSocketListening_ref_t;
@@ -130,8 +130,8 @@ __flatbuffers_build_table_prolog(flatbuffers_, demon_ProcessLaunched, demon_Proc
 static inline demon_ChildCreationError_ref_t demon_ChildCreationError_create(flatbuffers_builder_t *B __demon_ChildCreationError_formal_args);
 __flatbuffers_build_table_prolog(flatbuffers_, demon_ChildCreationError, demon_ChildCreationError_file_identifier, demon_ChildCreationError_type_identifier)
 
-#define __demon_ProcessTerminated_formal_args , int32_t v0
-#define __demon_ProcessTerminated_call_args , v0
+#define __demon_ProcessTerminated_formal_args , int32_t v0, uint32_t v1
+#define __demon_ProcessTerminated_call_args , v0, v1
 static inline demon_ProcessTerminated_ref_t demon_ProcessTerminated_create(flatbuffers_builder_t *B __demon_ProcessTerminated_formal_args);
 __flatbuffers_build_table_prolog(flatbuffers_, demon_ProcessTerminated, demon_ProcessTerminated_file_identifier, demon_ProcessTerminated_type_identifier)
 
@@ -387,11 +387,13 @@ static demon_ChildCreationError_ref_t demon_ChildCreationError_clone(flatbuffers
 }
 
 __flatbuffers_build_scalar_field(0, flatbuffers_, demon_ProcessTerminated_pid, flatbuffers_int32, int32_t, 4, 4, INT32_C(0), demon_ProcessTerminated)
+__flatbuffers_build_scalar_field(1, flatbuffers_, demon_ProcessTerminated_errno, flatbuffers_uint32, uint32_t, 4, 4, UINT32_C(0), demon_ProcessTerminated)
 
 static inline demon_ProcessTerminated_ref_t demon_ProcessTerminated_create(flatbuffers_builder_t *B __demon_ProcessTerminated_formal_args)
 {
     if (demon_ProcessTerminated_start(B)
-        || demon_ProcessTerminated_pid_add(B, v0)) {
+        || demon_ProcessTerminated_pid_add(B, v0)
+        || demon_ProcessTerminated_errno_add(B, v1)) {
         return 0;
     }
     return demon_ProcessTerminated_end(B);
@@ -401,7 +403,8 @@ static demon_ProcessTerminated_ref_t demon_ProcessTerminated_clone(flatbuffers_b
 {
     __flatbuffers_memoize_begin(B, t);
     if (demon_ProcessTerminated_start(B)
-        || demon_ProcessTerminated_pid_pick(B, t)) {
+        || demon_ProcessTerminated_pid_pick(B, t)
+        || demon_ProcessTerminated_errno_pick(B, t)) {
         return 0;
     }
     __flatbuffers_memoize_end(B, t, demon_ProcessTerminated_end(B));

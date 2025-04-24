@@ -50,6 +50,7 @@ table ChildCreationError {
 
 table ProcessTerminated {
     pid: int32;
+    errno: uint32;
 }
 
 table TCPSocketListening {

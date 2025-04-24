@@ -2,6 +2,9 @@ CC  = gcc
 SYS = -std=gnu11 -Wall -Wextra -O2
 PTHREAD_SYS = $(SYS) -lpthread
 
+#FLATCC_INC = -Iflatcc/include
+#FLATCC_LIB = flatcc/lib/libflatccrt.a
+
 SRCDIR = daemon-features
 OBJDIR = obj
 BINDIR = bin

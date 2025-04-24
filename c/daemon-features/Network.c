@@ -67,38 +67,44 @@ void serialize_command(flatcc_builder_t *B, struct command *cmd) {
 }
 
 //fonction pour envoyer une commande au démon
-void send_command_to_demon(command *cmd){
+struct buffer_info* send_command_to_demon(command *cmd){
 
     flatcc_builder_t builder;
     void *buffer;
     size_t size;
+    struct buffer_info* infos = malloc(sizeof(struct buffer_info));
+
     flatcc_builder_init(&builder);
     serialize_command(&builder, cmd);
 
     //buffer est le message sérialisé a envoyer sur le réseau
     buffer = flatcc_builder_finalize_buffer(&builder, &size);
 
-    //Code d'utilisation du buffer (envoi du buffer sur le réseau par exemple)
+    infos->buffer = buffer;
+    infos->size = size;
 
     //liberer l'espace mémoire du builder
     flatcc_builder_clear(&builder);
 
+    return infos;
 }
 
 //fonction pour envoyer un killprocess au démon
-void send_kill_to_demon(int32_t pid) {
+struct buffer_info* send_kill_to_demon(int32_t pid) {
     flatcc_builder_t builder;
     void* buffer;
     size_t size;
+    struct buffer_info* infos = malloc(sizeof(struct buffer_info));
 
     flatcc_builder_init(&builder);
     demon_KillProcess_ref_t serialized_kill = demon_KillProcess_create(&builder, pid);
     demon_Message_create_as_root(&builder, serialized_kill);
     buffer = flatcc_builder_finalize_buffer(&builder, &size);
-
-    //Code d'utilisation du buffer (envoi du buffer sur le réseau par exemple)
-
+    infos->buffer = buffer;
+    infos->size = size;
     flatcc_builder_clear(&builder);
+
+    return infos;
 }
 
 
@@ -188,6 +194,7 @@ int32_t receive_kill(void *buffer, size_t size) {
         demon_KillProcess_table_t kill_process = demon_Message_events(message);
     }
     int32_t pid = demon_KillProcess_pid(kill_process);
+    return pid;
 }
 
 //permet au démon de savoir si le message reçu est une commande ou un killprocess
@@ -207,90 +214,112 @@ enum Event receive_message_from_user(void *buffer, size_t size) {
 //
 
 //fonction pour envoyer un processlaunched a l'user
-void send_processlaunched_to_user(int32_t pid) {
+struct buffer_info* send_processlaunched_to_user(int32_t pid) {
     flatcc_builder_t builder;
     void* buffer;
     size_t size;
+    struct buffer_info* infos = malloc(sizeof(struct buffer_info));
+
 
     flatcc_builder_init(&builder);
     demon_ProcessLaunched_ref_t process_launched = demon_ProcessLaunched_create(&builder, pid);
     demon_Message_create_as_root(&builder, process_launched);
     buffer = flatcc_builder_finalize_buffer(&builder, &size);
-
-    //Code d'utilisation du buffer (envoi du buffer sur le réseau par exemple)
+    infos->buffer = buffer;
+    infos->size = size;
 
     flatcc_builder_clear(&builder);
+    
+    return infos;
 }
 
 //fonction pour envoyer un childcreationerror a l'user
-void send_childcreationerror_to_user(uint32_t errno) {
+struct buffer_info* send_childcreationerror_to_user(uint32_t errno) {
     flatcc_builder_t builder;
     void* buffer;
     size_t size;
+    struct buffer_info* infos = malloc(sizeof(struct buffer_info));
+
 
     flatcc_builder_init(&builder);
     demon_ChildCreationError_ref_t child_creation_error = demon_ChildCreationError_create(&builder, errno);
     demon_Message_create_as_root(&builder, child_creation_error);
     buffer = flatcc_builder_finalize_buffer(&builder, &size);
-
-    //Code d'utilisation du buffer (envoi du buffer sur le réseau par exemple)
+    infos->buffer = buffer;
+    infos->size = size;
 
     flatcc_builder_clear(&builder);
+    
+    return infos;
 }
 
 //fonction pour envoyer un processterminaed a l'user
-void send_processterminated_to_user(int32_t pid) {
+struct buffer_info* send_processterminated_to_user(int32_t pid) {
     flatcc_builder_t builder;
     void* buffer;
     size_t size;
+    struct buffer_info* infos = malloc(sizeof(struct buffer_info));
+
 
     flatcc_builder_init(&builder);
     demon_ProcessTerminated_ref_t process_terminated = demon_ProcessTerminated_create(&builder, pid);
     demon_Message_create_as_root(&builder, process_terminated);
     buffer = flatcc_builder_finalize_buffer(&builder, &size);
-
-    //Code d'utilisation du buffer (envoi du buffer sur le réseau par exemple)
+    infos->buffer = buffer;
+    infos->size = size;
 
     flatcc_builder_clear(&builder);
+    
+    return infos;
 }
 
 //fonction pour envoyer un TCPSocketListening a l'user
-void send_tcpsocketlistening_to_user(uint16_t port) {
+struct buffer_info* send_tcpsocketlistening_to_user(uint16_t port) {
     flatcc_builder_t builder;
     void* buffer;
     size_t size;
+    struct buffer_info* infos = malloc(sizeof(struct buffer_info));
+
 
     flatcc_builder_init(&builder);
     demon_TCPSocketListening_ref_t TCP_socket = demon_TCPSocketListening_create(&builder, port);
     demon_Message_create_as_root(&builder, TCP_socket);
     buffer = flatcc_builder_finalize_buffer(&builder, &size);
-
-    //Code d'utilisation du buffer (envoi du buffer sur le réseau par exemple)
+    infos->buffer = buffer;
+    infos->size = size;
 
     flatcc_builder_clear(&builder);
+    
+    return infos;
 }
 
 //fonction pour envoyer un processterminaed a l'user
-void send_processterminated_to_user(int32_t pid) {
+struct buffer_info* send_processterminated_to_user(int32_t pid) {
     flatcc_builder_t builder;
     void* buffer;
     size_t size;
+    struct buffer_info* infos = malloc(sizeof(struct buffer_info));
+
 
     flatcc_builder_init(&builder);
     demon_ProcessTerminated_ref_t process_terminated = demon_ProcessTerminated_create(&builder, pid);
     demon_Message_create_as_root(&builder, process_terminated);
     buffer = flatcc_builder_finalize_buffer(&builder, &size);
-
-    //Code d'utilisation du buffer (envoi du buffer sur le réseau par exemple)
+    infos->buffer = buffer;
+    infos->size = size;
 
     flatcc_builder_clear(&builder);
+    
+    return infos;
 }
 
 //fonction pour envoyer un inotifypathupdated a l'user
-void send_inotifypahtupdated_to_user(struct inotify_parameters *inotify) {
+struct buffer_info* send_inotifypahtupdated_to_user(struct inotify_parameters *inotify) {
     flatcc_builder_t builder;
     void* buffer;
     size_t size;
+    struct buffer_info* infos = malloc(sizeof(struct buffer_info));
+
 
     flatcc_builder_init(&builder);
 
@@ -303,13 +332,79 @@ void send_inotifypahtupdated_to_user(struct inotify_parameters *inotify) {
     demon_Message_create_as_root(&builder, path_updated);
 
     buffer = flatcc_builder_finalize_buffer(&builder, &size);
-
-    //Code d'utilisation du buffer (envoi du buffer sur le réseau par exemple)
+    infos->buffer = buffer;
+    infos->size = size;
 
     flatcc_builder_clear(&builder);
+    
+    return infos;
 }
 
-//il me reste a ajouter les fonctions de désérialisation des 5 messages si dessous 
+int32_t receive_processlaunched(void *buffer, size_t size) {
+    demon_Message_table_t message = demon_Message_as_root(buffer);
+    if(demon_Message_events_type(message) == demon_Event_ProcessLaunched) {
+        demon_ProcessLaunched_table_t process_launched = demon_Message_events(message);
+    }
+    int32_t pid = demon_ProcessLaunched_pid(process_launched);
+    return pid;
+}
+
+uint32_t receive_childerror(void *buffer, size_t size) {
+    demon_Message_table_t message = demon_Message_as_root(buffer);
+    if(demon_Message_events_type(message) == demon_Event_ChildCreationError) {
+        demon_ChildCreationError_table_t child_error = demon_Message_events(message);
+    }
+    uint32_t errno = demon_ChildCreationError_errno(child_error);
+    return errno;
+}
+
+static struct process_terminated_info* receive_processterminated(void *buffer, size_t size) {
+    struct process_terminated_info* infos = malloc(sizeof(struct process_terminated_info));
+    demon_Message_table_t message = demon_Message_as_root(buffer);
+
+    if(demon_Message_events_type(message) == demon_Event_ProcessTerminated) {
+        demon_ProcessTerminated_table_t process_terminated = demon_Message_events(message);
+    }
+    infos->pid = demon_ProcessTerminated_pid(process_terminated);
+    infos->errno = demon_ProcessTerminated_errno(process_terminated);
+
+    return errno;
+
+}
+
+uint16_t receive_TCPSocket(void *buffer, size_t size) {
+    demon_Message_table_t message = demon_Message_as_root(buffer);
+    if(demon_Message_events_type(message) == demon_Event_TCPSocketListening) {
+        demon_TCPSocketListening_table_t tcp_socket = demon_Message_events(message);
+    }
+    uint16_t port = demon_TCPSocketListening_port(tcp_socket);
+    return port;
+}
+
+static struct inotify_parameters* extract_inotifypathupdated(void *buffer, size_t size) {
+    struct inotify_parameters* params = malloc(sizeof(struct inotify_parameters));
+
+    demon_Message_table_t message = demon_Message_as_root(buffer);
+    if(demon_Message_events_type(message) == demon_Event_InotifyPathUpdated) {
+        demon_InotifyPathUpdated_table_t inotify = demon_Message_events(message);
+    }
+    // Extraire root_paths
+    const char* root_path = demon_InotifyPathUpdated_root_paths(inotify);
+    params->root_paths = strdup(root_path);
+    
+    // Extraire trigger_events
+    demon_InotifyEvent_vec_t events = demon_InotifyPathUpdated_trigger_events(inotify);
+    size_t events_size = demon_InotifyEvent_vec_len(events);
+    params->i_events = malloc(sizeof(InotifyEvent) * events_size);
+    params->size = events_size;
+    
+    for(size_t i = 0; i < events_size; i++) {
+        params->i_events[i] = demon_InotifyEvent_vec_at(events, i);
+    }
+    
+    return params;
+}
+
 
 //permet a l'user de savoir si le message reçu est une commande ou un killprocess
 Event receive_message_from_demon(void *buffer, size_t size) {

@@ -12,6 +12,16 @@ struct tcp_socket{
     uint8_t destport;
 };
 
+struct buffer_info{
+    void *buffer;
+    size_t size;
+};
+
+struct process_terminated_info{
+    int32_t pid;
+    uint32_t errno;
+};
+
 struct socket_info{
     int port;
     struct sockaddr_in* address;
