@@ -10,19 +10,61 @@ use crate::monitoring_tools::signal_tool::send_sigkill;
 use crate::monitoring_tools::command::exec_command;
 
 // flatbuffers
-use crate::proto::demon_generated::demon::{root_as_message, Event, InotifyEvent};
+use crate::proto::demon_generated::demon::{root_as_message, finish_message_buffer,
+    Event, InotifyEvent, Inotify, TCPSocket, Surveillance, SurveillanceEvent, RunCommand, KillProcess};
 
 use tokio::net::TcpListener;
 
+//est-ce que l'on fait passer le retour par cette fonction ?
 async fn handle_message(buf: &[u8]) {
+
+    //Création du builder flatbuffer
+    let mut bldr = FlatBufferBuilder::new();
+    bldr.reset();
+
     let msg = root_as_message(buf).expect("error root_as_message");
 
     match msg.events_type() {
         Event::EstablishTCPConnection => {
             // TODO
+
+
+            //Affectation temporaire, pour déclarer la variable
+            let destination_port : i8 = 5;
+
+            //Creation de l'objet EstablishTCPConnection
+            let args = EstablishTCPConnectionArgs{destport: destination_port};
+            let object_TCP_Co = EstablishTCPConnection::create(&mut bldr, &args);
+
+            //Creation et sérialisation de l'objet Event pour le retour (as_union_value à revoir)
+            let event = Event::create(&mut bldr, EventArgs{Some(object_TCP_Co.as_union_value())});
+
+            bldr.finish(event, None);
+
+            let buf = bldr.finished_data();
+
+            return buf;          
         }
         Event::EstablishUnixConnection => {
             // TODO
+
+            //Affectation temporaire, pour déclarer la variable
+            let destination_port : String = "abc";
+
+            //Creation de l'objet EstablishUnixConnection
+            let args = EstablishUnixConnectionArgs{destport: destination_port};
+            let object_Unix_Co = EstablishUnixConnection::create(&mut bldr, &args);
+
+            //Creation et sérialisation de l'objet Event pour le retour
+            let event = Event::create(&mut bldr, EventArgs{Some(object_Unix_Co.as_union_value())});
+
+            bldr.finish(event, None);
+
+            let buf = bldr.finished_data();
+
+            return buf;
+
+
         }
         Event::InotifyPathUpdated => {
             let from_message =
@@ -55,22 +97,67 @@ async fn handle_message(buf: &[u8]) {
             }
 
             read_events_inotify(path, trig_events, reach_size).await.expect("error reading inotify events");
+
+            //retour ici ?
         }
         Event::KillProcess => {
             let from_mess = msg.events_as_kill_process().expect("error events_as_kill_process");
-            let pid = from_mess.pid();
+            let pid_kill = from_mess.pid();
 
-            send_sigkill(pid).expect("error while sending SIGKILL");
+            send_sigkill(pid_kill).expect("error while sending SIGKILL");
+
+
+            //Creation de l'objet KillProcess
+            let args = KillProcessArgs{pid: pid_kill};
+            let object_Kill = KillProcess::create(&mut bldr, &args);
+
+            //Creation et sérialisation de l'objet Event pour le retour
+            let event = Event::create(&mut bldr, EventArgs{Some(object_Kill.as_union_value())});
+
+            bldr.finish(event, None);
+
+            let buf = bldr.finished_data();
+
+            return buf;
+            
         }
         Event::ProcessLaunched => {
             let from_mess = msg.events_as_process_launched().expect("error events_as_process_launched");
-            let pid = from_mess.pid();
+            let pid_launch = from_mess.pid();
             // TODO
+
+            //Creation de l'objet ProcessLaunched
+            let args = ProcessLaunchedArgs{pid: pid_launch};
+            let object_Launch = ProcessLaunched::create(&mut bldr, &args);
+
+            //Creation de l'objet Event pour le retour
+            let event = Event::create(&mut bldr, EventArgs{Some(object_Launch.as_union_value())});
+
+            bldr.finish(event, None);
+
+            let buf = bldr.finished_data();
+
+            return buf;
         }
         Event::ProcessTerminated => {
             let from_mess = msg.events_as_process_terminated().expect("error events_as_process_terminated");
-            let pid = from_mess.pid();
+            let pid_terminated = from_mess.pid();
             // TODO
+
+            //Creation de l'objet ProcessTerminated
+            let args = ProcessTerminatedArgs{pid: pid_terminated};
+            let object_Terminated = ProcessTerminated::create(&mut bldr, &args);
+
+            //Creation de l'objet Event pour le retour
+            let event = Event::create(&mut bldr, EventArgs{Some(object_Terminated.as_union_value())});
+
+            bldr.finish(event, None);
+
+            let buf = bldr.finished_data();
+
+            return buf;
+            
+
         }
         Event::RunCommand => {
             let from_mess = msg.events_as_run_command().expect("error events_as_run_command");
@@ -79,6 +166,8 @@ async fn handle_message(buf: &[u8]) {
             let to_watch = from_mess.to_watch().expect("error to get to_watch");
             
             exec_command(&from_mess).await;
+
+            //retour ici ? Pas de doublon avec ProcessLaunched ?
         }
         Event::TCPSocketListening => {
             println!("Handling EventType2");
@@ -86,6 +175,30 @@ async fn handle_message(buf: &[u8]) {
             let port = from_mess.port();
 
             read_events_port_tokio(port).await.expect("error read_events_port");
+
+            //retour ici ?
+        }
+        Event::ChildCreationError => {
+            //TODO
+
+            //Affectation temporaire, pour déclarer la variable
+            let erreur : i32 = 5;
+
+            //Creation de l'objet ChildCreationError
+            let args = ChildCreationErrorArgs{errno: erreur};
+            let object_ChildErr = ChildCreationError::create(&mut bldr, &args);
+
+            //Creation de l'objet Event de retour
+            let event = Event::create(&mut bldr, EventArgs{Some(object_ChildErr.as_union_value())});
+
+            bldr.finish(event, None);
+
+            let buf = bldr.finished_data();
+
+            return buf;
+
+
+
         }
         _ => {
             println!("Unknown event type");
@@ -131,7 +244,14 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
                     break;
                 }
 
-                handle_message(&buf).await;
+                //
+                
+                //Traitement + obtention du retour
+                let mut retour = handle_message(&buf).await;
+
+                //Envoi sur le réseau
+                socket.write(&mut retour).await;
+                
             }
         });
     }
