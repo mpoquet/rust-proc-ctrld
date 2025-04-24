@@ -3,10 +3,14 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <sys/epoll.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include "demon_builder.h"
+#include "demon_verifier.h"
+#include "demon_reader.h"
 
 struct tcp_socket{
     uint8_t destport;
@@ -28,9 +32,10 @@ struct socket_info{
     int sockfd;
 };
 
+//event = constante definie par flatbuffers de la forme : demon_InotifyEvent_modification
 struct inotify_parameters{
     char *root_paths;
-    enum InotifyEvent* i_events;
+    demon_InotifyEvent_enum_t* i_events; 
     uint32_t size;
 };
 
@@ -78,7 +83,7 @@ void send_command(command *cmd);
 
 int read_socket(int serveur_fd, char* buffer);
 
-enum Event receive_message_from_user(void *buffer, size_t size);
+enum Event receive_message_from_user(void *buffer);
 
 static command* receive_command(void *buffer, size_t size);    //exemple of function i want for the daemon; Return NULL in case of failure 
 

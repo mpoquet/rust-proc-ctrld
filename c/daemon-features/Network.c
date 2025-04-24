@@ -1,7 +1,4 @@
 #include "../include/Network.h"
-#include "../include/demon_builder.h"
-#include "../include/demon_verifier.h"
-#include "../include/demon_reader.h"
 
 // A helper to simplify creating vectors from C-arrays.
 #define c_vec_len(V) (sizeof(V)/sizeof((V)[0]))
@@ -13,6 +10,15 @@
    flatbuffers_string_t in FlatCC is typically a char pointer. */
 static inline const char *get_string_chars(flatbuffers_string_t s) {
     return s ? (const char *)s : "";
+}
+
+int verify_buffer(void *buffer, size_t size) {
+    int verify_result = demon_Message_verify_as_root(buffer, size);
+    if (!verify_result) {
+        fprintf(stderr, "Error buffer verification failed\n");
+        return -1;
+    }
+    return 0;
 }
 
 //
@@ -49,21 +55,36 @@ static demon_SurveillanceEvent_ref_t create_surveillance_event(flatcc_builder_t 
     return demon_SurveillanceEvent_end(B);
 }
 
-void serialize_command(flatcc_builder_t *B, struct command *cmd) {
+void serialize_command(flatcc_builder_t *B, command *cmd) {
+    // Create string references array for args
+    flatbuffers_string_ref_t *args_refs = malloc(sizeof(flatbuffers_string_ref_t) * cmd->args_size);
+    for(size_t i = 0; i < cmd->args_size; i++) {
+        args_refs[i] = flatbuffers_string_create_str(B, cmd->args[i]);
+    }
+    
+    // Create string references array for envp
+    flatbuffers_string_ref_t *envp_refs = malloc(sizeof(flatbuffers_string_ref_t) * cmd->envp_size);
+    for(size_t i = 0; i < cmd->envp_size; i++) {
+        envp_refs[i] = flatbuffers_string_create_str(B, cmd->envp[i]);
+    }
+
     flatbuffers_string_ref_t path = flatbuffers_string_create_str(B, cmd->path);
-    flatbuffers_string_vec_ref_t args = flatbuffers_string_vec_create(B, cmd->args, cmd->args_size);
-    flatbuffers_string_vec_ref_t envp = flatbuffers_string_vec_create(B, cmd->envp, cmd->envp_size);
+    flatbuffers_string_vec_ref_t args = flatbuffers_string_vec_create(B, args_refs, cmd->args_size);
+    flatbuffers_string_vec_ref_t envp = flatbuffers_string_vec_create(B, envp_refs, cmd->envp_size);
+
+    // Create surveillances vector
     demon_SurveillanceEvent_vec_start(B);
-    for(int i = 0; i < cmd->to_watch_size; i++) {
+    for(size_t i = 0; i < cmd->to_watch_size; i++) {
         demon_SurveillanceEvent_vec_push(B, create_surveillance_event(B, &cmd->to_watch[i]));
     }
     demon_SurveillanceEvent_vec_ref_t to_watch = demon_SurveillanceEvent_vec_end(B);
     demon_RunCommand_ref_t serialized_command = demon_RunCommand_create(B, path, args, envp, cmd->flags, cmd->stack_size, to_watch);
 
-    //Creer le message final
-    demon_Message_create_as_root(B, serialized_command);
+    demon_Message_create_as_root(B, demon_Event_as_RunCommand(serialized_command));
 
-
+    // Cleanup
+    free(args_refs);
+    free(envp_refs);
 }
 
 //fonction pour envoyer une commande au démon
@@ -98,7 +119,8 @@ struct buffer_info* send_kill_to_demon(int32_t pid) {
 
     flatcc_builder_init(&builder);
     demon_KillProcess_ref_t serialized_kill = demon_KillProcess_create(&builder, pid);
-    demon_Message_create_as_root(&builder, serialized_kill);
+    demon_Event_union_ref_t event = demon_Event_as_KillProcess(serialized_kill);
+    demon_Message_create_as_root(&builder, event);
     buffer = flatcc_builder_finalize_buffer(&builder, &size);
     infos->buffer = buffer;
     infos->size = size;
@@ -119,7 +141,7 @@ static struct inotify_parameters* extract_inotify(demon_Inotify_table_t inotify)
     // Extraire trigger_events
     demon_InotifyEvent_vec_t events = demon_Inotify_trigger_events(inotify);
     size_t events_size = demon_InotifyEvent_vec_len(events);
-    params->i_events = malloc(sizeof(InotifyEvent) * events_size);
+    params->i_events = malloc(sizeof(demon_InotifyEvent_enum_t) * events_size);
     params->size = events_size;
     
     for(size_t i = 0; i < events_size; i++) {
@@ -138,16 +160,14 @@ static struct tcp_socket* extract_tcp_socket(demon_TCPSocket_table_t socket) {
 
 //désérialisation RunCommand
 static command* receive_command(void *buffer, size_t size) {
-    //on vérifie que le buffer est valide
-    int verify_result = demon_Message_verify_as_root(buffer, size);
-    if (!verify_result) {
-        fprintf(stderr, "Error buffer verification failed\n");
-        return;
+    if(verify_buffer(buffer, size) == -1) {
+        return NULL;
     }
 
     demon_Message_table_t message = demon_Message_as_root(buffer);
+    demon_RunCommand_table_t run_command;
     if(demon_Message_events_type(message) == demon_Event_RunCommand) {
-        demon_RunCommand_table_t run_command = demon_Message_events(message);
+        run_command = demon_Message_events(message);
     }
 
     //Reconstruction de la structure RunCommand
@@ -161,9 +181,9 @@ static command* receive_command(void *buffer, size_t size) {
     demon_SurveillanceEvent_vec_t to_watch = demon_RunCommand_to_watch(run_command);
     size_t to_watch_size = demon_SurveillanceEvent_vec_len(to_watch);
 
-    surveillance* to_watch_array = NULL;
+    struct surveillance* to_watch_array = NULL;
     if(to_watch_size > 0) {
-        to_watch_array = malloc(sizeof(surveillance) * to_watch_size);
+        to_watch_array = malloc(sizeof(struct surveillance) * to_watch_size);
     
         for(size_t i = 0; i < to_watch_size; i++) {
             demon_SurveillanceEvent_table_t surv_event = demon_SurveillanceEvent_vec_at(to_watch, i);
@@ -172,40 +192,69 @@ static command* receive_command(void *buffer, size_t size) {
             // Remplir la structure surveillance
             if(type == demon_Surveillance_Inotify) {
                 to_watch_array[i].event = INOTIFY;
-                demon_Inotify_table_t inotify = demon_SurveillanceEvent_event_Inotify(surv_event);
+                demon_Inotify_table_t inotify = demon_SurveillanceEvent_event(surv_event);
                 to_watch_array[i].ptr_event = extract_inotify(inotify);
             }
             else if(type == demon_Surveillance_TCPSocket) {
                 to_watch_array[i].event = WATCH_SOCKET;
-                demon_TCPSocket_table_t socket = demon_SurveillanceEvent_event_TCPSocket(surv_event);
+                demon_TCPSocket_table_t socket = demon_SurveillanceEvent_event(surv_event);
                 to_watch_array[i].ptr_event = extract_tcp_socket(socket);
             }
         }
     }
-    command final_command;
-    final_command = {path, args, args_size, envp, envp_size, flags, stack_size, to_watch_array, to_watch_size};
+    command* final_command = malloc(sizeof(command));
+    if (!final_command) {
+        return NULL;
+    }
+
+    // Initialize the structure members one by one
+    final_command->path = strdup(path);  // Make a copy of the string
+    final_command->args_size = args_size;
+    final_command->envp_size = envp_size;
+    final_command->flags = flags;
+    final_command->stack_size = stack_size;
+    final_command->to_watch = to_watch_array;
+    final_command->to_watch_size = to_watch_size;
+
+    // Copy args array
+    final_command->args = malloc(sizeof(char*) * args_size);
+    for(size_t i = 0; i < args_size; i++) {
+        final_command->args[i] = strdup(flatbuffers_string_vec_at(args, i));
+    }
+
+    // Copy envp array
+    final_command->envp = malloc(sizeof(char*) * envp_size);
+    for(size_t i = 0; i < envp_size; i++) {
+        final_command->envp[i] = strdup(flatbuffers_string_vec_at(envp, i));
+    }
+
     return final_command;
 }
 
 //désérialisation KillProcess
 int32_t receive_kill(void *buffer, size_t size) {
+    if(verify_buffer(buffer, size) == -1) {
+        return -1;
+    }
+
     demon_Message_table_t message = demon_Message_as_root(buffer);
+    demon_KillProcess_table_t kill_process;
     if(demon_Message_events_type(message) == demon_Event_KillProcess) {
-        demon_KillProcess_table_t kill_process = demon_Message_events(message);
+        kill_process = demon_Message_events(message);
     }
     int32_t pid = demon_KillProcess_pid(kill_process);
     return pid;
 }
 
 //permet au démon de savoir si le message reçu est une commande ou un killprocess
-enum Event receive_message_from_user(void *buffer, size_t size) {
+enum Event receive_message_from_user(void *buffer) {
+    demon_Message_table_t message = demon_Message_as_root(buffer);
     if(demon_Message_events_type(message) == demon_Event_RunCommand) {
         return RUN_COMMAND;
     }
     if(demon_Message_events_type(message) == demon_Event_KillProcess) {
         return KILL_PROCESS;
     }
-    return NULL;
 }
 
 
@@ -223,7 +272,8 @@ struct buffer_info* send_processlaunched_to_user(int32_t pid) {
 
     flatcc_builder_init(&builder);
     demon_ProcessLaunched_ref_t process_launched = demon_ProcessLaunched_create(&builder, pid);
-    demon_Message_create_as_root(&builder, process_launched);
+    demon_Event_union_ref_t event = demon_Event_as_ProcessLaunched(process_launched);
+    demon_Message_create_as_root(&builder, event);
     buffer = flatcc_builder_finalize_buffer(&builder, &size);
     infos->buffer = buffer;
     infos->size = size;
@@ -243,7 +293,8 @@ struct buffer_info* send_childcreationerror_to_user(uint32_t errno) {
 
     flatcc_builder_init(&builder);
     demon_ChildCreationError_ref_t child_creation_error = demon_ChildCreationError_create(&builder, errno);
-    demon_Message_create_as_root(&builder, child_creation_error);
+    demon_Event_union_ref_t event = demon_Event_as_ChildCreationError(child_creation_error);
+    demon_Message_create_as_root(&builder, event);
     buffer = flatcc_builder_finalize_buffer(&builder, &size);
     infos->buffer = buffer;
     infos->size = size;
@@ -254,7 +305,7 @@ struct buffer_info* send_childcreationerror_to_user(uint32_t errno) {
 }
 
 //fonction pour envoyer un processterminaed a l'user
-struct buffer_info* send_processterminated_to_user(int32_t pid) {
+struct buffer_info* send_processterminated_to_user(int32_t pid, uint32_t errno) {
     flatcc_builder_t builder;
     void* buffer;
     size_t size;
@@ -262,8 +313,9 @@ struct buffer_info* send_processterminated_to_user(int32_t pid) {
 
 
     flatcc_builder_init(&builder);
-    demon_ProcessTerminated_ref_t process_terminated = demon_ProcessTerminated_create(&builder, pid);
-    demon_Message_create_as_root(&builder, process_terminated);
+    demon_ProcessTerminated_ref_t process_terminated = demon_ProcessTerminated_create(&builder, pid, errno);
+    demon_Event_union_ref_t event = demon_Event_as_ProcessTerminated(process_terminated);
+    demon_Message_create_as_root(&builder, event);
     buffer = flatcc_builder_finalize_buffer(&builder, &size);
     infos->buffer = buffer;
     infos->size = size;
@@ -283,27 +335,8 @@ struct buffer_info* send_tcpsocketlistening_to_user(uint16_t port) {
 
     flatcc_builder_init(&builder);
     demon_TCPSocketListening_ref_t TCP_socket = demon_TCPSocketListening_create(&builder, port);
-    demon_Message_create_as_root(&builder, TCP_socket);
-    buffer = flatcc_builder_finalize_buffer(&builder, &size);
-    infos->buffer = buffer;
-    infos->size = size;
-
-    flatcc_builder_clear(&builder);
-    
-    return infos;
-}
-
-//fonction pour envoyer un processterminaed a l'user
-struct buffer_info* send_processterminated_to_user(int32_t pid) {
-    flatcc_builder_t builder;
-    void* buffer;
-    size_t size;
-    struct buffer_info* infos = malloc(sizeof(struct buffer_info));
-
-
-    flatcc_builder_init(&builder);
-    demon_ProcessTerminated_ref_t process_terminated = demon_ProcessTerminated_create(&builder, pid);
-    demon_Message_create_as_root(&builder, process_terminated);
+    demon_Event_union_ref_t event = demon_Event_as_TCPSocketListening(TCP_socket);
+    demon_Message_create_as_root(&builder, event);
     buffer = flatcc_builder_finalize_buffer(&builder, &size);
     infos->buffer = buffer;
     infos->size = size;
@@ -323,13 +356,14 @@ struct buffer_info* send_inotifypahtupdated_to_user(struct inotify_parameters *i
 
     flatcc_builder_init(&builder);
 
-    demon_Inotify_start(&builder);
-    demon_Inotify_root_paths_create_str(&builder, inotify->root_paths);
-    demon_Inotify_trigger_events_create(&builder, inotify->i_events, inotify->size);
-    demon_Inotify_size_add(&builder, inotify->size);
-    demon_InotifyPathUpdated_ref_t path_updated = demon_Inotify_end(&builder);
+    demon_InotifyPathUpdated_start(&builder);
+    demon_InotifyPathUpdated_path_create_str(&builder, inotify->root_paths);
+    demon_InotifyPathUpdated_trigger_events_create(&builder, inotify->i_events, inotify->size);
+    demon_InotifyPathUpdated_size_add(&builder, inotify->size);
+    demon_InotifyPathUpdated_ref_t path_updated = demon_InotifyPathUpdated_end(&builder);
+    demon_Event_union_ref_t event = demon_Event_as_InotifyPathUpdated(path_updated);
 
-    demon_Message_create_as_root(&builder, path_updated);
+    demon_Message_create_as_root(&builder, event);
 
     buffer = flatcc_builder_finalize_buffer(&builder, &size);
     infos->buffer = buffer;
@@ -341,61 +375,82 @@ struct buffer_info* send_inotifypahtupdated_to_user(struct inotify_parameters *i
 }
 
 int32_t receive_processlaunched(void *buffer, size_t size) {
+    if(verify_buffer(buffer, size) == -1) {
+        return -1;
+    }
+    
     demon_Message_table_t message = demon_Message_as_root(buffer);
+    demon_ProcessLaunched_table_t process_launched;
     if(demon_Message_events_type(message) == demon_Event_ProcessLaunched) {
-        demon_ProcessLaunched_table_t process_launched = demon_Message_events(message);
+        process_launched = demon_Message_events(message);
     }
     int32_t pid = demon_ProcessLaunched_pid(process_launched);
     return pid;
 }
 
 uint32_t receive_childerror(void *buffer, size_t size) {
+    if(verify_buffer(buffer, size) == -1) {
+        exit(1);
+    }
     demon_Message_table_t message = demon_Message_as_root(buffer);
+    demon_ChildCreationError_table_t child_error;
     if(demon_Message_events_type(message) == demon_Event_ChildCreationError) {
-        demon_ChildCreationError_table_t child_error = demon_Message_events(message);
+        child_error = demon_Message_events(message);
     }
     uint32_t errno = demon_ChildCreationError_errno(child_error);
     return errno;
 }
 
 static struct process_terminated_info* receive_processterminated(void *buffer, size_t size) {
+    if(verify_buffer(buffer, size) == -1) {
+        return NULL;
+    }
     struct process_terminated_info* infos = malloc(sizeof(struct process_terminated_info));
     demon_Message_table_t message = demon_Message_as_root(buffer);
+    demon_ProcessTerminated_table_t process_terminated;
 
     if(demon_Message_events_type(message) == demon_Event_ProcessTerminated) {
-        demon_ProcessTerminated_table_t process_terminated = demon_Message_events(message);
+        process_terminated = demon_Message_events(message);
     }
     infos->pid = demon_ProcessTerminated_pid(process_terminated);
     infos->errno = demon_ProcessTerminated_errno(process_terminated);
 
-    return errno;
+    return infos;
 
 }
 
 uint16_t receive_TCPSocket(void *buffer, size_t size) {
+    if(verify_buffer(buffer, size) == -1) {
+        exit(1);;
+    }
     demon_Message_table_t message = demon_Message_as_root(buffer);
+    demon_TCPSocketListening_table_t tcp_socket;
     if(demon_Message_events_type(message) == demon_Event_TCPSocketListening) {
-        demon_TCPSocketListening_table_t tcp_socket = demon_Message_events(message);
+        tcp_socket = demon_Message_events(message);
     }
     uint16_t port = demon_TCPSocketListening_port(tcp_socket);
     return port;
 }
 
-static struct inotify_parameters* extract_inotifypathupdated(void *buffer, size_t size) {
+static struct inotify_parameters* receive_inotifypathupdated(void *buffer, size_t size) {
+    if(verify_buffer(buffer, size) == -1) {
+        return NULL;
+    }
     struct inotify_parameters* params = malloc(sizeof(struct inotify_parameters));
 
     demon_Message_table_t message = demon_Message_as_root(buffer);
+    demon_InotifyPathUpdated_table_t inotify;
     if(demon_Message_events_type(message) == demon_Event_InotifyPathUpdated) {
-        demon_InotifyPathUpdated_table_t inotify = demon_Message_events(message);
+        inotify = demon_Message_events(message);
     }
     // Extraire root_paths
-    const char* root_path = demon_InotifyPathUpdated_root_paths(inotify);
+    const char* root_path = demon_InotifyPathUpdated_path(inotify);
     params->root_paths = strdup(root_path);
     
     // Extraire trigger_events
     demon_InotifyEvent_vec_t events = demon_InotifyPathUpdated_trigger_events(inotify);
     size_t events_size = demon_InotifyEvent_vec_len(events);
-    params->i_events = malloc(sizeof(InotifyEvent) * events_size);
+    params->i_events = malloc(sizeof(demon_InotifyEvent_enum_t) * events_size);
     params->size = events_size;
     
     for(size_t i = 0; i < events_size; i++) {
@@ -407,7 +462,8 @@ static struct inotify_parameters* extract_inotifypathupdated(void *buffer, size_
 
 
 //permet a l'user de savoir si le message reçu est une commande ou un killprocess
-Event receive_message_from_demon(void *buffer, size_t size) {
+enum Event receive_message_from_demon(void *buffer) {
+    demon_Message_table_t message = demon_Message_as_root(buffer);
     if(demon_Message_events_type(message) == demon_Event_ProcessLaunched) {
         return PROCESS_LAUNCHED;
     }
@@ -423,7 +479,6 @@ Event receive_message_from_demon(void *buffer, size_t size) {
     if(demon_Message_events_type(message) == demon_Event_InotifyPathUpdated) {
         return INOTIFY_PATH_UPDATED;
     }
-    return NULL;
 }
 
 

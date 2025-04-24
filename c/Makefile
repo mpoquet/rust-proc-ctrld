@@ -2,8 +2,8 @@ CC  = gcc
 SYS = -std=gnu11 -Wall -Wextra -O2
 PTHREAD_SYS = $(SYS) -lpthread
 
-#FLATCC_INC = -Iflatcc/include
-#FLATCC_LIB = flatcc/lib/libflatccrt.a
+FLATCC_INC = -Iflatcc/include
+FLATCC_LIB = flatcc/lib/libflatccrt.a
 
 SRCDIR = daemon-features
 OBJDIR = obj
@@ -26,10 +26,10 @@ daemon: dirs $(OBJ_COMMON)
 # EXEC daemon
 # -----
 $(DAEMON): $(OBJ_COMMON) $(OBJ_DAEMON)
-	$(CC) -o $(DAEMON) $(OBJ_COMMON) $(OBJ_DAEMON)
+	$(CC) -o $(DAEMON) $(OBJ_COMMON) $(OBJ_DAEMON) $(FLATCC_LIB)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
-	$(CC) -o $@ -c $< $(SYS)
+	$(CC) -o $@ -c $< $(SYS) $(FLATCC_INC)
 
 
 dirs:
