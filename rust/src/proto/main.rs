@@ -1,6 +1,6 @@
 use std::env;
 use inotify::{EventMask, Inotify};
-use tokio::io::AsyncReadExt;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use std::error::Error;
 
 // monitoring tools
@@ -15,7 +15,6 @@ use crate::proto::demon_generated::demon::{root_as_message, finish_message_buffe
 
 use tokio::net::TcpListener;
 
-//est-ce que l'on fait passer le retour par cette fonction ?
 async fn handle_message(buf: &[u8]) {
 
     //Création du builder flatbuffer
@@ -25,47 +24,6 @@ async fn handle_message(buf: &[u8]) {
     let msg = root_as_message(buf).expect("error root_as_message");
 
     match msg.events_type() {
-        Event::EstablishTCPConnection => {
-            // TODO
-
-
-            //Affectation temporaire, pour déclarer la variable
-            let destination_port : i8 = 5;
-
-            //Creation de l'objet EstablishTCPConnection
-            let args = EstablishTCPConnectionArgs{destport: destination_port};
-            let object_TCP_Co = EstablishTCPConnection::create(&mut bldr, &args);
-
-            //Creation et sérialisation de l'objet Event pour le retour (as_union_value à revoir)
-            let event = Event::create(&mut bldr, EventArgs{Some(object_TCP_Co.as_union_value())});
-
-            bldr.finish(event, None);
-
-            let buf = bldr.finished_data();
-
-            return buf;          
-        }
-        Event::EstablishUnixConnection => {
-            // TODO
-
-            //Affectation temporaire, pour déclarer la variable
-            let destination_port : String = "abc";
-
-            //Creation de l'objet EstablishUnixConnection
-            let args = EstablishUnixConnectionArgs{destport: destination_port};
-            let object_Unix_Co = EstablishUnixConnection::create(&mut bldr, &args);
-
-            //Creation et sérialisation de l'objet Event pour le retour
-            let event = Event::create(&mut bldr, EventArgs{Some(object_Unix_Co.as_union_value())});
-
-            bldr.finish(event, None);
-
-            let buf = bldr.finished_data();
-
-            return buf;
-
-
-        }
         Event::InotifyPathUpdated => {
             let from_message =
                 msg.events_as_inotify_path_updated().expect("error events_as_inotify...");
@@ -170,7 +128,6 @@ async fn handle_message(buf: &[u8]) {
             //retour ici ? Pas de doublon avec ProcessLaunched ?
         }
         Event::TCPSocketListening => {
-            println!("Handling EventType2");
             let from_mess = msg.events_as_tcpsocket_listening().expect("error from receiving message");
             let port = from_mess.port();
 

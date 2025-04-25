@@ -328,103 +328,6 @@ impl<'a> flatbuffers::Verifiable for Event {
 impl flatbuffers::SimpleToVerifyInSlice for Event {}
 pub struct EventUnionTableOffset {}
 
-pub enum SizeOffset {}
-#[derive(Copy, Clone, PartialEq)]
-
-pub struct Size<'a> {
-  pub _tab: flatbuffers::Table<'a>,
-}
-
-impl<'a> flatbuffers::Follow<'a> for Size<'a> {
-  type Inner = Size<'a>;
-  #[inline]
-  unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-    Self { _tab: flatbuffers::Table::new(buf, loc) }
-  }
-}
-
-impl<'a> Size<'a> {
-  pub const VT_SIZE: flatbuffers::VOffsetT = 4;
-
-  #[inline]
-  pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
-    Size { _tab: table }
-  }
-  #[allow(unused_mut)]
-  pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr, A: flatbuffers::Allocator + 'bldr>(
-    _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
-    args: &'args SizeArgs
-  ) -> flatbuffers::WIPOffset<Size<'bldr>> {
-    let mut builder = SizeBuilder::new(_fbb);
-    builder.add_size(args.size);
-    builder.finish()
-  }
-
-
-  #[inline]
-  pub fn size(&self) -> u32 {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<u32>(Size::VT_SIZE, Some(0)).unwrap()}
-  }
-}
-
-impl flatbuffers::Verifiable for Size<'_> {
-  #[inline]
-  fn run_verifier(
-    v: &mut flatbuffers::Verifier, pos: usize
-  ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
-    use self::flatbuffers::Verifiable;
-    v.visit_table(pos)?
-     .visit_field::<u32>("size", Self::VT_SIZE, false)?
-     .finish();
-    Ok(())
-  }
-}
-pub struct SizeArgs {
-    pub size: u32,
-}
-impl<'a> Default for SizeArgs {
-  #[inline]
-  fn default() -> Self {
-    SizeArgs {
-      size: 0,
-    }
-  }
-}
-
-pub struct SizeBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
-  fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
-  start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
-}
-impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> SizeBuilder<'a, 'b, A> {
-  #[inline]
-  pub fn add_size(&mut self, size: u32) {
-    self.fbb_.push_slot::<u32>(Size::VT_SIZE, size, 0);
-  }
-  #[inline]
-  pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> SizeBuilder<'a, 'b, A> {
-    let start = _fbb.start_table();
-    SizeBuilder {
-      fbb_: _fbb,
-      start_: start,
-    }
-  }
-  #[inline]
-  pub fn finish(self) -> flatbuffers::WIPOffset<Size<'a>> {
-    let o = self.fbb_.end_table(self.start_);
-    flatbuffers::WIPOffset::new(o.value())
-  }
-}
-
-impl core::fmt::Debug for Size<'_> {
-  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-    let mut ds = f.debug_struct("Size");
-      ds.field("size", &self.size());
-      ds.finish()
-  }
-}
 pub enum InotifyOffset {}
 #[derive(Copy, Clone, PartialEq)]
 
@@ -1311,6 +1214,7 @@ impl<'a> flatbuffers::Follow<'a> for ProcessTerminated<'a> {
 
 impl<'a> ProcessTerminated<'a> {
   pub const VT_PID: flatbuffers::VOffsetT = 4;
+  pub const VT_ERRNO: flatbuffers::VOffsetT = 6;
 
   #[inline]
   pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
@@ -1322,6 +1226,7 @@ impl<'a> ProcessTerminated<'a> {
     args: &'args ProcessTerminatedArgs
   ) -> flatbuffers::WIPOffset<ProcessTerminated<'bldr>> {
     let mut builder = ProcessTerminatedBuilder::new(_fbb);
+    builder.add_errno(args.errno);
     builder.add_pid(args.pid);
     builder.finish()
   }
@@ -1334,6 +1239,13 @@ impl<'a> ProcessTerminated<'a> {
     // which contains a valid value in this slot
     unsafe { self._tab.get::<i32>(ProcessTerminated::VT_PID, Some(0)).unwrap()}
   }
+  #[inline]
+  pub fn errno(&self) -> u32 {
+    // Safety:
+    // Created from valid Table for this object
+    // which contains a valid value in this slot
+    unsafe { self._tab.get::<u32>(ProcessTerminated::VT_ERRNO, Some(0)).unwrap()}
+  }
 }
 
 impl flatbuffers::Verifiable for ProcessTerminated<'_> {
@@ -1344,18 +1256,21 @@ impl flatbuffers::Verifiable for ProcessTerminated<'_> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
      .visit_field::<i32>("pid", Self::VT_PID, false)?
+     .visit_field::<u32>("errno", Self::VT_ERRNO, false)?
      .finish();
     Ok(())
   }
 }
 pub struct ProcessTerminatedArgs {
     pub pid: i32,
+    pub errno: u32,
 }
 impl<'a> Default for ProcessTerminatedArgs {
   #[inline]
   fn default() -> Self {
     ProcessTerminatedArgs {
       pid: 0,
+      errno: 0,
     }
   }
 }
@@ -1368,6 +1283,10 @@ impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ProcessTerminatedBuilder<'a, 'b
   #[inline]
   pub fn add_pid(&mut self, pid: i32) {
     self.fbb_.push_slot::<i32>(ProcessTerminated::VT_PID, pid, 0);
+  }
+  #[inline]
+  pub fn add_errno(&mut self, errno: u32) {
+    self.fbb_.push_slot::<u32>(ProcessTerminated::VT_ERRNO, errno, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> ProcessTerminatedBuilder<'a, 'b, A> {
@@ -1388,6 +1307,7 @@ impl core::fmt::Debug for ProcessTerminated<'_> {
   fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
     let mut ds = f.debug_struct("ProcessTerminated");
       ds.field("pid", &self.pid());
+      ds.field("errno", &self.errno());
       ds.finish()
   }
 }

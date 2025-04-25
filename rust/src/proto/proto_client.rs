@@ -14,8 +14,11 @@ use std::net::TcpListener;
 
 //use crate::monitoring_tools::command::exec_command;
 
+use flatbuffers::FlatBufferBuilder;
+
+use crate::proto::demon_generated::demon::RunCommandArgs;
 // flatbuffers
-use demon_generated::demon::{root_as_message, finish_message_buffer, Event, InotifyEvent, RunCommand};
+use crate::proto::demon_generated::demon::{root_as_message, finish_message_buffer, Event, InotifyEvent, RunCommand};
 
 
 
@@ -89,7 +92,7 @@ fn main() {
                                     envp: envs_command,
                                     ..Default::default()};
     
-    let object_runCommand = RunCommand::create(&mut bldr, &args_build);
+    let object_run_command = RunCommand::create(&mut bldr, &args_build);
 
     //Creation et serialisation de l'objet Event pour l'envoi
     let event = Event::create(&mut bldr, EventArgs{Some(object_runCommand.as_union())});
