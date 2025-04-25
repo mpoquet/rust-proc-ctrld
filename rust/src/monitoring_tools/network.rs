@@ -1,5 +1,6 @@
 use std::{os::unix::io::{AsRawFd, RawFd}, time::Duration, thread};
 use netstat2::*;
+use nix::errno::Errno;
 use tokio::task;
 use std::net::{TcpStream, TcpListener};
 
@@ -43,7 +44,7 @@ pub fn is_port_listening(port: u16) -> bool {
     false
 }
 
-pub async fn read_events_port_tokio(port: u16) -> Result<(), ()> {
+pub async fn read_events_port_tokio(port: u16) -> Result<u32, Errno> {
     task::spawn(async move {
         loop {
             if is_port_listening(port) {
@@ -53,7 +54,7 @@ pub async fn read_events_port_tokio(port: u16) -> Result<(), ()> {
             tokio::time::sleep(Duration::from_millis(500)).await;
         }
     });
-    Ok(())
+    Ok(std::process::id())
 }
 
 pub async fn read_events_port_scanner(port: u16) -> Result<(), ()> {

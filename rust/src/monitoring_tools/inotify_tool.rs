@@ -1,6 +1,6 @@
 use std::fs::metadata;
 use inotify::EventMask;
-use nix::libc::{epoll_wait, epoll_event,};
+use nix::{errno::Errno, libc::{epoll_event, epoll_wait}};
 use tokio::task;
 use std::os::fd::AsRawFd;
 use inotify::{
@@ -51,7 +51,7 @@ pub fn get_size_file(path: &String) -> std::io::Result<u64> {
 }
 
 // reach_size = size maximum of file for being notify
-pub async fn read_events_inotify(path: &str, vec: Vec<EventMask>, reach_size: u64) -> Result<(), ()>{
+pub async fn read_events_inotify(path: &str, vec: Vec<EventMask>, reach_size: u64) -> Result<u32, Errno>{
     let epoll_fd = create_epoll()
         .expect("error creating epoll_fd");
 
@@ -63,7 +63,7 @@ pub async fn read_events_inotify(path: &str, vec: Vec<EventMask>, reach_size: u6
         .expect("error failed to add inotifyfd to epoll");
 
     let mut events = [epoll_event { events: 0, u64: 0 }; 10];
-    task::spawn({
+    let handle = task::spawn({
         let path = path.to_string();
         async move {
             loop {
@@ -122,11 +122,14 @@ pub async fn read_events_inotify(path: &str, vec: Vec<EventMask>, reach_size: u6
                         }
                     }
                     Err(e) => {
-                        eprintln!("Erreur lecture inotify: {}", e)
+                        let errno = Errno::from_raw(e.raw_os_error().unwrap_or(0));
+                        eprintln!("Error reading events: {:?}", errno);
+                        break;
                     },
                 }
             }
         }
     });
-    Ok(())
+    handle.await.map_err(|_| Errno::UnknownErrno)?;
+    Ok(std::process::id())
 }

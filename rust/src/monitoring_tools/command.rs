@@ -1,10 +1,11 @@
+use nix::errno::Errno;
 use tokio::process::Command;
 
 use crate::proto::demon_generated::demon;
 
 
 
-pub async fn exec_command(run_cmd: &demon::RunCommand<'_>) {
+pub async fn exec_command(run_cmd: &demon::RunCommand<'_>) -> Result<u32, Errno>{
     let path = run_cmd.path().expect("path not present");
     let args = run_cmd.args().unwrap_or_default();
     let envp = run_cmd.envp().unwrap_or_default();
@@ -30,4 +31,5 @@ pub async fn exec_command(run_cmd: &demon::RunCommand<'_>) {
             Err(_) => todo!(),
         }
     });
+    Ok(std::process::id())
 }
