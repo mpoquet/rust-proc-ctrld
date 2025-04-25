@@ -8,6 +8,7 @@ use std::error::Error;
 use std::env;
 use std::io; 
 use std::net::TcpListener;
+use std::io::Write;
 
 //use crate::monitoring_tools::command::exec_command;
 
@@ -16,7 +17,7 @@ use flatbuffers::FlatBufferBuilder;
 use crate::proto::demon_generated::demon::RunCommandArgs;
 
 // flatbuffers
-use crate::proto::demon_generated::demon::{root_as_message, finish_message_buffer, Event, InotifyEvent, RunCommand};
+use crate::proto::demon_generated::demon::{root_as_message, finish_message_buffer, Message, MessageArgs, Event, InotifyEvent, RunCommand};
 
 
 
@@ -84,16 +85,24 @@ fn main() {
     let mut bldr = FlatBufferBuilder::new();
     bldr.reset();
 
+
     //Creation de l'objet RunCommand
-    let args_build = RunCommandArgs{path: path_command, 
-                                    args: args_command,
-                                    envp: envs_command,
+    let args_build = RunCommandArgs{path: Some(bldr.create_string(&path_command)), 
+                                    args: Some(bldr.create_vector_of_strings(&args_tab)),
+                                    envp: Some(bldr.create_vector_of_strings(&args_envs)),
                                     ..Default::default()};
     
     let object_run_command = RunCommand::create(&mut bldr, &args_build);
 
-    //Creation et serialisation de l'objet Event pour l'envoi
-    let event = Event::create(&mut bldr, EventArgs{Some(object_runCommand.as_union())});
+    //Creation et serialisation de l'objet Message pour l'envoi
+    let mess = Message::create(
+        &mut bldr, 
+        &MessageArgs{
+            events_type: Event::RunCommand,
+            events: Some(object_run_command.as_union_value())});
+
+    bldr.finish(mess, None);
+    bldr.finished_data();
 
 
     //Initialisation de la connection TCP (ne prends pas en compte l'IP pour l'instant)
@@ -109,11 +118,14 @@ fn main() {
 
     println!("We listen on the port {}", port);
 
-    let listener = TcpListener::bind(format!("127.0.0.1::{}", port));
+    let listener = TcpListener::bind(format!("127.0.0.1::{}", port)).unwrap();
 
-    let (mut socket, addr) = listener.accept();
+
+    let Ok((mut socket, addr)) = listener.accept();
+
+    println!("{}", addr);
 
     //Envoi sur le réseau
-    socket.write(&mut event);
+    socket.write(&mut mess);
     
 }
