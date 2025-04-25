@@ -1,7 +1,9 @@
 use std::env;
-use inotify::{EventMask, Inotify};
+use inotify::EventMask;
+use nix::errno::Errno;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use std::error::Error;
+use tokio::net::TcpListener;
 
 // monitoring tools
 use crate::monitoring_tools::inotify_tool::read_events_inotify;
@@ -10,16 +12,12 @@ use crate::monitoring_tools::signal_tool::send_sigkill;
 use crate::monitoring_tools::command::exec_command;
 
 // flatbuffers
-use crate::proto::demon_generated::demon::{root_as_message, finish_message_buffer,
-    Event, InotifyEvent, Inotify, TCPSocket, Surveillance, SurveillanceEvent, RunCommand, KillProcess};
+use crate::proto::demon_generated::demon::{root_as_message,Event, InotifyEvent};
 
-use tokio::net::TcpListener;
+// sérialisation
+use super::serialisation::{serialize_child_creation_error, serialize_process_launched, serialize_process_terminated};
 
-async fn handle_message(buf: &[u8]) {
-
-    //Création du builder flatbuffer
-    let mut bldr = FlatBufferBuilder::new();
-    bldr.reset();
+async fn handle_message(buf: &[u8]) -> Vec<u8> {
 
     let msg = root_as_message(buf).expect("error root_as_message");
 
@@ -29,7 +27,7 @@ async fn handle_message(buf: &[u8]) {
                 msg.events_as_inotify_path_updated().expect("error events_as_inotify...");
             let path = from_message.path().expect("No path from the message");
             let trigger_events = from_message.trigger_events().expect("No vector of trigger events for inotify");
-            let reach_size = 500;                           // TODO
+            let reach_size = from_message.size();
 
             // new vector of "real" Inotify Event not from flatbuffer
             let mut trig_events = Vec::<EventMask>::new();
@@ -54,130 +52,52 @@ async fn handle_message(buf: &[u8]) {
                 }
             }
 
-            read_events_inotify(path, trig_events, reach_size).await.expect("error reading inotify events");
-
-            //retour ici ?
+            match read_events_inotify(path, trig_events, reach_size).await {
+                Ok(pid) => serialize_process_launched(pid as i32),
+                Err(errno) => serialize_child_creation_error(errno as u32),
+            }
         }
         Event::KillProcess => {
             let from_mess = msg.events_as_kill_process().expect("error events_as_kill_process");
             let pid_kill = from_mess.pid();
 
-            send_sigkill(pid_kill).expect("error while sending SIGKILL");
-
-
-            //Creation de l'objet KillProcess
-            let args = KillProcessArgs{pid: pid_kill};
-            let object_Kill = KillProcess::create(&mut bldr, &args);
-
-            //Creation et sérialisation de l'objet Event pour le retour
-            let event = Event::create(&mut bldr, EventArgs{Some(object_Kill.as_union_value())});
-
-            bldr.finish(event, None);
-
-            let buf = bldr.finished_data();
-
-            return buf;
-            
-        }
-        Event::ProcessLaunched => {
-            let from_mess = msg.events_as_process_launched().expect("error events_as_process_launched");
-            let pid_launch = from_mess.pid();
-            // TODO
-
-            //Creation de l'objet ProcessLaunched
-            let args = ProcessLaunchedArgs{pid: pid_launch};
-            let object_Launch = ProcessLaunched::create(&mut bldr, &args);
-
-            //Creation de l'objet Event pour le retour
-            let event = Event::create(&mut bldr, EventArgs{Some(object_Launch.as_union_value())});
-
-            bldr.finish(event, None);
-
-            let buf = bldr.finished_data();
-
-            return buf;
-        }
-        Event::ProcessTerminated => {
-            let from_mess = msg.events_as_process_terminated().expect("error events_as_process_terminated");
-            let pid_terminated = from_mess.pid();
-            // TODO
-
-            //Creation de l'objet ProcessTerminated
-            let args = ProcessTerminatedArgs{pid: pid_terminated};
-            let object_Terminated = ProcessTerminated::create(&mut bldr, &args);
-
-            //Creation de l'objet Event pour le retour
-            let event = Event::create(&mut bldr, EventArgs{Some(object_Terminated.as_union_value())});
-
-            bldr.finish(event, None);
-
-            let buf = bldr.finished_data();
-
-            return buf;
-            
-
+            match send_sigkill(pid_kill) {
+                Ok(pid) => serialize_process_launched(pid as i32),
+                Err(errno) => serialize_child_creation_error( errno as u32),
+            }
         }
         Event::RunCommand => {
             let from_mess = msg.events_as_run_command().expect("error events_as_run_command");
-            let flags = from_mess.flags();
-            let stack_size = from_mess.stack_size();
-            let to_watch = from_mess.to_watch().expect("error to get to_watch");
-            
-            exec_command(&from_mess).await;
 
-            //retour ici ? Pas de doublon avec ProcessLaunched ?
+            let res = exec_command(&from_mess).await;
+            
+            match res {
+                Ok(pid) => serialize_process_launched(pid as i32),
+                Err(errno) => serialize_child_creation_error(errno as u32),
+            }
         }
         Event::TCPSocketListening => {
             let from_mess = msg.events_as_tcpsocket_listening().expect("error from receiving message");
             let port = from_mess.port();
 
-            read_events_port_tokio(port).await.expect("error read_events_port");
-
-            //retour ici ?
-        }
-        Event::ChildCreationError => {
-            //TODO
-
-            //Affectation temporaire, pour déclarer la variable
-            let erreur : i32 = 5;
-
-            //Creation de l'objet ChildCreationError
-            let args = ChildCreationErrorArgs{errno: erreur};
-            let object_ChildErr = ChildCreationError::create(&mut bldr, &args);
-
-            //Creation de l'objet Event de retour
-            let event = Event::create(&mut bldr, EventArgs{Some(object_ChildErr.as_union_value())});
-
-            bldr.finish(event, None);
-
-            let buf = bldr.finished_data();
-
-            return buf;
-
-
-
+            match read_events_port_tokio(port).await {
+                Ok(pid) => serialize_process_launched(pid as i32),
+                Err(errno) => serialize_child_creation_error(errno as u32),
+            }
         }
         _ => {
-            println!("Unknown event type");
+            // TODO a changer plus tard ?
+            serialize_child_creation_error(Errno::ENODATA as u32)
         }
     }
 }
 
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn Error>> {
-    let mut args = env::args();
-    if args.len() != 2 {
-        println!("Usage : {:?} <PortId>", args.next())
-    }
-
-    let port: u16 = args.nth(1)
-        .expect("error getting args")
-        .parse()
-        .expect("invalid port number");
-
+    let port: u16 = 8080;
     println!("We listen on the port {}", port);
 
-    let listener = TcpListener::bind(format!("127.0.0.1::{}", port)).await?;
+    let listener = TcpListener::bind(format!("127.0.0.1:{}", port)).await?;
 
     loop {
         let (mut socket, addr) = listener.accept().await?;
@@ -200,8 +120,6 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
                     println!("Erreur de lecture message");
                     break;
                 }
-
-                //
                 
                 //Traitement + obtention du retour
                 let mut retour = handle_message(&buf).await;

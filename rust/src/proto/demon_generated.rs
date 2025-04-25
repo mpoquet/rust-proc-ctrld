@@ -1426,6 +1426,7 @@ impl<'a> flatbuffers::Follow<'a> for InotifyPathUpdated<'a> {
 impl<'a> InotifyPathUpdated<'a> {
   pub const VT_PATH: flatbuffers::VOffsetT = 4;
   pub const VT_TRIGGER_EVENTS: flatbuffers::VOffsetT = 6;
+  pub const VT_SIZE: flatbuffers::VOffsetT = 8;
 
   #[inline]
   pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
@@ -1437,6 +1438,7 @@ impl<'a> InotifyPathUpdated<'a> {
     args: &'args InotifyPathUpdatedArgs<'args>
   ) -> flatbuffers::WIPOffset<InotifyPathUpdated<'bldr>> {
     let mut builder = InotifyPathUpdatedBuilder::new(_fbb);
+    builder.add_size(args.size);
     if let Some(x) = args.trigger_events { builder.add_trigger_events(x); }
     if let Some(x) = args.path { builder.add_path(x); }
     builder.finish()
@@ -1457,6 +1459,13 @@ impl<'a> InotifyPathUpdated<'a> {
     // which contains a valid value in this slot
     unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'a, InotifyEvent>>>(InotifyPathUpdated::VT_TRIGGER_EVENTS, None)}
   }
+  #[inline]
+  pub fn size(&self) -> u64 {
+    // Safety:
+    // Created from valid Table for this object
+    // which contains a valid value in this slot
+    unsafe { self._tab.get::<u64>(InotifyPathUpdated::VT_SIZE, Some(0)).unwrap()}
+  }
 }
 
 impl flatbuffers::Verifiable for InotifyPathUpdated<'_> {
@@ -1468,6 +1477,7 @@ impl flatbuffers::Verifiable for InotifyPathUpdated<'_> {
     v.visit_table(pos)?
      .visit_field::<flatbuffers::ForwardsUOffset<&str>>("path", Self::VT_PATH, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, InotifyEvent>>>("trigger_events", Self::VT_TRIGGER_EVENTS, false)?
+     .visit_field::<u64>("size", Self::VT_SIZE, false)?
      .finish();
     Ok(())
   }
@@ -1475,6 +1485,7 @@ impl flatbuffers::Verifiable for InotifyPathUpdated<'_> {
 pub struct InotifyPathUpdatedArgs<'a> {
     pub path: Option<flatbuffers::WIPOffset<&'a str>>,
     pub trigger_events: Option<flatbuffers::WIPOffset<flatbuffers::Vector<'a, InotifyEvent>>>,
+    pub size: u64,
 }
 impl<'a> Default for InotifyPathUpdatedArgs<'a> {
   #[inline]
@@ -1482,6 +1493,7 @@ impl<'a> Default for InotifyPathUpdatedArgs<'a> {
     InotifyPathUpdatedArgs {
       path: None,
       trigger_events: None,
+      size: 0,
     }
   }
 }
@@ -1498,6 +1510,10 @@ impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> InotifyPathUpdatedBuilder<'a, '
   #[inline]
   pub fn add_trigger_events(&mut self, trigger_events: flatbuffers::WIPOffset<flatbuffers::Vector<'b , InotifyEvent>>) {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(InotifyPathUpdated::VT_TRIGGER_EVENTS, trigger_events);
+  }
+  #[inline]
+  pub fn add_size(&mut self, size: u64) {
+    self.fbb_.push_slot::<u64>(InotifyPathUpdated::VT_SIZE, size, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> InotifyPathUpdatedBuilder<'a, 'b, A> {
@@ -1519,6 +1535,7 @@ impl core::fmt::Debug for InotifyPathUpdated<'_> {
     let mut ds = f.debug_struct("InotifyPathUpdated");
       ds.field("path", &self.path());
       ds.field("trigger_events", &self.trigger_events());
+      ds.field("size", &self.size());
       ds.finish()
   }
 }
