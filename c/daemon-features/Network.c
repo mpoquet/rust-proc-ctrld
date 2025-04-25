@@ -525,7 +525,7 @@ struct socket_info* establish_connection(int port){
 
 int accept_new_connexion(struct socket_info* info){
     int new_socket;
-    if ((new_socket = accept(info->port, info->address, (socklen_t*) sizeof(info->address))) < 0) {
+    if ((new_socket = accept(info->port, (struct sockaddr *)info->address, (socklen_t*) sizeof(info->address))) < 0) {
         perror("accept");
         exit(EXIT_FAILURE);
     }

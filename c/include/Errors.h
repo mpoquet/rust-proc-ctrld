@@ -2,7 +2,6 @@
 #define __ERRORS_C__
 
 #include <unistd.h>
-#include "./Network.h"
 
 enum error_type{
     CHILD_EXITED,
@@ -10,14 +9,14 @@ enum error_type{
     CLONE_ERR,
 };
 
-struct child_err{
-    int pid;
-    command com;
-};
+// struct child_err{
+//     int pid;
+//     command com;
+// };
 
-struct clone_err{
-    command* com;
-};
+// struct clone_err{
+//     command* com;
+// };
 
 int initialize_error_file(const char* filepath);
 

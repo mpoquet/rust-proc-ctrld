@@ -16,23 +16,6 @@ int initialize_error_file(const char* filepath){
 }
 
 int send_error(enum error_type type, void* err_data){
-    switch (type)
-    {
-    case CHILD_EXITED:
-        struct child_err* c1data= (struct child_err*) err_data;
-        break;
-
-    case CHILD_SIGNALED:
-        struct child_err* c2data= (struct child_err*) err_data;
-        break;
-
-    case CLONE_ERR:
-        struct clone_err* cdata= (struct clone_err*) err_data;
-        break;
-    
-    default:
-        break;
-    }
     return 0;
 }
 
