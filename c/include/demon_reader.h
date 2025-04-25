@@ -364,7 +364,7 @@ static inline demon_ChildCreationError_table_t demon_ChildCreationError_vec_at(d
 __flatbuffers_offset_vec_at(demon_ChildCreationError_table_t, vec, i, 0)
 __flatbuffers_table_as_root(demon_ChildCreationError)
 
-__flatbuffers_define_scalar_field(0, demon_ChildCreationError, errno, flatbuffers_uint32, uint32_t, UINT32_C(0))
+__flatbuffers_define_scalar_field(0, demon_ChildCreationError, error_code, flatbuffers_uint32, uint32_t, UINT32_C(0))
 
 struct demon_ProcessTerminated_table { uint8_t unused__; };
 
@@ -375,7 +375,7 @@ __flatbuffers_offset_vec_at(demon_ProcessTerminated_table_t, vec, i, 0)
 __flatbuffers_table_as_root(demon_ProcessTerminated)
 
 __flatbuffers_define_scalar_field(0, demon_ProcessTerminated, pid, flatbuffers_int32, int32_t, INT32_C(0))
-__flatbuffers_define_scalar_field(1, demon_ProcessTerminated, errno, flatbuffers_uint32, uint32_t, UINT32_C(0))
+__flatbuffers_define_scalar_field(1, demon_ProcessTerminated, error_code, flatbuffers_uint32, uint32_t, UINT32_C(0))
 
 struct demon_TCPSocketListening_table { uint8_t unused__; };
 

@@ -23,7 +23,7 @@ struct buffer_info{
 
 struct process_terminated_info{
     int32_t pid;
-    uint32_t errno;
+    uint32_t error_code;
 };
 
 struct socket_info{
@@ -100,6 +100,6 @@ int read_socket(int serveur_fd, char* buffer);
 
 enum Event receive_message_from_user(void *buffer);
 
-static command* receive_command(void *buffer, size_t size);    //exemple of function i want for the daemon; Return NULL in case of failure 
+command* receive_command(void *buffer, size_t size);    //exemple of function i want for the daemon; Return NULL in case of failure 
 
 #endif 

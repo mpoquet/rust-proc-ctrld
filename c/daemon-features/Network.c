@@ -159,7 +159,7 @@ static struct tcp_socket* extract_tcp_socket(demon_TCPSocket_table_t socket) {
 }
 
 //désérialisation RunCommand
-static command* receive_command(void *buffer, size_t size) {
+command* receive_command(void *buffer, size_t size) {
     if(verify_buffer(buffer, size) == -1) {
         return NULL;
     }
@@ -284,7 +284,7 @@ struct buffer_info* send_processlaunched_to_user(int32_t pid) {
 }
 
 //fonction pour envoyer un childcreationerror a l'user
-struct buffer_info* send_childcreationerror_to_user(uint32_t errno) {
+struct buffer_info* send_childcreationerror_to_user(uint32_t error_code) {
     flatcc_builder_t builder;
     void* buffer;
     size_t size;
@@ -292,7 +292,7 @@ struct buffer_info* send_childcreationerror_to_user(uint32_t errno) {
 
 
     flatcc_builder_init(&builder);
-    demon_ChildCreationError_ref_t child_creation_error = demon_ChildCreationError_create(&builder, errno);
+    demon_ChildCreationError_ref_t child_creation_error = demon_ChildCreationError_create(&builder, error_code);
     demon_Event_union_ref_t event = demon_Event_as_ChildCreationError(child_creation_error);
     demon_Message_create_as_root(&builder, event);
     buffer = flatcc_builder_finalize_buffer(&builder, &size);
@@ -305,7 +305,7 @@ struct buffer_info* send_childcreationerror_to_user(uint32_t errno) {
 }
 
 //fonction pour envoyer un processterminaed a l'user
-struct buffer_info* send_processterminated_to_user(int32_t pid, uint32_t errno) {
+struct buffer_info* send_processterminated_to_user(int32_t pid, uint32_t error_code) {
     flatcc_builder_t builder;
     void* buffer;
     size_t size;
@@ -313,7 +313,7 @@ struct buffer_info* send_processterminated_to_user(int32_t pid, uint32_t errno) 
 
 
     flatcc_builder_init(&builder);
-    demon_ProcessTerminated_ref_t process_terminated = demon_ProcessTerminated_create(&builder, pid, errno);
+    demon_ProcessTerminated_ref_t process_terminated = demon_ProcessTerminated_create(&builder, pid, error_code);
     demon_Event_union_ref_t event = demon_Event_as_ProcessTerminated(process_terminated);
     demon_Message_create_as_root(&builder, event);
     buffer = flatcc_builder_finalize_buffer(&builder, &size);
@@ -397,8 +397,8 @@ uint32_t receive_childerror(void *buffer, size_t size) {
     if(demon_Message_events_type(message) == demon_Event_ChildCreationError) {
         child_error = demon_Message_events(message);
     }
-    uint32_t errno = demon_ChildCreationError_errno(child_error);
-    return errno;
+    uint32_t error_code = demon_ChildCreationError_error_code(child_error);
+    return error_code;
 }
 
 static struct process_terminated_info* receive_processterminated(void *buffer, size_t size) {
@@ -413,7 +413,7 @@ static struct process_terminated_info* receive_processterminated(void *buffer, s
         process_terminated = demon_Message_events(message);
     }
     infos->pid = demon_ProcessTerminated_pid(process_terminated);
-    infos->errno = demon_ProcessTerminated_errno(process_terminated);
+    infos->error_code = demon_ProcessTerminated_error_code(process_terminated);
 
     return infos;
 

@@ -45,12 +45,12 @@ table ProcessLaunched {
 }
 
 table ChildCreationError {
-    errno: uint32;
+    error_code: uint32;
 }
 
 table ProcessTerminated {
     pid: int32;
-    errno: uint32;
+    error_code: uint32;
 }
 
 table TCPSocketListening {
