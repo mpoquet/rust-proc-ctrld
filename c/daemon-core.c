@@ -153,7 +153,7 @@ int main(int argc, char** argv){
                                 info_child* res;
                                 res = handle_clone_event(param,err_file);
                                 if(res==NULL){
-                                    send_message(edata->fd, (void*)send_childcreationerror_to_user(errno), sizeof(struct buffer_info));
+                                    send_message(edata->fd, (void*)send_childcreationerror_to_user((uint32_t)errno), sizeof(struct buffer_info));
                                 }else{
                                     if(manager_add_process(res->child_id, process_manager, *com, res->stack_p, nb_process)){
                                         nb_process++;

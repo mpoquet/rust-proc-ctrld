@@ -488,7 +488,6 @@ enum Event receive_message_from_demon(void *buffer) {
 struct socket_info* establish_connection(int port){
     int server_fd;
     struct sockaddr_in address;
-    int opt = 1;
 
     struct socket_info* info = malloc(sizeof(struct socket_info));
     if(info==NULL){
@@ -544,4 +543,5 @@ int send_message(int socket, void* buffer, int size){
     if(send(socket, buffer, size, 0)!=size){
         return -1;
     }
+    return size;
 }

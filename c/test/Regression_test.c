@@ -30,9 +30,17 @@ int try_launching_process(int sock, struct sockaddr_in serv_addr, command* com){
     }
 
     //Todo Finish this test
-    serialize_command(,com);
-    send_command_to_demon(com);
+    struct buffer_info* buffer = send_command_to_demon(com);
 
+    if(send(sock, (void*)buffer, sizeof(struct buffer_info),0)==-1){
+        return -1;
+    };
+
+    struct buffer_info* res;
+
+    if(read(sock, res,sizeof(struct buffer_info))==-1){
+        return -1;
+    };
 
 
     close(sock);
@@ -89,7 +97,10 @@ int main(int argc, char** argv){
     cmd->stack_size=512*512;
     cmd->to_watch=NULL;
     cmd->to_watch_size=0;
+    
     assert(try_launching_process(sock,serv_addr,cmd)==0);
+
+
 
 
 

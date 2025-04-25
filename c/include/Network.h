@@ -86,7 +86,7 @@ struct buffer_info* send_processlaunched_to_user(int32_t pid);
 
 struct buffer_info* send_tcpsocketlistening_to_user(uint16_t port);
 
-struct buffer_info* send_childcreationerror_to_user(uint32_t errno);
+struct buffer_info* send_childcreationerror_to_user(uint32_t error_code);
 
 void serialize_command(flatcc_builder_t *B, command *cmd);
 

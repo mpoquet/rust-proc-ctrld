@@ -1,5 +1,6 @@
 CC  = gcc
 SYS = -std=gnu11 -Wall -Wextra -O2
+CFLAGS += -I./flatcc/include
 
 FLATCC_INC = -Iflatcc/include
 FLATCC_LIB = flatcc/lib/libflatccrt.a
