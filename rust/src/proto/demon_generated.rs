@@ -1460,11 +1460,11 @@ impl<'a> InotifyPathUpdated<'a> {
     unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'a, InotifyEvent>>>(InotifyPathUpdated::VT_TRIGGER_EVENTS, None)}
   }
   #[inline]
-  pub fn size(&self) -> u64 {
+  pub fn size(&self) -> u32 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<u64>(InotifyPathUpdated::VT_SIZE, Some(0)).unwrap()}
+    unsafe { self._tab.get::<u32>(InotifyPathUpdated::VT_SIZE, Some(0)).unwrap()}
   }
 }
 
@@ -1477,7 +1477,7 @@ impl flatbuffers::Verifiable for InotifyPathUpdated<'_> {
     v.visit_table(pos)?
      .visit_field::<flatbuffers::ForwardsUOffset<&str>>("path", Self::VT_PATH, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, InotifyEvent>>>("trigger_events", Self::VT_TRIGGER_EVENTS, false)?
-     .visit_field::<u64>("size", Self::VT_SIZE, false)?
+     .visit_field::<u32>("size", Self::VT_SIZE, false)?
      .finish();
     Ok(())
   }
@@ -1485,7 +1485,7 @@ impl flatbuffers::Verifiable for InotifyPathUpdated<'_> {
 pub struct InotifyPathUpdatedArgs<'a> {
     pub path: Option<flatbuffers::WIPOffset<&'a str>>,
     pub trigger_events: Option<flatbuffers::WIPOffset<flatbuffers::Vector<'a, InotifyEvent>>>,
-    pub size: u64,
+    pub size: u32,
 }
 impl<'a> Default for InotifyPathUpdatedArgs<'a> {
   #[inline]
@@ -1512,8 +1512,8 @@ impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> InotifyPathUpdatedBuilder<'a, '
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(InotifyPathUpdated::VT_TRIGGER_EVENTS, trigger_events);
   }
   #[inline]
-  pub fn add_size(&mut self, size: u64) {
-    self.fbb_.push_slot::<u64>(InotifyPathUpdated::VT_SIZE, size, 0);
+  pub fn add_size(&mut self, size: u32) {
+    self.fbb_.push_slot::<u32>(InotifyPathUpdated::VT_SIZE, size, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> InotifyPathUpdatedBuilder<'a, 'b, A> {

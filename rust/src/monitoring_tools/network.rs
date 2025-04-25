@@ -1,4 +1,4 @@
-use std::{os::unix::io::{AsRawFd, RawFd}, time::Duration, thread};
+use std::{os::unix::io::{AsRawFd, RawFd}, time::Duration};
 use netstat2::*;
 use nix::errno::Errno;
 use tokio::task;
@@ -44,8 +44,8 @@ pub fn is_port_listening(port: u16) -> bool {
     false
 }
 
-pub async fn read_events_port_tokio(port: u16) -> Result<u32, Errno> {
-    task::spawn(async move {
+pub async fn read_events_port_tokio(port: u16) -> Result<u32, (u32, Errno)> {
+    let join_handle = task::spawn(async move {
         loop {
             if is_port_listening(port) {
                 println!("The port {} is LISTENING in tokio", port);
@@ -54,7 +54,11 @@ pub async fn read_events_port_tokio(port: u16) -> Result<u32, Errno> {
             tokio::time::sleep(Duration::from_millis(500)).await;
         }
     });
-    Ok(std::process::id())
+
+    match join_handle.await {
+        Ok(_) => Ok(std::process::id()),
+        Err(_) => Err((std::process::id(), Errno::UnknownErrno)),
+    }
 }
 
 pub async fn read_events_port_scanner(port: u16) -> Result<(), ()> {

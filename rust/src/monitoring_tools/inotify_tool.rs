@@ -51,7 +51,7 @@ pub fn get_size_file(path: &String) -> std::io::Result<u64> {
 }
 
 // reach_size = size maximum of file for being notify
-pub async fn read_events_inotify(path: &str, vec: Vec<EventMask>, reach_size: u64) -> Result<u32, Errno>{
+pub async fn read_events_inotify(path: &str, vec: Vec<EventMask>, reach_size: u64) -> Result<u32, (u32,Errno)>{
     let epoll_fd = create_epoll()
         .expect("error creating epoll_fd");
 
@@ -123,13 +123,12 @@ pub async fn read_events_inotify(path: &str, vec: Vec<EventMask>, reach_size: u6
                     }
                     Err(e) => {
                         let errno = Errno::from_raw(e.raw_os_error().unwrap_or(0));
-                        eprintln!("Error reading events: {:?}", errno);
-                        break;
+                        return Err((std::process::id(), errno));
                     },
                 }
             }
+            Ok(std::process::id())
         }
     });
-    handle.await.map_err(|_| Errno::UnknownErrno)?;
-    Ok(std::process::id())
+    handle.await.map_err(|_| (std::process::id(), Errno::UnknownErrno))?
 }

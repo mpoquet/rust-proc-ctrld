@@ -52,9 +52,9 @@ async fn handle_message(buf: &[u8]) -> Vec<u8> {
                 }
             }
 
-            match read_events_inotify(path, trig_events, reach_size).await {
+            match read_events_inotify(path, trig_events, reach_size as u64).await {
                 Ok(pid) => serialize_process_launched(pid as i32),
-                Err(errno) => serialize_child_creation_error(errno as u32),
+                Err((pid,errno)) => serialize_process_terminated(pid as i32, errno as u32),
             }
         }
         Event::KillProcess => {
@@ -63,7 +63,7 @@ async fn handle_message(buf: &[u8]) -> Vec<u8> {
 
             match send_sigkill(pid_kill) {
                 Ok(pid) => serialize_process_launched(pid as i32),
-                Err(errno) => serialize_child_creation_error( errno as u32),
+                Err((pid,errno)) => serialize_process_terminated(pid as i32, errno as u32),
             }
         }
         Event::RunCommand => {
@@ -73,7 +73,7 @@ async fn handle_message(buf: &[u8]) -> Vec<u8> {
             
             match res {
                 Ok(pid) => serialize_process_launched(pid as i32),
-                Err(errno) => serialize_child_creation_error(errno as u32),
+                Err((pid,errno)) => serialize_process_terminated(pid as i32, errno as u32),
             }
         }
         Event::TCPSocketListening => {
@@ -82,11 +82,10 @@ async fn handle_message(buf: &[u8]) -> Vec<u8> {
 
             match read_events_port_tokio(port).await {
                 Ok(pid) => serialize_process_launched(pid as i32),
-                Err(errno) => serialize_child_creation_error(errno as u32),
+                Err((pid ,errno)) => serialize_process_terminated(pid as i32, errno as u32),
             }
         }
         _ => {
-            // TODO a changer plus tard ?
             serialize_child_creation_error(Errno::ENODATA as u32)
         }
     }

@@ -107,10 +107,10 @@ pub fn ctrl_channel() -> Result<Receiver<()>, ctrlc::Error> {
     Ok(receiver)
 }
 
-pub fn send_sigkill(pid : i32) -> Result<u32, Errno> {
+pub fn send_sigkill(pid : i32) -> Result<u32, (u32,Errno)> {
     let pid = Pid::from_raw(pid);
     if let Err(e) = nix::sys::signal::kill(pid, Signal::SIGKILL) {
-        return Err(e);
+        return Err((std::process::id(), e));
     }
     Ok(std::process::id())
 }
