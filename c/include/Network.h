@@ -74,12 +74,27 @@ enum Event {
     INOTIFY_PATH_UPDATED,
 };
 
+int32_t receive_kill(void *buffer, size_t size);
 
 struct socket_info* establish_connection(int port); //exemple of function i want for the daemon 
 
 int accept_new_connexion(struct socket_info* info);
 
 void send_command(command *cmd);
+
+struct buffer_info* send_processlaunched_to_user(int32_t pid);
+
+struct buffer_info* send_tcpsocketlistening_to_user(uint16_t port);
+
+struct buffer_info* send_childcreationerror_to_user(uint32_t errno);
+
+void serialize_command(flatcc_builder_t *B, command *cmd);
+
+struct buffer_info* send_command_to_demon(command *cmd);
+
+int send_message(int socket, void* buffer, int size);
+
+struct buffer_info* send_processterminated_to_user(int32_t pid, uint32_t errno);
 
 int read_socket(int serveur_fd, char* buffer);
 

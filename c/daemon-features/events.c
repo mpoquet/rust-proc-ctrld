@@ -109,7 +109,7 @@ struct clone_parameters* extract_clone_parameters(command* com){
 }
 
 //TODO modifer pour utiliser autre chose que running process et child info.
-int handle_SIGCHLD(struct signalfd_siginfo fdsi, process_info** manager, int size){
+void* handle_SIGCHLD(struct signalfd_siginfo fdsi, process_info** manager, int size){
     int wstatus;
     int exit_status;
     waitpid(fdsi.ssi_pid, &wstatus, 0);  // Attente de la fin du fils
@@ -117,58 +117,43 @@ int handle_SIGCHLD(struct signalfd_siginfo fdsi, process_info** manager, int siz
     //TODO Gérer le renvoi d'érreur dans les deux cas. Il faut une fonction pour trouver un groupe a partir d'un pid pour pouvoir envoyer les bonnes infos.
     if(WIFEXITED(wstatus)){
         exit_status = WEXITSTATUS(wstatus);
-        struct child_err* data = malloc(sizeof(struct child_err));
-        if (data==NULL){
-            printf("Unable to allocate memory for error message");
-        }else{
-            data->com=manager[search_process(fdsi.ssi_pid,size, manager)]->param;
-            data->pid=fdsi.ssi_pid;
-            send_error(CHILD_EXITED,(void*)data);
-        }
     }else if (WIFSIGNALED(wstatus)){
-        exit_status= WTERMSIG(wstatus);
-        struct child_err* data = malloc(sizeof(struct child_err));
-        if (data==NULL){
-            printf("Unable to allocate memory for error message");
-        }else{
-            data->com=manager[search_process(fdsi.ssi_pid,size, manager)]->param;
-            data->pid=fdsi.ssi_pid;
-            send_error(CHILD_SIGNALED,(void*)data);
-        }        
+        exit_status= WTERMSIG(wstatus);     
     }
-    for (int i=0; i<running_process;i++){
+    for (int i=0; i<size;i++){
         if(child_infos[i].child_id==fdsi.ssi_pid){
             free(child_infos[i].stack_p);
             child_infos[i].child_id=-1;
         }
     }
-    return exit_status;
+    manager_remove_process(fdsi.ssi_pid,manager,size);
+    struct buffer_info* info = send_processterminated_to_user(fdsi.ssi_pid,exit_status);
+    return (void*) info;
 }
 
-int handle_signalfd_event(int fd, process_info** manager, int size){
+void* handle_signalfd_event(int fd, process_info** manager, int size){
     ssize_t s;
     struct signalfd_siginfo fdsi;
-    int pid=-1;
-    for (;;) {
-        s = read(fd, &fdsi, sizeof(fdsi));
-        if (s != sizeof(fdsi)){
-            perror("read");
-            return -1;
-            
-        } 
-        switch (fdsi.ssi_signo)
-        {
-        case SIGCHLD:
-            pid = handle_SIGCHLD(fdsi, manager, size);
-            manager_remove_process(pid,manager,size);
-            break;
+    void* res=NULL;
+    s = read(fd, &fdsi, sizeof(fdsi));
+    if (s != sizeof(fdsi)){
+        perror("read");
+        return NULL;
         
-        default:
-            printf("Read unexpected signal\n");
-            break;
-        }
+    } 
+    switch (fdsi.ssi_signo)
+    {
+    case SIGCHLD:
+        res = handle_SIGCHLD(fdsi, manager, size);
+        return res;
+        break;
+    
+    default:
+        printf("Read unexpected signal\n");
+        return res;
+        break;
     }
-    return pid;
+
 }
 
 int add_event_inotifyFd(int fd, int epollfd){

@@ -503,7 +503,7 @@ struct socket_info* establish_connection(int port){
     }
 
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_addr.s_addr = htonl(INADDR_LOOPBACK); //Wont work for internet connexion, just to simplify testing
     address.sin_port = htons(port);
 
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
@@ -515,16 +515,6 @@ struct socket_info* establish_connection(int port){
         perror("listen");
         exit(EXIT_FAILURE);
     }
-
-    // Récupère l'IP locale associée à cette socket
-    if (getsockname(server_fd, (struct sockaddr *)&address, (socklen_t*) sizeof(address)) == -1) {
-        perror("getsockname");
-        exit(EXIT_FAILURE);
-    }
-
-    char ip_str[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &(address.sin_addr), ip_str, INET_ADDRSTRLEN);
-    printf("Serveur en écoute sur %s:%d\n", ip_str, ntohs(address.sin_port));
 
     info->address=&address;
     info->port=port;
@@ -550,3 +540,8 @@ int read_socket(int serveur_fd, char* buffer){
     return valread;
 }
 
+int send_message(int socket, void* buffer, int size){
+    if(send(socket, buffer, size, 0)!=size){
+        return -1;
+    }
+}

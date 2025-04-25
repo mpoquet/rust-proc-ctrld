@@ -11,6 +11,7 @@
 #include <sys/signalfd.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <errno.h>
 
 #include "./include/clone.h"
 #include "./include/healthcheck.h"
@@ -25,7 +26,7 @@
 int num_inotifyFD=0;
 int nfds;
 struct epoll_event events[MAX_EVENTS];
-command* instruction_mess;
+command* com;
 int nb_process=0;
 
 int main(int argc, char** argv){
@@ -124,9 +125,11 @@ int main(int argc, char** argv){
                         break;
                     
                     case SIGNALFD:
-                        if (handle_signalfd_event(edata->fd, process_manager, nb_process) == -1){
+                        void* res;
+                        if ( (res=handle_signalfd_event(edata->fd, process_manager, nb_process)) == NULL){
                             printf("Unable to read signalfd\n");
                         }
+                        send_message(edata->fd,res,sizeof(struct buffer_info));
                         break;
                     
                     case SOCK_MESSAGE:
@@ -136,9 +139,9 @@ int main(int argc, char** argv){
                             printf("An error has occured while trying to read the communication socket\n");
                             break;
                         }
-                        switch (receive_message_from_user(buffer, size)){
+                        switch (receive_message_from_user(buffer)){
                             case RUN_COMMAND:
-                                command* com= receive_command(buffer,size);
+                                com= receive_command(buffer,size);
                                 struct clone_parameters* param = extract_clone_parameters(com);
                                 char buffer[20]="errFile";
                                 //On créer un fichier avec un nom unique normalement. Pours ça il faut que les valeurs soit proprement initalisé.
@@ -146,30 +149,32 @@ int main(int argc, char** argv){
                                     printf("Error while formatting the name of the errFile for the process %s\n", param->pathname);
                                 }
                                 err_file = initialize_error_file(buffer);
+                                err_file = err_file==-1?STDOUT_FILENO:err_file;
                                 info_child* res;
-                                if (err_file!=-1){
-                                    res = handle_clone_event(param,err_file);
-                                }else{
-                                    res = handle_clone_event(param,STDOUT_FILENO);
-                                }
+                                res = handle_clone_event(param,err_file);
                                 if(res==NULL){
-                                    struct clone_err* data = malloc(sizeof(struct clone_err));
-                                    if (data==NULL){
-                                        printf("Unable to allocate memory for error message");
-                                    }else{
-                                        data->com=instruction_mess;
-                                        send_error(CLONE_ERR,(void*)data);
-                                    }
+                                    send_message(edata->fd, (void*)send_childcreationerror_to_user(errno), sizeof(struct buffer_info));
                                 }else{
                                     if(manager_add_process(res->child_id, process_manager, *com, res->stack_p, nb_process)){
                                         nb_process++;
                                     }
+                                    struct buffer_info* result_message = send_processlaunched_to_user(res->child_id);
+                                    send_message(edata->fd,(void*)result_message,sizeof(struct buffer_info));
                                 }
                                 free(res);
                                 free(param);
+                                free(com);
                                 break;
 
                             case KILL_PROCESS:
+                                int pid = receive_kill(buffer,size);
+                                if (pid==0){ //Kill Daemon
+                                    free_manager(process_manager, nb_process);
+                                    kill(-getpgrp(), SIGTERM); // Kill all process of the group
+                                }else{
+                                    kill(pid,SIGKILL);
+                                    manager_remove_process(pid,process_manager,size);
+                                }
                                 break;
 
                             default :
@@ -194,6 +199,9 @@ int main(int argc, char** argv){
                             return -1;
                         }
                         num_inotifyFD++;
+
+                        struct buffer_info* info = send_tcpsocketlistening_to_user(destPort);
+                        send_message(new_connexion,(void*)info,sizeof(struct buffer_info));
                         break;
 
                     default:

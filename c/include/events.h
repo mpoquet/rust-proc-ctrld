@@ -51,7 +51,7 @@ int add_event_signalFd(int fd, int epollfd);
 
 int add_event_inotifyFd(int fd, int epollfd);
 
-int handle_signalfd_event(int fd, process_info** manager, int size);
+void* handle_signalfd_event(int fd, process_info** manager, int size);
 
 void handle_inotify_event(int fd);
 

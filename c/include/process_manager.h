@@ -17,6 +17,8 @@ typedef struct s_process_info{
 
 typedef struct s_command command;
 
+void free_manager(process_info** manager, int size);
+
 process_info** create_process_manager(int size);
 
 int search_process(int pid, int size, process_info** group);
