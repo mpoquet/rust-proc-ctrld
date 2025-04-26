@@ -72,16 +72,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Path : ");
     let mut path_command = String::new();
     io::stdin().read_line(&mut path_command).expect("Echec lecture");
+    
+    //Suppression du \n
+    path_command.pop();
 
     //Lecture des arguments
     println!("Arguments : ");
     let mut args_command = String::new();
     io::stdin().read_line(&mut args_command).expect("Echec lecture");
 
+    //Suppression du \n
+    args_command.pop();
+
+
     //Lecture des environnements
     println!("envs : ");
     let mut envs_command = String::new();
     io::stdin().read_line(&mut envs_command).expect("Echec lecture");
+
+    //Suppression du \n
+    envs_command.pop();
+
 
     
     //Lecture du flag et stack si clone 
