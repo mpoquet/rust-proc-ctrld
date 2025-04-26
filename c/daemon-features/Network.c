@@ -248,13 +248,23 @@ int32_t receive_kill(void *buffer, size_t size) {
 
 //permet au démon de savoir si le message reçu est une commande ou un killprocess
 enum Event receive_message_from_user(void *buffer) {
+    printf("test_receive\n");
+    fflush(stdout);
     demon_Message_table_t message = demon_Message_as_root(buffer);
+    printf("test_receive\n");
+    fflush(stdout);
     if(demon_Message_events_type(message) == demon_Event_RunCommand) {
+        printf("test_receive1\n");
+        fflush(stdout);
         return RUN_COMMAND;
     }
     if(demon_Message_events_type(message) == demon_Event_KillProcess) {
+        printf("test_receive2\n");
+        fflush(stdout);
         return KILL_PROCESS;
     }
+    printf("test_receive3\n");
+    fflush(stdout);
 }
 
 
