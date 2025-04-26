@@ -115,23 +115,30 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     //Attention : Le dernier string contient un \n
-    let mut args_tab: Vec<&str> = args_command.split(" ").collect();
+    let args_tab: Vec<&str> = args_command.split(" ").collect();
     println!("{:?}", args_tab);
 
-    let mut args_envs: Vec<&str> = envs_command.split(" ").collect();
+    let args_envs: Vec<&str> = envs_command.split(" ").collect();
     println!("{:?}", args_envs);
 
     //Initialisation du builder
     let mut bldr = FlatBufferBuilder::new();
     bldr.reset();
 
+    let args_offsets: Vec<_> = args_tab.iter().map(|s| bldr.create_string(s)).collect();
+    let envs_offsets: Vec<_> = args_envs.iter().map(|s| bldr.create_string(s)).collect();
+
+    let args_vector = bldr.create_vector(&args_offsets);
+    let envs_vector = bldr.create_vector(&envs_offsets);
+
 
     //Creation de l'objet RunCommand
-    let args_build = RunCommandArgs{path: Some(bldr.create_string(&path_command)), 
-                                    args: Some(bldr.create_vector_of_strings(&args_tab)),
-                                    envp: Some(bldr.create_vector_of_strings(&args_envs)),
-                                    ..Default::default()};
-    
+    let args_build = RunCommandArgs{
+        path: Some(bldr.create_string(&path_command)), 
+        args: Some(args_vector),
+        envp: Some(envs_vector),
+        ..Default::default()};
+
     let object_run_command = RunCommand::create(&mut bldr, &args_build);
 
     //Creation et serialisation de l'objet Message pour l'envoi
@@ -142,25 +149,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             events: Some(object_run_command.as_union_value())});
 
     bldr.finish(mess, None);
-
-
-    //Initialisation de la connection TCP (ne prends pas en compte l'IP et le port pour l'instant)
-    /*let mut args = env::args();
-    if args.len() != 2 {
-        println!("Usage : {:?} <PortId>", args.next())
-    }
-
-    let port: u16 = args.nth(1)
-        .expect("error getting args")
-        .parse()
-        .expect("invalid port number");
-
-    println!("We listen on the port {}", port);
-
-    let listener = TcpListener::bind(format!("127.0.0.1::{}", port)).unwrap(); 
-
-
-    let Ok((mut socket, addr)) = listener.accept(); */
 
     let port: u16 = 8080;
 
