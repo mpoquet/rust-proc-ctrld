@@ -25,14 +25,15 @@ pub async fn exec_command(run_cmd: &demon::RunCommand<'_>) -> Result<u32, (u32, 
         }
     }
 
-    tokio::spawn(async move {
-        match command.output().await {
-            Ok(_) => todo!(),
-            Err(err) => {
-                let errno = Errno::from_raw(err.raw_os_error().unwrap_or(0));
-                return Err::<u32, (u32, Errno)>((std::process::id(), errno));
-            },
-        }
-    });
-    Ok(std::process::id())
+    let output = command.output().await.map_err(|err| {
+        let errno = Errno::from_raw(err.raw_os_error().unwrap_or(0));
+        (std::process::id(), errno)
+    })?;
+
+    if output.status.success() {
+        Ok(std::process::id())
+    } else {
+        let errno = Errno::from_raw(output.status.code().unwrap_or(1));
+        Err((std::process::id(), errno))
+    }
 }
