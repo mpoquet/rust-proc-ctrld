@@ -488,6 +488,7 @@ enum Event receive_message_from_demon(void *buffer) {
 struct socket_info* establish_connection(int port){
     int server_fd;
     struct sockaddr_in address;
+    socklen_t addrlen = sizeof(address);
 
     struct socket_info* info = malloc(sizeof(struct socket_info));
     if(info==NULL){
@@ -505,17 +506,36 @@ struct socket_info* establish_connection(int port){
     address.sin_addr.s_addr = htonl(INADDR_LOOPBACK); //Wont work for internet connexion, just to simplify testing
     address.sin_port = htons(port);
 
-    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
+    //Making the port reusable if the server is not closed properly
+    int opt = 1;
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
+        perror("setsockopt");
+        exit(1);
+    }
+
+    if (bind(server_fd, (struct sockaddr *)&address, addrlen) < 0) {
         perror("bind failed");
         exit(EXIT_FAILURE);
     }
+
+    // Showing socket info for debug purpose
+    if (getsockname(server_fd, (struct sockaddr *)&address, &addrlen) == -1) {
+        perror("getsockname");
+        exit(EXIT_FAILURE);
+    }
+
+    char ip_str[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &(address.sin_addr), ip_str, INET_ADDRSTRLEN);
+    printf("Serveur en écoute sur %s:%d\n", ip_str, ntohs(address.sin_port));
 
     if (listen(server_fd, 3) < 0) {
         perror("listen");
         exit(EXIT_FAILURE);
     }
 
-    info->address=&address;
+    printf("daemon now listening\n");
+
+    info->address=address;
     info->port=port;
     info->sockfd=server_fd;
 
@@ -523,18 +543,23 @@ struct socket_info* establish_connection(int port){
 }
 
 int accept_new_connexion(struct socket_info* info){
+    printf("accepting new connexion\n");
     int new_socket;
-    if ((new_socket = accept(info->port, (struct sockaddr *)info->address, (socklen_t*) sizeof(info->address))) < 0) {
+    socklen_t addrlen = sizeof(struct sockaddr_in);
+
+    if ((new_socket = accept(info->sockfd, (struct sockaddr *)&info->address, &addrlen)) < 0) {
         perror("accept");
         exit(EXIT_FAILURE);
     }
+
+    printf("New connexion accepted\n");
     return new_socket;
 }
 
-int read_socket(int serveur_fd, char* buffer){
+int read_socket(int serveur_fd, void* buffer, int size){
 
     // Subtract 1 for the null terminator at the end
-    int valread = read(serveur_fd, buffer, sizeof(buffer));
+    int valread = read(serveur_fd, buffer, size);
 
     return valread;
 }

@@ -31,7 +31,8 @@ int nb_process=0;
 
 int main(int argc, char** argv){
     if (argc<2){
-        printf("The daemon need a destination port to establish the TCP connection");
+        printf("The daemon need a destination port to establish the TCP connection\n");
+        return 0;
     }
     int destPort = atoi(argv[1]);
     //Commenting to simplify testing
@@ -64,13 +65,23 @@ int main(int argc, char** argv){
 
     if (err_file!=-1){
         dup2(err_file,STDOUT_FILENO);
+        dup2(err_file,STDERR_FILENO);
     }
+
+    printf("test\n");
+    fflush(stdout);
 
     int epollfd = epoll_create1(0);
 
     //Add our communication socket to the event list
     struct epoll_event* ev = malloc(sizeof(struct epoll_event));
     event_data_sock *edata = malloc(sizeof(event_data_sock));
+    if(ev==NULL || edata==NULL){
+        free(edata);
+        free(ev);
+        perror("malloc");
+        return -1;
+    }
     edata->fd = communication_socket->sockfd;
     edata->type = SOCK_CONNEXION;
     edata->sock_info=communication_socket;
@@ -108,12 +119,13 @@ int main(int argc, char** argv){
     int error_code;
 
     while(num_inotifyFD>0){
+        printf("Waiting for incoming notifications\n");
         nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
         if (nfds == -1) {
             perror("epoll_wait");
             exit(EXIT_FAILURE);
         }
-
+        printf("received notification, processing it...\n");
         for (int i = 0; i<nfds; i++){
             if (events[i].events != 0) {
                 event_data_t* edata = (event_data_t*)events[i].data.ptr;
@@ -133,15 +145,19 @@ int main(int argc, char** argv){
                         break;
                     
                     case SOCK_MESSAGE:
-                        char buffer[1024];
-                        int size = read_socket(edata->fd, buffer);
+                        printf("Incoming job...\n");
+                        struct buffer_info buffer;
+                        int size = read_socket(edata->fd, (void*)&buffer, sizeof(struct buffer_info));
                         if(size==0){
                             printf("An error has occured while trying to read the communication socket\n");
                             break;
                         }
-                        switch (receive_message_from_user(buffer)){
+                        printf("Command received\n");
+                        switch (receive_message_from_user((void*)&buffer)){
                             case RUN_COMMAND:
-                                com= receive_command(buffer,size);
+                                printf("test RUNCOMMAND\n");
+                                fflush(stdout);
+                                com= receive_command((void*)&buffer,size);
                                 struct clone_parameters* param = extract_clone_parameters(com);
                                 char buffer[20]="errFile";
                                 //On créer un fichier avec un nom unique normalement. Pours ça il faut que les valeurs soit proprement initalisé.
@@ -167,6 +183,8 @@ int main(int argc, char** argv){
                                 break;
 
                             case KILL_PROCESS:
+                                printf("KILLPROCESS\n");
+                                fflush(stdout);
                                 int pid = receive_kill(buffer,size);
                                 if (pid==0){ //Kill Daemon
                                     free_manager(process_manager, nb_process);
@@ -178,6 +196,8 @@ int main(int argc, char** argv){
                                 break;
 
                             default :
+                                printf("test default\n");
+                                fflush(stdout);
                                 printf("unexpected type of message received\n");
                                 break;
                     

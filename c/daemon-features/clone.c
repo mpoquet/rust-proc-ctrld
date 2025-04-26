@@ -23,6 +23,7 @@ int child_function(void *arg) {
 
     if (execve((const char*) params->filepath, (char* const*) params->args, (char* const*) params->envp)==-1){
         printf("Something went wrong when opening executing program");
+        perror("execve");
         exit(errno);
     };
     

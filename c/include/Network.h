@@ -28,7 +28,7 @@ struct process_terminated_info{
 
 struct socket_info{
     int port;
-    struct sockaddr_in* address;
+    struct sockaddr_in address;
     int sockfd;
 };
 
@@ -84,6 +84,8 @@ void send_command(command *cmd);
 
 struct buffer_info* send_processlaunched_to_user(int32_t pid);
 
+int32_t receive_processlaunched(void *buffer, size_t size);
+
 struct buffer_info* send_tcpsocketlistening_to_user(uint16_t port);
 
 struct buffer_info* send_childcreationerror_to_user(uint32_t error_code);
@@ -96,7 +98,7 @@ int send_message(int socket, void* buffer, int size);
 
 struct buffer_info* send_processterminated_to_user(int32_t pid, uint32_t errno);
 
-int read_socket(int serveur_fd, char* buffer);
+int read_socket(int serveur_fd, void* buffer, int size);
 
 enum Event receive_message_from_user(void *buffer);
 
