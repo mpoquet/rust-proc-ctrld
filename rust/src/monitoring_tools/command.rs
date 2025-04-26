@@ -31,6 +31,7 @@ pub async fn exec_command(run_cmd: &demon::RunCommand<'_>) -> Result<u32, (u32, 
     })?;
 
     if output.status.success() {
+        println!("Stdout: {}", String::from_utf8_lossy(&output.stdout));
         Ok(std::process::id())
     } else {
         let errno = Errno::from_raw(output.status.code().unwrap_or(1));
