@@ -10,6 +10,8 @@ use std::io;
 use std::net::TcpStream;
 use std::io::Write;
 
+use std::time::SystemTime;
+
 //use crate::monitoring_tools::command::exec_command;
 
 use flatbuffers::FlatBufferBuilder;
@@ -21,6 +23,7 @@ use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message, Message, Me
 
 
 fn handle_message(buff: &[u8]){
+
     let msg = root_as_message(buff).expect("error root_as_message");
 
     match msg.events_type(){
@@ -61,6 +64,7 @@ fn handle_message(buff: &[u8]){
 
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+
     println!("Prototype client en rust \n");
 
     let mut presence_clone = false;
@@ -93,10 +97,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     //Suppression du \n
     envs_command.pop();
 
-
+    //Mesure du temps
+    let depart = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?.as_millis();
     
     //Lecture du flag et stack si clone 
-    //Attention : le eq() ne semble pas fonctionner ici (toujours false)
     if path_command.eq("clone"){
         //Lecture du flag
         println!("flag : ");
@@ -114,21 +118,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
 
-    println!("path : {}", path_command);
-    println!("arguments : {}", args_command);
-    println!("environnements : {}", envs_command);
 
     if presence_clone{
         println!("flag : {}", flag);
         println!("stack : {}", stack);
     }
 
-    //Attention : Le dernier string contient un \n
+    //Construction des tableaux de string
     let args_tab: Vec<&str> = args_command.split(" ").collect();
-    println!("{:?}", args_tab);
+    //println!("{:?}", args_tab);
 
     let args_envs: Vec<&str> = envs_command.split(" ").collect();
-    println!("{:?}", args_envs);
+    //println!("{:?}", args_envs);
 
     //Initialisation du builder
     let mut bldr = FlatBufferBuilder::new();
@@ -182,7 +183,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("Erreur de lecture message");
     }
 
+    //Gestion de la réponse du démon
     handle_message(&buf);   
+
+    //Calcul du temps
+    let arrive = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?.as_millis() - depart;
+
+    println!("Durée : {} millisecondes", arrive);
 
     Ok(())
 }
