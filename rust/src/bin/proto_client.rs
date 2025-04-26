@@ -157,32 +157,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             events_type: Event::RunCommand,
             events: Some(object_run_command.as_union_value())});
 
-    bldr.finish(mess, None);
 
     let port: u16 = 8080;
 
 
+    bldr.finish(mess, None);
+
+    let finished_data = bldr.finished_data();
+    let data_len = finished_data.len() as u32;
     let mut stream = TcpStream::connect(format!("127.0.0.1:{}", port))?;
 
-    //Envoi sur le réseau
-    stream.write(&bldr.finished_data().to_vec())?;
-    
+    // Envoyer la taille en 4 octets
+    stream.write_all(&data_len.to_le_bytes())?;
+    stream.write_all(finished_data)?;
+
     //Reception du retour
-    // Lire la taille (4 octets)
     let mut len_buf = [0u8; 4];
     if stream.read_exact(&mut len_buf).is_err() {
         println!("Demon déconnecté");
     }
-
     let msg_len = u32::from_le_bytes(len_buf) as usize;
-
-    // Lire le message flatbuffer complet
     let mut buf = vec![0u8; msg_len];
     if stream.read_exact(&mut buf).is_err() {
         println!("Erreur de lecture message");
     }
 
-    handle_message(&buf);  
+    handle_message(&buf);   
 
     Ok(())
 }

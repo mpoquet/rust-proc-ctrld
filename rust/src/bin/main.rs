@@ -121,10 +121,13 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
                 }
                 
                 //Traitement + obtention du retour
-                let mut retour = handle_message(&buf).await;
+                let retour = handle_message(&buf).await;
 
-                //Envoi sur le réseau
-                let _ = socket.write(&mut retour).await;
+                let data_len = retour.len() as u32;
+                let mut resp = data_len.to_le_bytes().to_vec();
+                resp.extend(retour);
+
+                let _ = socket.write(&resp).await;
                 
             }
         });
