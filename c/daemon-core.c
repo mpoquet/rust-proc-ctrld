@@ -74,22 +74,20 @@ int main(int argc, char** argv){
     int epollfd = epoll_create1(0);
 
     //Add our communication socket to the event list
-    struct epoll_event* ev = malloc(sizeof(struct epoll_event));
+    struct epoll_event ev;
     event_data_sock *edata = malloc(sizeof(event_data_sock));
-    if(ev==NULL || edata==NULL){
+    if(edata==NULL){
         free(edata);
-        free(ev);
         perror("malloc");
         return -1;
     }
     edata->fd = communication_socket->sockfd;
     edata->type = SOCK_CONNEXION;
     edata->sock_info=communication_socket;
-    ev->events=EPOLLIN;
-    ev->data.ptr=edata;
-    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, communication_socket->sockfd, ev)==-1){
+    ev.events=EPOLLIN;
+    ev.data.ptr=edata;
+    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, communication_socket->sockfd, &ev)==-1){
         printf("error while trying to add file descriptor to epoll interest list");
-        free(ev);
         free(edata);
         return -1;
     }
@@ -119,6 +117,7 @@ int main(int argc, char** argv){
     int error_code;
 
     while(num_inotifyFD>0){
+        sleep(2);
         printf("Waiting for incoming notifications\n");
         nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
         if (nfds == -1) {
@@ -146,18 +145,24 @@ int main(int argc, char** argv){
                     
                     case SOCK_MESSAGE:
                         printf("Incoming job...\n");
-                        struct buffer_info buffer;
-                        int size = read_socket(edata->fd, (void*)&buffer, sizeof(struct buffer_info));
-                        if(size==0){
-                            printf("An error has occured while trying to read the communication socket\n");
+                        unsigned char buffer[512];
+                        size_t size;
+                        int Size = read_socket(edata->fd, &size, sizeof(size_t));
+                        if(Size==0){
+                            printf("The socket has been closed\n");
+                            epoll_ctl(epollfd, EPOLL_CTL_DEL, edata->fd, NULL);
+                            close(edata->fd);          
+                            free(edata);
+                            num_inotifyFD--;
                             break;
                         }
+                        read_socket(edata->fd, buffer, size);
                         printf("Command received\n");
-                        switch (receive_message_from_user((void*)&buffer)){
+                        switch (receive_message_from_user(buffer)){
                             case RUN_COMMAND:
                                 printf("test RUNCOMMAND\n");
                                 fflush(stdout);
-                                com= receive_command((void*)&buffer,size);
+                                com= receive_command(buffer,size);
                                 struct clone_parameters* param = extract_clone_parameters(com);
                                 char buffer[20]="errFile";
                                 //On créer un fichier avec un nom unique normalement. Pours ça il faut que les valeurs soit proprement initalisé.
@@ -171,7 +176,7 @@ int main(int argc, char** argv){
                                 if(res==NULL){
                                     send_message(edata->fd, (void*)send_childcreationerror_to_user((uint32_t)errno), sizeof(struct buffer_info));
                                 }else{
-                                    if(manager_add_process(res->child_id, process_manager, *com, res->stack_p, nb_process)){
+                                    if(manager_add_process(res->child_id, process_manager, err_file, res->stack_p, MAX_PROCESS)){
                                         nb_process++;
                                     }
                                     struct buffer_info* result_message = send_processlaunched_to_user(res->child_id);
@@ -202,6 +207,7 @@ int main(int argc, char** argv){
                                 break;
                     
                         }
+                        break;
                     case SOCK_CONNEXION:
                         event_data_sock* edata_sock = (event_data_sock*)events[i].data.ptr;
                         int new_connexion = accept_new_connexion(edata_sock->sock_info);
@@ -221,7 +227,9 @@ int main(int argc, char** argv){
                         num_inotifyFD++;
 
                         struct buffer_info* info = send_tcpsocketlistening_to_user(destPort);
-                        send_message(new_connexion,(void*)info,sizeof(struct buffer_info));
+                        printf("size : %zu", info->size);
+                        send_message(new_connexion,&info->size,sizeof(info->size));
+                        send_message(new_connexion,info->buffer,info->size);
                         break;
 
                     default:

@@ -5,6 +5,10 @@
 
 void free_manager(process_info** manager, int size){
     for(int i = 0; i<size; i++){
+        if(manager[i]->stack_p!=NULL){
+            free(manager[i]->stack_p);
+            close(manager[i]->err_file);
+        }
         free(manager[i]);
     }
     free(manager);
@@ -42,6 +46,7 @@ int manager_remove_process(int pid, process_info** manager, int size){
         if (manager[i]->child_id==pid){
             free(manager[i]->stack_p);
             manager[i]->stack_p=NULL;
+            close(manager[i]->err_file);
             return 0;
         }
     }
@@ -50,13 +55,13 @@ int manager_remove_process(int pid, process_info** manager, int size){
 
 }
 
-int manager_add_process(pid_t pid, process_info** manager, command param, void* stack, int nb_process){
+int manager_add_process(pid_t pid, process_info** manager, int err_file, void* stack, int nb_process){
     if(nb_process<MAX_PROCESS){
         for (int j=0; j<MAX_PROCESS; j++){
             if(manager[j]->stack_p==NULL){
                 manager[j]->child_id=pid;
                 manager[j]->stack_p=stack;
-                manager[j]->param=param;
+                manager[j]->err_file=err_file;
                 return 0;
             }
         }

@@ -12,10 +12,8 @@
 typedef struct s_process_info{
     void * stack_p;
     pid_t child_id;
-    command param;
+    int err_file;
 }process_info;
-
-typedef struct s_command command;
 
 void free_manager(process_info** manager, int size);
 
@@ -25,6 +23,6 @@ int search_process(int pid, int size, process_info** group);
 
 int manager_remove_process(int pid, process_info** manager, int size);
 
-int manager_add_process(pid_t pid, process_info** manager, command param, void* stack, int nb_process);
+int manager_add_process(pid_t pid, process_info** manager, int err_file, void* stack, int nb_process);
 
 #endif

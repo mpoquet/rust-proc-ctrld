@@ -86,6 +86,8 @@ struct buffer_info* send_processlaunched_to_user(int32_t pid);
 
 int32_t receive_processlaunched(void *buffer, size_t size);
 
+uint16_t receive_TCPSocket(void *buffer, size_t size);
+
 struct buffer_info* send_tcpsocketlistening_to_user(uint16_t port);
 
 struct buffer_info* send_childcreationerror_to_user(uint32_t error_code);

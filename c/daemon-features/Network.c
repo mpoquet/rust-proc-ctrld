@@ -160,9 +160,9 @@ static struct tcp_socket* extract_tcp_socket(demon_TCPSocket_table_t socket) {
 
 //désérialisation RunCommand
 command* receive_command(void *buffer, size_t size) {
-    if(verify_buffer(buffer, size) == -1) {
-        return NULL;
-    }
+    // if(verify_buffer(buffer, size) == -1) {
+    //     return NULL;
+    // }
 
     demon_Message_table_t message = demon_Message_as_root(buffer);
     demon_RunCommand_table_t run_command;
@@ -385,9 +385,9 @@ struct buffer_info* send_inotifypahtupdated_to_user(struct inotify_parameters *i
 }
 
 int32_t receive_processlaunched(void *buffer, size_t size) {
-    if(verify_buffer(buffer, size) == -1) {
-        return -1;
-    }
+    // if(verify_buffer(buffer, size) == -1) {
+    //     return -1;
+    // }
     
     demon_Message_table_t message = demon_Message_as_root(buffer);
     demon_ProcessLaunched_table_t process_launched;
@@ -430,10 +430,16 @@ static struct process_terminated_info* receive_processterminated(void *buffer, s
 }
 
 uint16_t receive_TCPSocket(void *buffer, size_t size) {
-    if(verify_buffer(buffer, size) == -1) {
-        exit(1);;
-    }
+    printf("Vérification du buffer : size = %zu octets\n", size);
+    fflush(stdout);
+    // if(verify_buffer(buffer, size) == -1) {
+    //     exit(1);;
+    // }
+    printf("Demon message as root\n");
+    fflush(stdout);
     demon_Message_table_t message = demon_Message_as_root(buffer);
+    printf("Demon message as root fini \n");
+    fflush(stdout);
     demon_TCPSocketListening_table_t tcp_socket;
     if(demon_Message_events_type(message) == demon_Event_TCPSocketListening) {
         tcp_socket = demon_Message_events(message);
@@ -567,8 +573,6 @@ int accept_new_connexion(struct socket_info* info){
 }
 
 int read_socket(int serveur_fd, void* buffer, int size){
-
-    // Subtract 1 for the null terminator at the end
     int valread = read(serveur_fd, buffer, size);
 
     return valread;
