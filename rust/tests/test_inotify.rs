@@ -1,4 +1,4 @@
-use inotify::{Event, EventMask};
+use inotify::EventMask;
 /**
  *  Tests with infinite loop (ctrl+c) to end it.
  */

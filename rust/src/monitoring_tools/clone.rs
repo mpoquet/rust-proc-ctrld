@@ -43,7 +43,7 @@ pub fn setup_handler(f_handler: extern "C" fn(i32)){
     }
 }
 
-fn main() {
+pub fn main() {
     // Configuration du gestionnaire de signal
     setup_handler(handle_sigchld);
 

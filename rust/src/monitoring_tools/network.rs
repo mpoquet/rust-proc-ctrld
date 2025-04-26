@@ -1,4 +1,4 @@
-use std::{os::unix::io::{AsRawFd, RawFd}, time::Duration};
+use std::time::Duration;
 use netstat2::*;
 use nix::errno::Errno;
 use tokio::task;
@@ -6,15 +6,6 @@ use std::net::{TcpStream, TcpListener};
 
 // Port scanner
 use port_scanner::scan_port;
-
-// const SERVER: Token = Token(0);
-// const CLIENT: Token = Token(1);
-
-fn create_socket_fd(add: &str, port: u16) -> Result<RawFd, ()>{
-    let address = format!("{}:{}", add, port.to_string());
-    let listener = TcpListener::bind(&address).expect("error binding addres");
-    Ok(listener.as_raw_fd())
-}
 
 pub fn is_port_open(add: &str, port: u16) -> bool {
     let target = format!("{}:{}", add, port);

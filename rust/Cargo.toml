@@ -21,21 +21,19 @@ flatbuffers = "25.2.10"
 name = "rust_proc_ctrl"
 path = "src/lib.rs"
 
+# binaire principal
+[[bin]]
+name = "run_demon"
+path = "src/bin/main.rs"
+
+# binaire pour le client
+[[bin]]
+name = "run_clien"
+path = "src/bin/proto_client.rs"
+
 [[bin]]
 name = "clone"
 path = "src/monitoring_tools/clone.rs"
-
-[[bin]]
-name = "foo"
-path = "src/monitoring_tools/foo.rs"
-
-[[bin]]
-name = "TCP_socket"
-path = "src/monitoring_tools/tcp_socket.rs"
-
-[[bin]]
-name = "Start_TCP_socket"
-path = "src/monitoring_tools/start_tcp_socket.rs"
 
 [[bin]]
 name = "test_inotify"
@@ -52,11 +50,3 @@ path = "tests/test_signal_select.rs"
 [[bin]]
 name = "test_socketfd"
 path = "tests/test_socketfd.rs"
-
-[[bin]]
-name = "main_serialisation"
-path = "serialisation_rust/src/main.rs"
-
-[[bin]]
-name = "demon"
-path = "src/proto/demon.rs"
