@@ -28,7 +28,7 @@ path = "src/bin/main.rs"
 
 # binaire pour le client
 [[bin]]
-name = "run_clien"
+name = "run_client"
 path = "src/bin/proto_client.rs"
 
 [[bin]]
