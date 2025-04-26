@@ -1,7 +1,6 @@
 # Dossiers de build et de distribution
 target/
 out/
-bin/
 build/
 tmp/
 
