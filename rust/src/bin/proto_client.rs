@@ -19,8 +19,13 @@ use rust_proc_ctrl::proto::demon_generated::demon::RunCommandArgs;
 // flatbuffers
 use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message, Message, MessageArgs, Event, RunCommand};
 
+enum ReturnHandleMessage {
+    Continue,
+    End,
+}
 
-fn handle_message(buff: &[u8]){
+
+fn handle_message(buff: &[u8]) -> ReturnHandleMessage {
     let msg = root_as_message(buff).expect("error root_as_message");
 
     match msg.events_type(){
@@ -31,6 +36,7 @@ fn handle_message(buff: &[u8]){
 
             //Sortie
             println!("Processus lancé \npid:{}", pid);
+            ReturnHandleMessage::Continue
         }
 
         Event::ChildCreationError => {
@@ -40,6 +46,7 @@ fn handle_message(buff: &[u8]){
 
             //Sortie
             println!("Erreur lors du lancement du processus fils \nerrno:{}", errno);
+            ReturnHandleMessage::End
         }
 
         Event::ProcessTerminated => {
@@ -50,10 +57,20 @@ fn handle_message(buff: &[u8]){
 
             //Sortie
             println!("Processus terminé. \npid:{} \nerrno:{}", pid, errno);
+            ReturnHandleMessage::End
         }
+        Event::ProcessSucced => {
+            //Récupération de l'objet ProcessSuccess, du pid et du errno
+            let from_message = msg.events_as_process_succed().expect("error event as process terminated");
+            let pid = from_message.pid();
 
+            //Sortie
+            println!("Processus c'est bien terminé sans erreurs. \npid:{} \n", pid);
+            ReturnHandleMessage::End
+        }
         _ => {
             println!("Reception d'un event inconnue");
+            ReturnHandleMessage::End
         }
     }
 }
@@ -61,39 +78,28 @@ fn handle_message(buff: &[u8]){
 
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("Prototype client en rust \n");
+    println!("Command to the daemon :");
 
     let mut presence_clone = false;
     let mut flag: u32 = 0;
     let mut stack: u32 = 0;
 
+    let mut input_line = String::new();
+    io::stdin().read_line(&mut input_line).expect("Échec de lecture");
+    let tokens : Vec<&str> = input_line.trim().split_whitespace().filter(|s| !s.eq(&"\n")).collect();
 
-    //Lecture path
-    println!("Path : ");
-    let mut path_command = String::new();
-    io::stdin().read_line(&mut path_command).expect("Echec lecture");
-    
-    //Suppression du \n
-    path_command.pop();
+    let path_command = String::from(tokens[0]);
+    let args_command = tokens.iter()
+        .filter(|&arg| !arg.eq(&path_command) && !arg.contains("="))
+        .cloned()
+        .collect::<Vec<&str>>()
+        .join(" ");
 
-    //Lecture des arguments
-    println!("Arguments : ");
-    let mut args_command = String::new();
-    io::stdin().read_line(&mut args_command).expect("Echec lecture");
-
-    //Suppression du \n
-    args_command.pop();
-
-
-    //Lecture des environnements
-    println!("envs : ");
-    let mut envs_command = String::new();
-    io::stdin().read_line(&mut envs_command).expect("Echec lecture");
-
-    //Suppression du \n
-    envs_command.pop();
-
-
+    let envs_command = tokens.iter()
+        .filter(|&arg| arg.contains("="))
+        .cloned()
+        .collect::<Vec<&str>>()
+        .join(" ");
     
     //Lecture du flag et stack si clone 
     //Attention : le eq() ne semble pas fonctionner ici (toujours false)
@@ -113,7 +119,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         presence_clone = true;
     }
 
-
     println!("path : {}", path_command);
     println!("arguments : {}", args_command);
     println!("environnements : {}", envs_command);
@@ -125,10 +130,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     //Attention : Le dernier string contient un \n
     let args_tab: Vec<&str> = args_command.split(" ").collect();
-    println!("{:?}", args_tab);
+    println!("args_tab = {:?}", args_tab);
 
     let args_envs: Vec<&str> = envs_command.split(" ").collect();
-    println!("{:?}", args_envs);
+    println!("envs_tab = {:?}", args_envs);
 
     //Initialisation du builder
     let mut bldr = FlatBufferBuilder::new();
@@ -171,18 +176,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     stream.write_all(&data_len.to_le_bytes())?;
     stream.write_all(finished_data)?;
 
-    //Reception du retour
-    let mut len_buf = [0u8; 4];
-    if stream.read_exact(&mut len_buf).is_err() {
-        println!("Demon déconnecté");
+    loop {
+        //Reception du retour
+        let mut len_buf = [0u8; 4];
+        if stream.read_exact(&mut len_buf).is_err() {
+            println!("Demon déconnecté");
+        }
+        let msg_len = u32::from_le_bytes(len_buf) as usize;
+        let mut buf = vec![0u8; msg_len];
+        if stream.read_exact(&mut buf).is_err() {
+            println!("Erreur de lecture message");
+        }
+        match handle_message(&buf) {
+            ReturnHandleMessage::Continue => continue,
+            ReturnHandleMessage::End => break,
+        }
     }
-    let msg_len = u32::from_le_bytes(len_buf) as usize;
-    let mut buf = vec![0u8; msg_len];
-    if stream.read_exact(&mut buf).is_err() {
-        println!("Erreur de lecture message");
-    }
-
-    handle_message(&buf);   
 
     Ok(())
 }

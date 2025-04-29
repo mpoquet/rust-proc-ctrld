@@ -2,7 +2,7 @@ use inotify::EventMask;
 use nix::errno::Errno;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use std::error::Error;
-use tokio::net::TcpListener;
+use tokio::net::{TcpListener, TcpStream};
 
 
 // monitoring tools
@@ -15,9 +15,9 @@ use rust_proc_ctrl::monitoring_tools::command::exec_command;
 use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message,Event, InotifyEvent};
 
 // sérialisation
-use rust_proc_ctrl::proto::serialisation::{serialize_child_creation_error, serialize_process_launched, serialize_process_terminated};
+use rust_proc_ctrl::proto::serialisation::{serialize_child_creation_error, serialize_process_launched, serialize_process_succed, serialize_process_terminated};
 
-async fn handle_message(buf: &[u8]) -> Vec<u8> {
+async fn handle_message(buf: &[u8], socket: &mut TcpStream) -> Vec<u8> {
 
     let msg = root_as_message(buf).expect("error root_as_message()");
 
@@ -68,12 +68,18 @@ async fn handle_message(buf: &[u8]) -> Vec<u8> {
         }
         Event::RunCommand => {
             let from_mess = msg.events_as_run_command().expect("error events_as_run_command");
+            let mut command = exec_command(&from_mess);
 
-            let res = exec_command(&from_mess).await;
+            let mut child = command.spawn().expect("failed to spawn command");
+            let pid = child.id().expect("could not get child pid");
+
+            send_on_socket(serialize_process_launched(pid as i32), socket).await;
             
+            let res = child.wait().await;
+
             match res {
-                Ok(pid) => serialize_process_launched(pid as i32),
-                Err((pid,errno)) => serialize_process_terminated(pid as i32, errno as u32),
+                Ok(_) => serialize_process_succed(pid as i32),
+                Err(errno) => serialize_process_terminated(pid as i32, errno.raw_os_error().unwrap_or(1) as u32),
             }
         }
         Event::TCPSocketListening => {
@@ -91,9 +97,18 @@ async fn handle_message(buf: &[u8]) -> Vec<u8> {
     }
 }
 
+async fn send_on_socket(retour: Vec<u8>, socket: &mut TcpStream) {
+    let data_len = retour.len() as u32;
+    let mut resp = data_len.to_le_bytes().to_vec();
+    resp.extend(retour);
+
+    let _ = socket.write(&resp).await;
+}
+
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn Error>> {
     let port: u16 = 8080;
+    println!("The demon pid is {}", std::process::id());
     println!("We listen on the port {}", port);
 
     let listener = TcpListener::bind(format!("127.0.0.1:{}", port)).await?;
@@ -121,14 +136,9 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
                 }
                 
                 //Traitement + obtention du retour
-                let retour = handle_message(&buf).await;
+                let retour = handle_message(&buf, &mut socket).await;  
 
-                let data_len = retour.len() as u32;
-                let mut resp = data_len.to_le_bytes().to_vec();
-                resp.extend(retour);
-
-                let _ = socket.write(&resp).await;
-                
+                send_on_socket(retour, &mut socket).await;
             }
         });
     }

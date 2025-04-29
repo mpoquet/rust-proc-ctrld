@@ -1,23 +1,17 @@
-use nix::errno::Errno;
-use tokio::process::Command;
-
 use crate::proto::demon_generated::demon;
 
 
 
-pub async fn exec_command(run_cmd: &demon::RunCommand<'_>) -> Result<u32, (u32, Errno)>{
+pub fn exec_command(run_cmd: &demon::RunCommand<'_>) -> tokio::process::Command{
     let path = run_cmd.path().expect("path not present");
     let args = run_cmd.args().unwrap_or_default();
     let envp = run_cmd.envp().unwrap_or_default();
 
-    let mut command = Command::new(path);
-
-    for i in 0..args.len() {
-        command.arg(args.get(i));
+    let mut command = tokio::process::Command::new(path);
+    for arg in args {
+        command.arg(arg);
     }
-
-    for i in 0..envp.len() {
-        let pair = envp.get(i);
+    for pair in envp {
         if let Some(eq_index) = pair.find('=') {
             let key = &pair[..eq_index];
             let value = &pair[eq_index + 1..];
@@ -25,16 +19,5 @@ pub async fn exec_command(run_cmd: &demon::RunCommand<'_>) -> Result<u32, (u32, 
         }
     }
 
-    let output = command.output().await.map_err(|err| {
-        let errno = Errno::from_raw(err.raw_os_error().unwrap_or(0));
-        (std::process::id(), errno)
-    })?;
-
-    if output.status.success() {
-        println!("Stdout: {}", String::from_utf8_lossy(&output.stdout));
-        Ok(std::process::id())
-    } else {
-        let errno = Errno::from_raw(output.status.code().unwrap_or(1));
-        Err((std::process::id(), errno))
-    }
+    command
 }
