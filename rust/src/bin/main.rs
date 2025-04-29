@@ -15,7 +15,7 @@ use rust_proc_ctrl::monitoring_tools::command::exec_command;
 use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message,Event, InotifyEvent};
 
 // sérialisation
-use rust_proc_ctrl::proto::serialisation::{serialize_child_creation_error, serialize_process_launched, serialize_process_succed, serialize_process_terminated};
+use rust_proc_ctrl::proto::serialisation::{serialize_child_creation_error, serialize_process_launched, serialize_process_terminated};
 
 async fn handle_message(buf: &[u8], socket: &mut TcpStream) -> Vec<u8> {
 
@@ -78,7 +78,7 @@ async fn handle_message(buf: &[u8], socket: &mut TcpStream) -> Vec<u8> {
             let res = child.wait().await;
 
             match res {
-                Ok(_) => serialize_process_succed(pid as i32),
+                Ok(ret_code) => serialize_process_terminated(pid as i32, ret_code.code().unwrap_or(1) as u32),
                 Err(errno) => serialize_process_terminated(pid as i32, errno.raw_os_error().unwrap_or(1) as u32),
             }
         }

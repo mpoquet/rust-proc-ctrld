@@ -63,23 +63,3 @@ pub fn serialize_process_terminated(pid: i32, errno: u32) -> Vec<u8> {
     builder.finish(message, None);
     builder.finished_data().to_vec()
 }
-
-pub fn serialize_process_succed(pid: i32) -> Vec<u8> {
-    let mut builder = flatbuffers::FlatBufferBuilder::new();
-
-    let process_succed = demon::ProcessSucced::create(
-        &mut builder,
-        &demon::ProcessSuccedArgs { pid },
-    );
-
-    let message = demon::Message::create(
-        &mut builder,
-        &demon::MessageArgs {
-            events_type: demon::Event::ProcessSucced,
-            events: Some(process_succed.as_union_value()),
-        },
-    );
-    
-    builder.finish(message, None);
-    builder.finished_data().to_vec()
-}

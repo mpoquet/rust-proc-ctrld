@@ -3,7 +3,11 @@
 
 // @generated
 
+use core::mem;
+use core::cmp::Ordering;
+
 extern crate flatbuffers;
+use self::flatbuffers::{EndianScalar, Follow};
 
 #[allow(unused_imports, dead_code)]
 pub mod demon {
@@ -205,10 +209,10 @@ pub struct SurveillanceUnionTableOffset {}
 #[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
 pub const ENUM_MIN_EVENT: u8 = 0;
 #[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
-pub const ENUM_MAX_EVENT: u8 = 10;
+pub const ENUM_MAX_EVENT: u8 = 9;
 #[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
 #[allow(non_camel_case_types)]
-pub const ENUM_VALUES_EVENT: [Event; 11] = [
+pub const ENUM_VALUES_EVENT: [Event; 10] = [
   Event::NONE,
   Event::RunCommand,
   Event::KillProcess,
@@ -219,7 +223,6 @@ pub const ENUM_VALUES_EVENT: [Event; 11] = [
   Event::ProcessTerminated,
   Event::TCPSocketListening,
   Event::InotifyPathUpdated,
-  Event::ProcessSucced,
 ];
 
 ///
@@ -240,10 +243,9 @@ impl Event {
   pub const ProcessTerminated: Self = Self(7);
   pub const TCPSocketListening: Self = Self(8);
   pub const InotifyPathUpdated: Self = Self(9);
-  pub const ProcessSucced: Self = Self(10);
 
   pub const ENUM_MIN: u8 = 0;
-  pub const ENUM_MAX: u8 = 10;
+  pub const ENUM_MAX: u8 = 9;
   pub const ENUM_VALUES: &'static [Self] = &[
     Self::NONE,
     Self::RunCommand,
@@ -255,7 +257,6 @@ impl Event {
     Self::ProcessTerminated,
     Self::TCPSocketListening,
     Self::InotifyPathUpdated,
-    Self::ProcessSucced,
   ];
   /// Returns the variant's name or "" if unknown.
   pub fn variant_name(self) -> Option<&'static str> {
@@ -270,7 +271,6 @@ impl Event {
       Self::ProcessTerminated => Some("ProcessTerminated"),
       Self::TCPSocketListening => Some("TCPSocketListening"),
       Self::InotifyPathUpdated => Some("InotifyPathUpdated"),
-      Self::ProcessSucced => Some("ProcessSucced"),
       _ => None,
     }
   }
@@ -1197,103 +1197,6 @@ impl core::fmt::Debug for ChildCreationError<'_> {
       ds.finish()
   }
 }
-pub enum ProcessSuccedOffset {}
-#[derive(Copy, Clone, PartialEq)]
-
-pub struct ProcessSucced<'a> {
-  pub _tab: flatbuffers::Table<'a>,
-}
-
-impl<'a> flatbuffers::Follow<'a> for ProcessSucced<'a> {
-  type Inner = ProcessSucced<'a>;
-  #[inline]
-  unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-    Self { _tab: flatbuffers::Table::new(buf, loc) }
-  }
-}
-
-impl<'a> ProcessSucced<'a> {
-  pub const VT_PID: flatbuffers::VOffsetT = 4;
-
-  #[inline]
-  pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
-    ProcessSucced { _tab: table }
-  }
-  #[allow(unused_mut)]
-  pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr, A: flatbuffers::Allocator + 'bldr>(
-    _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
-    args: &'args ProcessSuccedArgs
-  ) -> flatbuffers::WIPOffset<ProcessSucced<'bldr>> {
-    let mut builder = ProcessSuccedBuilder::new(_fbb);
-    builder.add_pid(args.pid);
-    builder.finish()
-  }
-
-
-  #[inline]
-  pub fn pid(&self) -> i32 {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<i32>(ProcessSucced::VT_PID, Some(0)).unwrap()}
-  }
-}
-
-impl flatbuffers::Verifiable for ProcessSucced<'_> {
-  #[inline]
-  fn run_verifier(
-    v: &mut flatbuffers::Verifier, pos: usize
-  ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
-    use self::flatbuffers::Verifiable;
-    v.visit_table(pos)?
-     .visit_field::<i32>("pid", Self::VT_PID, false)?
-     .finish();
-    Ok(())
-  }
-}
-pub struct ProcessSuccedArgs {
-    pub pid: i32,
-}
-impl<'a> Default for ProcessSuccedArgs {
-  #[inline]
-  fn default() -> Self {
-    ProcessSuccedArgs {
-      pid: 0,
-    }
-  }
-}
-
-pub struct ProcessSuccedBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
-  fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
-  start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
-}
-impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ProcessSuccedBuilder<'a, 'b, A> {
-  #[inline]
-  pub fn add_pid(&mut self, pid: i32) {
-    self.fbb_.push_slot::<i32>(ProcessSucced::VT_PID, pid, 0);
-  }
-  #[inline]
-  pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> ProcessSuccedBuilder<'a, 'b, A> {
-    let start = _fbb.start_table();
-    ProcessSuccedBuilder {
-      fbb_: _fbb,
-      start_: start,
-    }
-  }
-  #[inline]
-  pub fn finish(self) -> flatbuffers::WIPOffset<ProcessSucced<'a>> {
-    let o = self.fbb_.end_table(self.start_);
-    flatbuffers::WIPOffset::new(o.value())
-  }
-}
-
-impl core::fmt::Debug for ProcessSucced<'_> {
-  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-    let mut ds = f.debug_struct("ProcessSucced");
-      ds.field("pid", &self.pid());
-      ds.finish()
-  }
-}
 pub enum ProcessTerminatedOffset {}
 #[derive(Copy, Clone, PartialEq)]
 
@@ -2014,21 +1917,6 @@ impl<'a> Message<'a> {
     }
   }
 
-  #[inline]
-  #[allow(non_snake_case)]
-  pub fn events_as_process_succed(&self) -> Option<ProcessSucced<'a>> {
-    if self.events_type() == Event::ProcessSucced {
-      self.events().map(|t| {
-       // Safety:
-       // Created from a valid Table for this object
-       // Which contains a valid union in this slot
-       unsafe { ProcessSucced::init_from_table(t) }
-     })
-    } else {
-      None
-    }
-  }
-
 }
 
 impl flatbuffers::Verifiable for Message<'_> {
@@ -2049,7 +1937,6 @@ impl flatbuffers::Verifiable for Message<'_> {
           Event::ProcessTerminated => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ProcessTerminated>>("Event::ProcessTerminated", pos),
           Event::TCPSocketListening => v.verify_union_variant::<flatbuffers::ForwardsUOffset<TCPSocketListening>>("Event::TCPSocketListening", pos),
           Event::InotifyPathUpdated => v.verify_union_variant::<flatbuffers::ForwardsUOffset<InotifyPathUpdated>>("Event::InotifyPathUpdated", pos),
-          Event::ProcessSucced => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ProcessSucced>>("Event::ProcessSucced", pos),
           _ => Ok(()),
         }
      })?
@@ -2162,13 +2049,6 @@ impl core::fmt::Debug for Message<'_> {
         },
         Event::InotifyPathUpdated => {
           if let Some(x) = self.events_as_inotify_path_updated() {
-            ds.field("events", &x)
-          } else {
-            ds.field("events", &"InvalidFlatbuffer: Union discriminant does not match value.")
-          }
-        },
-        Event::ProcessSucced => {
-          if let Some(x) = self.events_as_process_succed() {
             ds.field("events", &x)
           } else {
             ds.field("events", &"InvalidFlatbuffer: Union discriminant does not match value.")

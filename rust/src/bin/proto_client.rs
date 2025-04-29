@@ -56,16 +56,7 @@ fn handle_message(buff: &[u8]) -> ReturnHandleMessage {
             let errno = from_message.errno();
 
             //Sortie
-            println!("Processus terminé. \npid:{} \nerrno:{}", pid, errno);
-            ReturnHandleMessage::End
-        }
-        Event::ProcessSucced => {
-            //Récupération de l'objet ProcessSuccess, du pid et du errno
-            let from_message = msg.events_as_process_succed().expect("error event as process terminated");
-            let pid = from_message.pid();
-
-            //Sortie
-            println!("Processus c'est bien terminé sans erreurs. \npid:{} \n", pid);
+            println!("Processus terminé. \npid:{} \nCode de retour :{}", pid, errno);
             ReturnHandleMessage::End
         }
         _ => {
