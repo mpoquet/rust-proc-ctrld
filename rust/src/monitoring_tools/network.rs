@@ -1,19 +1,11 @@
-use std::{os::unix::io::{AsRawFd, RawFd}, time::Duration, thread};
+use std::time::Duration;
 use netstat2::*;
+use nix::errno::Errno;
 use tokio::task;
 use std::net::{TcpStream, TcpListener};
 
 // Port scanner
 use port_scanner::scan_port;
-
-// const SERVER: Token = Token(0);
-// const CLIENT: Token = Token(1);
-
-fn create_socket_fd(add: &str, port: u16) -> Result<RawFd, ()>{
-    let address = format!("{}:{}", add, port.to_string());
-    let listener = TcpListener::bind(&address).expect("error binding addres");
-    Ok(listener.as_raw_fd())
-}
 
 pub fn is_port_open(add: &str, port: u16) -> bool {
     let target = format!("{}:{}", add, port);
@@ -43,8 +35,8 @@ pub fn is_port_listening(port: u16) -> bool {
     false
 }
 
-pub async fn read_events_port_tokio(port: u16) -> Result<(), ()> {
-    task::spawn(async move {
+pub async fn read_events_port_tokio(port: u16) -> Result<u32, (u32, Errno)> {
+    let join_handle = task::spawn(async move {
         loop {
             if is_port_listening(port) {
                 println!("The port {} is LISTENING in tokio", port);
@@ -53,7 +45,11 @@ pub async fn read_events_port_tokio(port: u16) -> Result<(), ()> {
             tokio::time::sleep(Duration::from_millis(500)).await;
         }
     });
-    Ok(())
+
+    match join_handle.await {
+        Ok(_) => Ok(std::process::id()),
+        Err(_) => Err((std::process::id(), Errno::UnknownErrno)),
+    }
 }
 
 pub async fn read_events_port_scanner(port: u16) -> Result<(), ()> {

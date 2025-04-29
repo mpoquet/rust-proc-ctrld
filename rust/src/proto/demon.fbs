@@ -50,6 +50,7 @@ table ChildCreationError {
 
 table ProcessTerminated {
     pid: int32;
+    errno: uint32;
 }
 
 table TCPSocketListening {
@@ -59,6 +60,7 @@ table TCPSocketListening {
 table InotifyPathUpdated {
     path: string;
     trigger_events: [InotifyEvent];
+    size: uint32;
 }
 
 table EstablishTCPConnection {
