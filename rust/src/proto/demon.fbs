@@ -1,0 +1,93 @@
+namespace demon;
+
+enum InotifyEvent : byte {
+    modification,
+    creation,
+    size,
+    deletion,
+    access
+}
+
+table Inotify {
+    root_paths: string;
+    trigger_events: [InotifyEvent];
+    size: uint32;
+}
+
+table TCPSocket {
+    destport: uint8;
+}
+
+union Surveillance {
+    Inotify,
+    TCPSocket
+}
+
+table SurveillanceEvent {
+    event: Surveillance;
+}
+
+table RunCommand {
+    path: string;
+    args: [string];
+    envp: [string];
+    flags: uint32;
+    stack_size: uint32;
+    to_watch: [SurveillanceEvent];
+}
+
+table KillProcess {
+    pid: int32;
+}
+
+table ProcessLaunched {
+    pid: int32;
+}
+
+table ChildCreationError {
+    errno: uint32;
+}
+
+table ProcessTerminated {
+    pid: int32;
+}
+
+table TCPSocketListening {
+    port: uint16;
+}
+
+table InotifyPathUpdated {
+    path: string;
+    trigger_events: [InotifyEvent];
+}
+
+table EstablishTCPConnection {
+    destport: uint8;
+}
+
+table EstablishUnixConnection {
+    path: string;
+}
+
+///
+/// Main message table
+///
+
+union Event {
+    RunCommand,
+    KillProcess,
+    EstablishTCPConnection,
+    EstablishUnixConnection,
+
+    ProcessLaunched,
+    ChildCreationError,
+    ProcessTerminated,
+    TCPSocketListening,
+    InotifyPathUpdated
+}
+
+table Message {
+    events: Event;
+}
+
+root_type Message;
