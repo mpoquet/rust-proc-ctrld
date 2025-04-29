@@ -48,6 +48,10 @@ table ChildCreationError {
     errno: uint32;
 }
 
+table ProcessSucced {
+    pid: int32;
+}
+
 table ProcessTerminated {
     pid: int32;
     errno: uint32;
@@ -85,7 +89,8 @@ union Event {
     ChildCreationError,
     ProcessTerminated,
     TCPSocketListening,
-    InotifyPathUpdated
+    InotifyPathUpdated,
+    ProcessSucced
 }
 
 table Message {
