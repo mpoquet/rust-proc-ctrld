@@ -93,6 +93,13 @@ int main(int argc, char** argv){
     }
     num_inotifyFD++;
 
+    int inotifyFd = inotify_init();
+    if (inotifyFd == -1){
+        printf("error while initializing inotify");
+        perror("inotify");
+    }
+
+    add_event_inotifyFd(epollfd,inotifyFd,0);
 
     //Add the signal SIGCHLD to the watch list for future child creation
     sigset_t mask;
@@ -117,7 +124,6 @@ int main(int argc, char** argv){
     int error_code;
 
     while(num_inotifyFD>0){
-        sleep(2);
         printf("Waiting for incoming notifications\n");
         nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
         if (nfds == -1) {
@@ -132,7 +138,8 @@ int main(int argc, char** argv){
                     switch (edata->type)
                     {
                     case INOTIFYFD:
-                        handle_inotify_event(edata->fd);
+                        event_data_Inotify_size* I_edata = (event_data_Inotify_size*)events[i].data.ptr;
+                        handle_inotify_event(edata->fd, I_edata->size);
                         break;
                     
                     case SIGNALFD:
@@ -160,36 +167,41 @@ int main(int argc, char** argv){
                         printf("Command received\n");
                         switch (receive_message_from_user(buffer)){
                             case RUN_COMMAND:
-                                printf("test RUNCOMMAND\n");
-                                fflush(stdout);
+                                //First check if there is a program to execute
+                                printf("RUNCOMMAND\n");
                                 com= receive_command(buffer,size);
                                 struct clone_parameters* param = extract_clone_parameters(com);
-                                char buffer[20]="errFile";
-                                //On créer un fichier avec un nom unique normalement. Pours ça il faut que les valeurs soit proprement initalisé.
-                                if(snprintf(buffer, sizeof(buffer), "%d-%s", nb_process, param->pathname)){
-                                    printf("Error while formatting the name of the errFile for the process %s\n", param->pathname);
-                                }
-                                err_file = initialize_error_file(buffer);
-                                err_file = err_file==-1?STDOUT_FILENO:err_file;
-                                info_child* res;
-                                res = handle_clone_event(param,err_file);
-                                if(res==NULL){
-                                    send_message(edata->fd, (void*)send_childcreationerror_to_user((uint32_t)errno), sizeof(struct buffer_info));
-                                }else{
-                                    if(manager_add_process(res->child_id, process_manager, err_file, res->stack_p, MAX_PROCESS)){
-                                        nb_process++;
+                                if(param!=NULL){
+                                    char buffer[20]="errFile";
+                                    //On créer un fichier avec un nom unique normalement. Pours ça il faut que les valeurs soit proprement initalisé.
+                                    if(snprintf(buffer, sizeof(buffer), "%d-%s", nb_process, param->pathname)){
+                                        printf("Error while formatting the name of the errFile for the process %s\n", param->pathname);
                                     }
-                                    struct buffer_info* result_message = send_processlaunched_to_user(res->child_id);
-                                    send_message(edata->fd,(void*)result_message,sizeof(struct buffer_info));
+                                    err_file = initialize_error_file(buffer);
+                                    err_file = err_file==-1?STDOUT_FILENO:err_file;
+                                    info_child* res;
+                                    res = handle_clone_event(param,err_file);
+                                    if(res==NULL){
+                                        send_message(edata->fd, (void*)send_childcreationerror_to_user((uint32_t)errno), sizeof(struct buffer_info));
+                                    }else{
+                                        if(manager_add_process(res->child_id, process_manager, err_file, res->stack_p, MAX_PROCESS)){
+                                            nb_process++;
+                                        }
+                                        struct buffer_info* result_message = send_processlaunched_to_user(res->child_id);
+                                        send_message(edata->fd,(void*)result_message,sizeof(struct buffer_info));
+                                    }
+                                    free(res);
+                                    free(param);
+                                }else{
+                                    send_message(edata->fd, (void*)send_childcreationerror_to_user((uint32_t)errno), sizeof(struct buffer_info));
                                 }
-                                free(res);
-                                free(param);
+                                process_surveillance_requests(com,inotifyFd,epollfd);
+
                                 free(com);
                                 break;
 
                             case KILL_PROCESS:
                                 printf("KILLPROCESS\n");
-                                fflush(stdout);
                                 int pid = receive_kill(buffer,size);
                                 if (pid==0){ //Kill Daemon
                                     free_manager(process_manager, nb_process);
@@ -201,8 +213,6 @@ int main(int argc, char** argv){
                                 break;
 
                             default :
-                                printf("test default\n");
-                                fflush(stdout);
                                 printf("unexpected type of message received\n");
                                 break;
                     

@@ -16,13 +16,6 @@ enum eventType{
     SOCK_MESSAGE,
 };
 
-enum InotifyEvent{
-    MODIFY,
-    CREATE,
-    DELETE,
-    ACCESS,
-};
-
 struct clone_parameters{
     int stack_size;
     char *pathname;
@@ -43,17 +36,25 @@ typedef struct {
     struct socket_info* sock_info;
 } event_data_sock;
 
+typedef struct {
+    int fd;
+    enum eventType type;
+    int size;
+} event_data_Inotify_size;
+
 typedef struct s_process_info process_info;
+
+void process_surveillance_requests(command* com, int InotifyFd, int epollfd);
 
 info_child* handle_clone_event(struct clone_parameters* param, int errorfd);
 
 int add_event_signalFd(int fd, int epollfd);
 
-int add_event_inotifyFd(int fd, int epollfd);
+int add_event_inotifyFd(int fd, int epollfd, int size);
 
 void* handle_signalfd_event(int fd, process_info** manager, int size);
 
-void handle_inotify_event(int fd);
+void handle_inotify_event(int fd, int size);
 
 struct clone_parameters* extract_clone_parameters(command* com);
 

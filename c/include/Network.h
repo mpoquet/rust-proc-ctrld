@@ -13,7 +13,7 @@
 #include "demon_reader.h"
 
 struct tcp_socket{
-    uint8_t destport;
+    uint32_t destport;
 };
 
 struct buffer_info{
@@ -32,10 +32,18 @@ struct socket_info{
     int sockfd;
 };
 
+enum InotifyEvent{
+    MODIFIED,
+    CREATED,
+    SIZE_REACHED,
+    DELETED,
+    ACCESSED,
+};
+
 //event = constante definie par flatbuffers de la forme : demon_InotifyEvent_modification
 struct inotify_parameters{
     char *root_paths;
-    demon_InotifyEvent_enum_t* i_events; 
+    int mask;
     uint32_t size;
 };
 
@@ -47,6 +55,12 @@ enum SurveillanceEventType{
 struct surveillance {
     enum SurveillanceEventType event;
     void *ptr_event;
+};
+
+struct InotifyPathUpdated{
+    char* path;
+    enum InotifyEvent event;
+    int size;
 };
 
 typedef struct s_command{ //template for deserialized struct which contained all the info for all possible command. CAN BE MODIFIED
@@ -67,6 +81,7 @@ enum Event {
     KILL_PROCESS,
     ESTABLISH_TCP_CONNECTION,
     ESTABLISH_UNIX_CONNECTION,
+    
     PROCESS_LAUNCHED,
     CHILD_CREATION_ERROR,
     PROCESS_TERMINATED,

@@ -19,9 +19,6 @@
 
 #define MAX_EVENTS 128
 
-info_child child_infos[512];
-int running_process = 0;
-
 int findSize(char file_name[]) {
     struct stat statbuf;
     if (stat(file_name, &statbuf) == 0) {
@@ -47,84 +44,101 @@ info_child* handle_clone_event(struct clone_parameters* param, int errorfd){
     return res;
 }
 
-static void displayInotifyEvent(struct inotify_event *i)
+static void process_Event(struct inotify_event *i, struct InotifyPathUpdated* info, int size)
 {
-    printf("    wd =%2d; ", i->wd);
-    if (i->cookie > 0)
-        printf("cookie =%4d; ", i->cookie);
-
-    printf("mask = ");
-    if (i->mask & IN_ACCESS)        printf("IN_ACCESS ");
-    if (i->mask & IN_ATTRIB)        printf("IN_ATTRIB ");
-    if (i->mask & IN_CLOSE_NOWRITE) printf("IN_CLOSE_NOWRITE ");
-    if (i->mask & IN_CLOSE_WRITE)   printf("IN_CLOSE_WRITE ");
-    if (i->mask & IN_CREATE)        printf("IN_CREATE ");
-    if (i->mask & IN_DELETE)        printf("IN_DELETE ");
-    if (i->mask & IN_DELETE_SELF)   printf("IN_DELETE_SELF ");
-    if (i->mask & IN_IGNORED)      printf("IN_IGNORED ");
-    if (i->mask & IN_ISDIR)      printf("IN_ISDIR ");
+    info->path=i->name;
+    if (i->mask & IN_ACCESS)        info->event=ACCESSED;
+    if (i->mask & IN_CREATE)        info->event=CREATED;
+    if (i->mask & IN_DELETE)        info->event=DELETED;
     if (i->mask & IN_MODIFY) {
-        printf("IN_MODIFY ");
-        printf("file size : %d",findSize(i->name));
+        info->event=MODIFIED;
+        if((info->size=findSize(i->name))>size){
+            info->event=SIZE_REACHED;
+        }
     }        
-    if (i->mask & IN_MOVE_SELF)  printf("IN_MOVE_SELF ");
-    if (i->mask & IN_MOVED_FROM)    printf("IN_MOVED_FROM ");
-    if (i->mask & IN_MOVED_TO)    printf("IN_MOVED_TO ");
-    if (i->mask & IN_OPEN)        printf("IN_OPEN ");
-    if (i->mask & IN_Q_OVERFLOW)    printf("IN_Q_OVERFLOW ");
-    if (i->mask & IN_UNMOUNT)      printf("IN_UNMOUNT ");
-    printf("\n");
-
-    if (i->len > 0)
-        printf("        name = %s\n", i->name);
 }
 
-void handle_inotify_event(int fd){
-    char buf[4096];
+void handle_inotify_event(int fd, int size){
+    struct InotifyPathUpdated info;
+    char buf[512];
     ssize_t s = read(fd, buf, sizeof(buf));
-    printf("    read %zd bytes: %.*s\n",
-        s, (int) s, buf);
+    printf("read %zd bytes: %.*s\n",s, (int) s, buf);
     for(char *p = buf; p<buf+s;){
         struct inotify_event* event = (struct inotify_event *)p;
-        displayInotifyEvent(event);
+        process_Event(event,&info, size);
+        //TODO serialize and send message
+
         p += sizeof(struct inotify_event) + event->len;
     }
 
 }
 
-struct clone_parameters* extract_clone_parameters(command* com){
-    struct clone_parameters* param = malloc(sizeof(struct clone_parameters));
-    if(param==NULL){
-        perror("malloc");
-        return NULL;
+//Add new file to inotify and new sockets to epoll
+//Todo finish the socket part
+void process_surveillance_requests(command* com, int InotifyFd, int epollfd){
+    struct inotify_parameters* I_param;
+    int* destport;
+    if(com->to_watch_size>0){
+        for(int i=0; i< com->to_watch_size;i++){
+            switch (com->to_watch[i].event)
+            {
+            case INOTIFY:
+                I_param = (struct inotify_parameters*) com->to_watch[i].ptr_event;
+                if(I_param->size>0){
+                    int inotifyFd = inotify_init();
+                    if (inotifyFd == -1){
+                        printf("error while initializing inotify");
+                        perror("inotify");
+                    }
+                    //Create a new instance of inotifyFD that will store in epoll the size that trigger an event
+                    inotify_add_watch(InotifyFd, I_param->root_paths, I_param->mask);
+                    add_event_inotifyFd(inotifyFd,epollfd, I_param->size);
+                }else{
+                    inotify_add_watch(InotifyFd, I_param->root_paths, I_param->mask);
+                }
+                break;
+            case WATCH_SOCKET:
+                destport = com->to_watch[i].ptr_event;
+                break;
+            
+            default:
+                printf("Unexpected surveillance type");
+                break;
+            }
+        }
     }
 
-    param->args=com->args;
-    param->envp=com->envp;
-    param->flags=com->flags;
-    param->pathname=com->path;
-    param->stack_size=com->stack_size;
-
-    return param;
 }
 
-//TODO modifer pour utiliser autre chose que running process et child info.
+//Return either the struct with clone parameters or NULL in case of malloc error
+//Or if no program to execute has been provided
+struct clone_parameters* extract_clone_parameters(command* com){
+    if(com->args!=NULL){
+        struct clone_parameters* param = malloc(sizeof(struct clone_parameters));
+        if(param==NULL){
+            perror("malloc");
+            return NULL;
+        }
+
+        param->args=com->args;
+        param->envp=com->envp;
+        param->flags=com->flags;
+        param->pathname=com->path;
+        param->stack_size=com->stack_size;
+        return param;
+    }
+    return NULL;
+}
+
 void* handle_SIGCHLD(struct signalfd_siginfo fdsi, process_info** manager, int size){
     int wstatus;
     int exit_status;
-    waitpid(fdsi.ssi_pid, &wstatus, 0);  // Attente de la fin du fils
+    waitpid(fdsi.ssi_pid, &wstatus, 0);
     
-    //TODO Gérer le renvoi d'érreur dans les deux cas. Il faut une fonction pour trouver un groupe a partir d'un pid pour pouvoir envoyer les bonnes infos.
     if(WIFEXITED(wstatus)){
         exit_status = WEXITSTATUS(wstatus);
     }else if (WIFSIGNALED(wstatus)){
         exit_status= WTERMSIG(wstatus);     
-    }
-    for (int i=0; i<size;i++){
-        if(child_infos[i].child_id==fdsi.ssi_pid){
-            free(child_infos[i].stack_p);
-            child_infos[i].child_id=-1;
-        }
     }
     manager_remove_process(fdsi.ssi_pid,manager,size);
     struct buffer_info* info = send_processterminated_to_user(fdsi.ssi_pid,exit_status);
@@ -156,11 +170,12 @@ void* handle_signalfd_event(int fd, process_info** manager, int size){
 
 }
 
-int add_event_inotifyFd(int fd, int epollfd){
+int add_event_inotifyFd(int fd, int epollfd, int size){
     struct epoll_event* ev = malloc(sizeof(struct epoll_event));
-    event_data_t *edata = malloc(sizeof(event_data_t));
+    event_data_Inotify_size *edata = malloc(sizeof(event_data_Inotify_size));
     edata->fd = fd;
     edata->type = INOTIFYFD;
+    edata->size=size;
     ev->events=EPOLLIN;
     ev->data.ptr=edata;
     printf("adding file descriptor : %d\n", fd);
@@ -168,7 +183,6 @@ int add_event_inotifyFd(int fd, int epollfd){
         printf("error while trying to add file descriptor to epoll interest list");
         free(edata);
         free(ev);
-        return -1;
     }
     return 0;
 }

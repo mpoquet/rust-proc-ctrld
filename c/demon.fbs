@@ -1,21 +1,21 @@
 namespace demon;
 
 enum InotifyEvent : byte {
-    modification,
-    creation,
-    size,
-    deletion,
-    access
+    modified,
+    created,
+    size_reached,
+    deleted,
+    accessed,
 }
 
 table Inotify {
     root_paths: string;
-    trigger_events: [InotifyEvent];
+    int32 mask;
     size: uint32;
 }
 
 table TCPSocket {
-    destport: uint8;
+    destport: uint32;
 }
 
 union Surveillance {
@@ -59,12 +59,12 @@ table TCPSocketListening {
 
 table InotifyPathUpdated {
     path: string;
-    trigger_events: [InotifyEvent];
+    trigger_events: InotifyEvent;
     size: uint32;
 }
 
 table EstablishTCPConnection {
-    destport: uint8;
+    destport: uint32;
 }
 
 table EstablishUnixConnection {
