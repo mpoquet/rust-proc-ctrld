@@ -34,15 +34,15 @@ async fn handle_message(buf: &[u8], socket: &mut TcpStream) -> Vec<u8> {
 
             for event in trigger_events {
                 match event {
-                    InotifyEvent::access => trig_events.push(EventMask::ACCESS),
-                    InotifyEvent::creation => {
+                    InotifyEvent::accessed => trig_events.push(EventMask::ACCESS),
+                    InotifyEvent::created => {
                         trig_events.push(EventMask::CREATE);
                         trig_events.push(EventMask::ISDIR);                        
                     }
-                    InotifyEvent::deletion => trig_events.push(EventMask::DELETE),
-                    InotifyEvent::modification => trig_events.push(EventMask::MODIFY),
+                    InotifyEvent::deleted => trig_events.push(EventMask::DELETE),
+                    InotifyEvent::modified => trig_events.push(EventMask::MODIFY),
                     // when we want to know the size of a file, we watch when the file is Close
-                    InotifyEvent::size => {
+                    InotifyEvent::size_reached => {
                         trig_events.push(EventMask::CLOSE_NOWRITE);
                         trig_events.push(EventMask::CLOSE_WRITE);
                     }

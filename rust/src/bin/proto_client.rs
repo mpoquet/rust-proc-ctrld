@@ -42,7 +42,7 @@ fn handle_message(buff: &[u8]) -> ReturnHandleMessage {
         Event::ChildCreationError => {
             //Recupération de l'objet ChildCreationError et du errno
             let from_message = msg.events_as_child_creation_error().expect("error event as child creation error");
-            let errno = from_message.errno();
+            let errno = from_message.error_code();
 
             //Sortie
             println!("Erreur lors du lancement du processus fils \nerrno:{}", errno);
@@ -53,7 +53,7 @@ fn handle_message(buff: &[u8]) -> ReturnHandleMessage {
             //Récupération de l'objet ProcessTerminated, du pid et du errno
             let from_message = msg.events_as_process_terminated().expect("error event as process terminated");
             let pid = from_message.pid();
-            let errno = from_message.errno();
+            let errno = from_message.error_code();
 
             //Sortie
             println!("Processus terminé. \npid:{} \nCode de retour :{}", pid, errno);

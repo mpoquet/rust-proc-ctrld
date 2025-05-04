@@ -25,11 +25,11 @@ pub const ENUM_MAX_INOTIFY_EVENT: i8 = 4;
 #[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
 #[allow(non_camel_case_types)]
 pub const ENUM_VALUES_INOTIFY_EVENT: [InotifyEvent; 5] = [
-  InotifyEvent::modification,
-  InotifyEvent::creation,
-  InotifyEvent::size,
-  InotifyEvent::deletion,
-  InotifyEvent::access,
+  InotifyEvent::modified,
+  InotifyEvent::created,
+  InotifyEvent::size_reached,
+  InotifyEvent::deleted,
+  InotifyEvent::accessed,
 ];
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
@@ -37,29 +37,29 @@ pub const ENUM_VALUES_INOTIFY_EVENT: [InotifyEvent; 5] = [
 pub struct InotifyEvent(pub i8);
 #[allow(non_upper_case_globals)]
 impl InotifyEvent {
-  pub const modification: Self = Self(0);
-  pub const creation: Self = Self(1);
-  pub const size: Self = Self(2);
-  pub const deletion: Self = Self(3);
-  pub const access: Self = Self(4);
+  pub const modified: Self = Self(0);
+  pub const created: Self = Self(1);
+  pub const size_reached: Self = Self(2);
+  pub const deleted: Self = Self(3);
+  pub const accessed: Self = Self(4);
 
   pub const ENUM_MIN: i8 = 0;
   pub const ENUM_MAX: i8 = 4;
   pub const ENUM_VALUES: &'static [Self] = &[
-    Self::modification,
-    Self::creation,
-    Self::size,
-    Self::deletion,
-    Self::access,
+    Self::modified,
+    Self::created,
+    Self::size_reached,
+    Self::deleted,
+    Self::accessed,
   ];
   /// Returns the variant's name or "" if unknown.
   pub fn variant_name(self) -> Option<&'static str> {
     match self {
-      Self::modification => Some("modification"),
-      Self::creation => Some("creation"),
-      Self::size => Some("size"),
-      Self::deletion => Some("deletion"),
-      Self::access => Some("access"),
+      Self::modified => Some("modified"),
+      Self::created => Some("created"),
+      Self::size_reached => Some("size_reached"),
+      Self::deleted => Some("deleted"),
+      Self::accessed => Some("accessed"),
       _ => None,
     }
   }
@@ -345,7 +345,7 @@ impl<'a> flatbuffers::Follow<'a> for Inotify<'a> {
 
 impl<'a> Inotify<'a> {
   pub const VT_ROOT_PATHS: flatbuffers::VOffsetT = 4;
-  pub const VT_TRIGGER_EVENTS: flatbuffers::VOffsetT = 6;
+  pub const VT_MASK: flatbuffers::VOffsetT = 6;
   pub const VT_SIZE: flatbuffers::VOffsetT = 8;
 
   #[inline]
@@ -359,7 +359,7 @@ impl<'a> Inotify<'a> {
   ) -> flatbuffers::WIPOffset<Inotify<'bldr>> {
     let mut builder = InotifyBuilder::new(_fbb);
     builder.add_size(args.size);
-    if let Some(x) = args.trigger_events { builder.add_trigger_events(x); }
+    builder.add_mask(args.mask);
     if let Some(x) = args.root_paths { builder.add_root_paths(x); }
     builder.finish()
   }
@@ -373,11 +373,11 @@ impl<'a> Inotify<'a> {
     unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(Inotify::VT_ROOT_PATHS, None)}
   }
   #[inline]
-  pub fn trigger_events(&self) -> Option<flatbuffers::Vector<'a, InotifyEvent>> {
+  pub fn mask(&self) -> i32 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'a, InotifyEvent>>>(Inotify::VT_TRIGGER_EVENTS, None)}
+    unsafe { self._tab.get::<i32>(Inotify::VT_MASK, Some(0)).unwrap()}
   }
   #[inline]
   pub fn size(&self) -> u32 {
@@ -396,7 +396,7 @@ impl flatbuffers::Verifiable for Inotify<'_> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
      .visit_field::<flatbuffers::ForwardsUOffset<&str>>("root_paths", Self::VT_ROOT_PATHS, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, InotifyEvent>>>("trigger_events", Self::VT_TRIGGER_EVENTS, false)?
+     .visit_field::<i32>("mask", Self::VT_MASK, false)?
      .visit_field::<u32>("size", Self::VT_SIZE, false)?
      .finish();
     Ok(())
@@ -404,7 +404,7 @@ impl flatbuffers::Verifiable for Inotify<'_> {
 }
 pub struct InotifyArgs<'a> {
     pub root_paths: Option<flatbuffers::WIPOffset<&'a str>>,
-    pub trigger_events: Option<flatbuffers::WIPOffset<flatbuffers::Vector<'a, InotifyEvent>>>,
+    pub mask: i32,
     pub size: u32,
 }
 impl<'a> Default for InotifyArgs<'a> {
@@ -412,7 +412,7 @@ impl<'a> Default for InotifyArgs<'a> {
   fn default() -> Self {
     InotifyArgs {
       root_paths: None,
-      trigger_events: None,
+      mask: 0,
       size: 0,
     }
   }
@@ -428,8 +428,8 @@ impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> InotifyBuilder<'a, 'b, A> {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(Inotify::VT_ROOT_PATHS, root_paths);
   }
   #[inline]
-  pub fn add_trigger_events(&mut self, trigger_events: flatbuffers::WIPOffset<flatbuffers::Vector<'b , InotifyEvent>>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(Inotify::VT_TRIGGER_EVENTS, trigger_events);
+  pub fn add_mask(&mut self, mask: i32) {
+    self.fbb_.push_slot::<i32>(Inotify::VT_MASK, mask, 0);
   }
   #[inline]
   pub fn add_size(&mut self, size: u32) {
@@ -454,7 +454,7 @@ impl core::fmt::Debug for Inotify<'_> {
   fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
     let mut ds = f.debug_struct("Inotify");
       ds.field("root_paths", &self.root_paths());
-      ds.field("trigger_events", &self.trigger_events());
+      ds.field("mask", &self.mask());
       ds.field("size", &self.size());
       ds.finish()
   }
@@ -493,11 +493,11 @@ impl<'a> TCPSocket<'a> {
 
 
   #[inline]
-  pub fn destport(&self) -> u8 {
+  pub fn destport(&self) -> u32 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<u8>(TCPSocket::VT_DESTPORT, Some(0)).unwrap()}
+    unsafe { self._tab.get::<u32>(TCPSocket::VT_DESTPORT, Some(0)).unwrap()}
   }
 }
 
@@ -508,13 +508,13 @@ impl flatbuffers::Verifiable for TCPSocket<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<u8>("destport", Self::VT_DESTPORT, false)?
+     .visit_field::<u32>("destport", Self::VT_DESTPORT, false)?
      .finish();
     Ok(())
   }
 }
 pub struct TCPSocketArgs {
-    pub destport: u8,
+    pub destport: u32,
 }
 impl<'a> Default for TCPSocketArgs {
   #[inline]
@@ -531,8 +531,8 @@ pub struct TCPSocketBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
 }
 impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> TCPSocketBuilder<'a, 'b, A> {
   #[inline]
-  pub fn add_destport(&mut self, destport: u8) {
-    self.fbb_.push_slot::<u8>(TCPSocket::VT_DESTPORT, destport, 0);
+  pub fn add_destport(&mut self, destport: u32) {
+    self.fbb_.push_slot::<u32>(TCPSocket::VT_DESTPORT, destport, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> TCPSocketBuilder<'a, 'b, A> {
@@ -1116,7 +1116,7 @@ impl<'a> flatbuffers::Follow<'a> for ChildCreationError<'a> {
 }
 
 impl<'a> ChildCreationError<'a> {
-  pub const VT_ERRNO: flatbuffers::VOffsetT = 4;
+  pub const VT_ERROR_CODE: flatbuffers::VOffsetT = 4;
 
   #[inline]
   pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
@@ -1128,17 +1128,17 @@ impl<'a> ChildCreationError<'a> {
     args: &'args ChildCreationErrorArgs
   ) -> flatbuffers::WIPOffset<ChildCreationError<'bldr>> {
     let mut builder = ChildCreationErrorBuilder::new(_fbb);
-    builder.add_errno(args.errno);
+    builder.add_error_code(args.error_code);
     builder.finish()
   }
 
 
   #[inline]
-  pub fn errno(&self) -> u32 {
+  pub fn error_code(&self) -> u32 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<u32>(ChildCreationError::VT_ERRNO, Some(0)).unwrap()}
+    unsafe { self._tab.get::<u32>(ChildCreationError::VT_ERROR_CODE, Some(0)).unwrap()}
   }
 }
 
@@ -1149,19 +1149,19 @@ impl flatbuffers::Verifiable for ChildCreationError<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<u32>("errno", Self::VT_ERRNO, false)?
+     .visit_field::<u32>("error_code", Self::VT_ERROR_CODE, false)?
      .finish();
     Ok(())
   }
 }
 pub struct ChildCreationErrorArgs {
-    pub errno: u32,
+    pub error_code: u32,
 }
 impl<'a> Default for ChildCreationErrorArgs {
   #[inline]
   fn default() -> Self {
     ChildCreationErrorArgs {
-      errno: 0,
+      error_code: 0,
     }
   }
 }
@@ -1172,8 +1172,8 @@ pub struct ChildCreationErrorBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a>
 }
 impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ChildCreationErrorBuilder<'a, 'b, A> {
   #[inline]
-  pub fn add_errno(&mut self, errno: u32) {
-    self.fbb_.push_slot::<u32>(ChildCreationError::VT_ERRNO, errno, 0);
+  pub fn add_error_code(&mut self, error_code: u32) {
+    self.fbb_.push_slot::<u32>(ChildCreationError::VT_ERROR_CODE, error_code, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> ChildCreationErrorBuilder<'a, 'b, A> {
@@ -1193,7 +1193,7 @@ impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ChildCreationErrorBuilder<'a, '
 impl core::fmt::Debug for ChildCreationError<'_> {
   fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
     let mut ds = f.debug_struct("ChildCreationError");
-      ds.field("errno", &self.errno());
+      ds.field("error_code", &self.error_code());
       ds.finish()
   }
 }
@@ -1214,7 +1214,7 @@ impl<'a> flatbuffers::Follow<'a> for ProcessTerminated<'a> {
 
 impl<'a> ProcessTerminated<'a> {
   pub const VT_PID: flatbuffers::VOffsetT = 4;
-  pub const VT_ERRNO: flatbuffers::VOffsetT = 6;
+  pub const VT_ERROR_CODE: flatbuffers::VOffsetT = 6;
 
   #[inline]
   pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
@@ -1226,7 +1226,7 @@ impl<'a> ProcessTerminated<'a> {
     args: &'args ProcessTerminatedArgs
   ) -> flatbuffers::WIPOffset<ProcessTerminated<'bldr>> {
     let mut builder = ProcessTerminatedBuilder::new(_fbb);
-    builder.add_errno(args.errno);
+    builder.add_error_code(args.error_code);
     builder.add_pid(args.pid);
     builder.finish()
   }
@@ -1240,11 +1240,11 @@ impl<'a> ProcessTerminated<'a> {
     unsafe { self._tab.get::<i32>(ProcessTerminated::VT_PID, Some(0)).unwrap()}
   }
   #[inline]
-  pub fn errno(&self) -> u32 {
+  pub fn error_code(&self) -> u32 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<u32>(ProcessTerminated::VT_ERRNO, Some(0)).unwrap()}
+    unsafe { self._tab.get::<u32>(ProcessTerminated::VT_ERROR_CODE, Some(0)).unwrap()}
   }
 }
 
@@ -1256,21 +1256,21 @@ impl flatbuffers::Verifiable for ProcessTerminated<'_> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
      .visit_field::<i32>("pid", Self::VT_PID, false)?
-     .visit_field::<u32>("errno", Self::VT_ERRNO, false)?
+     .visit_field::<u32>("error_code", Self::VT_ERROR_CODE, false)?
      .finish();
     Ok(())
   }
 }
 pub struct ProcessTerminatedArgs {
     pub pid: i32,
-    pub errno: u32,
+    pub error_code: u32,
 }
 impl<'a> Default for ProcessTerminatedArgs {
   #[inline]
   fn default() -> Self {
     ProcessTerminatedArgs {
       pid: 0,
-      errno: 0,
+      error_code: 0,
     }
   }
 }
@@ -1285,8 +1285,8 @@ impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ProcessTerminatedBuilder<'a, 'b
     self.fbb_.push_slot::<i32>(ProcessTerminated::VT_PID, pid, 0);
   }
   #[inline]
-  pub fn add_errno(&mut self, errno: u32) {
-    self.fbb_.push_slot::<u32>(ProcessTerminated::VT_ERRNO, errno, 0);
+  pub fn add_error_code(&mut self, error_code: u32) {
+    self.fbb_.push_slot::<u32>(ProcessTerminated::VT_ERROR_CODE, error_code, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> ProcessTerminatedBuilder<'a, 'b, A> {
@@ -1307,7 +1307,7 @@ impl core::fmt::Debug for ProcessTerminated<'_> {
   fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
     let mut ds = f.debug_struct("ProcessTerminated");
       ds.field("pid", &self.pid());
-      ds.field("errno", &self.errno());
+      ds.field("error_code", &self.error_code());
       ds.finish()
   }
 }
@@ -1573,11 +1573,11 @@ impl<'a> EstablishTCPConnection<'a> {
 
 
   #[inline]
-  pub fn destport(&self) -> u8 {
+  pub fn destport(&self) -> u32 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<u8>(EstablishTCPConnection::VT_DESTPORT, Some(0)).unwrap()}
+    unsafe { self._tab.get::<u32>(EstablishTCPConnection::VT_DESTPORT, Some(0)).unwrap()}
   }
 }
 
@@ -1588,13 +1588,13 @@ impl flatbuffers::Verifiable for EstablishTCPConnection<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<u8>("destport", Self::VT_DESTPORT, false)?
+     .visit_field::<u32>("destport", Self::VT_DESTPORT, false)?
      .finish();
     Ok(())
   }
 }
 pub struct EstablishTCPConnectionArgs {
-    pub destport: u8,
+    pub destport: u32,
 }
 impl<'a> Default for EstablishTCPConnectionArgs {
   #[inline]
@@ -1611,8 +1611,8 @@ pub struct EstablishTCPConnectionBuilder<'a: 'b, 'b, A: flatbuffers::Allocator +
 }
 impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> EstablishTCPConnectionBuilder<'a, 'b, A> {
   #[inline]
-  pub fn add_destport(&mut self, destport: u8) {
-    self.fbb_.push_slot::<u8>(EstablishTCPConnection::VT_DESTPORT, destport, 0);
+  pub fn add_destport(&mut self, destport: u32) {
+    self.fbb_.push_slot::<u32>(EstablishTCPConnection::VT_DESTPORT, destport, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> EstablishTCPConnectionBuilder<'a, 'b, A> {

@@ -1,21 +1,21 @@
 namespace demon;
 
 enum InotifyEvent : byte {
-    modification,
-    creation,
-    size,
-    deletion,
-    access
+    modified,
+    created,
+    size_reached,
+    deleted,
+    accessed,
 }
 
 table Inotify {
     root_paths: string;
-    trigger_events: [InotifyEvent];
+    mask: int32;
     size: uint32;
 }
 
 table TCPSocket {
-    destport: uint8;
+    destport: uint32;
 }
 
 union Surveillance {
@@ -45,12 +45,12 @@ table ProcessLaunched {
 }
 
 table ChildCreationError {
-    errno: uint32;
+    error_code: uint32;
 }
 
 table ProcessTerminated {
     pid: int32;
-    errno: uint32;
+    error_code: uint32;
 }
 
 table TCPSocketListening {
@@ -64,7 +64,7 @@ table InotifyPathUpdated {
 }
 
 table EstablishTCPConnection {
-    destport: uint8;
+    destport: uint32;
 }
 
 table EstablishUnixConnection {
@@ -85,7 +85,7 @@ union Event {
     ChildCreationError,
     ProcessTerminated,
     TCPSocketListening,
-    InotifyPathUpdated,
+    InotifyPathUpdated
 }
 
 table Message {

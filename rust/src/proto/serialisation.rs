@@ -23,12 +23,12 @@ pub fn serialize_process_launched(pid: i32) -> Vec<u8> {
     builder.finished_data().to_vec()
 }   
 
-pub fn serialize_child_creation_error(errno: u32) -> Vec<u8> {
+pub fn serialize_child_creation_error(error_code: u32) -> Vec<u8> {
     let mut builder = FlatBufferBuilder::new();
 
     let child_error = demon::ChildCreationError::create(
         &mut builder, &demon::ChildCreationErrorArgs {
-            errno
+            error_code
         }
     );
 
@@ -44,12 +44,12 @@ pub fn serialize_child_creation_error(errno: u32) -> Vec<u8> {
     builder.finished_data().to_vec()
 }
 
-pub fn serialize_process_terminated(pid: i32, errno: u32) -> Vec<u8> {
+pub fn serialize_process_terminated(pid: i32, error_code: u32) -> Vec<u8> {
     let mut builder = FlatBufferBuilder::new();
 
     let terminated = demon::ProcessTerminated::create(
         &mut builder,
-        &demon::ProcessTerminatedArgs { pid, errno },
+        &demon::ProcessTerminatedArgs { pid, error_code },
     );
 
     let message = demon::Message::create(
