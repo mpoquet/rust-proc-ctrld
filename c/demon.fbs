@@ -12,6 +12,7 @@ table Inotify {
     root_paths: string;
     int32 mask;
     size: uint32;
+    size_limit : uint32;
 }
 
 table TCPSocket {
