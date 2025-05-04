@@ -10,14 +10,9 @@ use std::io;
 use std::net::TcpStream;
 use std::io::Write;
 
-//use crate::monitoring_tools::command::exec_command;
-
-use flatbuffers::FlatBufferBuilder;
-
-use rust_proc_ctrl::proto::demon_generated::demon::RunCommandArgs;
-
 // flatbuffers
-use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message, Message, MessageArgs, Event, RunCommand};
+use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message, Event};
+use rust_proc_ctrl::proto::serialisation::{serialize_inotify, serialize_run_command};
 
 enum ReturnHandleMessage {
     Continue,
@@ -126,46 +121,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args_envs: Vec<&str> = envs_command.split(" ").collect();
     println!("envs_tab = {:?}", args_envs);
 
-    //Initialisation du builder
-    let mut bldr = FlatBufferBuilder::new();
-    bldr.reset();
+    // Match vers sérialisation
 
-    let args_offsets: Vec<_> = args_tab.iter().map(|s| bldr.create_string(s)).collect();
-    let envs_offsets: Vec<_> = args_envs.iter().map(|s| bldr.create_string(s)).collect();
-
-    let args_vector = bldr.create_vector(&args_offsets);
-    let envs_vector = bldr.create_vector(&envs_offsets);
-
-
-    //Creation de l'objet RunCommand
-    let args_build = RunCommandArgs{
-        path: Some(bldr.create_string(&path_command)), 
-        args: Some(args_vector),
-        envp: Some(envs_vector),
-        ..Default::default()};
-
-    let object_run_command = RunCommand::create(&mut bldr, &args_build);
-
-    //Creation et serialisation de l'objet Message pour l'envoi
-    let mess = Message::create(
-        &mut bldr, 
-        &MessageArgs{
-            events_type: Event::RunCommand,
-            events: Some(object_run_command.as_union_value())});
-
+    let finished_data = if path_command.eq("inotify") {
+        serialize_inotify(args_tab[0], 10, 6000)
+    }
+    else {
+        serialize_run_command(&path_command, args_tab, args_envs)
+    };
 
     let port: u16 = 8080;
 
-
-    bldr.finish(mess, None);
-
-    let finished_data = bldr.finished_data();
     let data_len = finished_data.len() as u32;
     let mut stream = TcpStream::connect(format!("127.0.0.1:{}", port))?;
 
     // Envoyer la taille en 4 octets
     stream.write_all(&data_len.to_le_bytes())?;
-    stream.write_all(finished_data)?;
+    stream.write_all(&finished_data)?;
 
     loop {
         //Reception du retour
