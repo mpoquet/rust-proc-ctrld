@@ -1,16 +1,13 @@
-#ifndef __NETWORK_H__
-#define __NETWORK_H__
+#ifndef SERIALIZE_H
+#define SERIALIZE_H
 
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdint>  // for uint32_t, int32_t, etc.
 #include <sys/epoll.h>
 #include <sys/types.h>
-#include <sys/socket.h>
 #include <arpa/inet.h>
-#include "demon_builder.h"
-#include "demon_verifier.h"
-#include "demon_reader.h"
+#include <sys/socket.h>  // for sockaddr_in
+#include <netinet/in.h>  // for sockaddr_in
+#include <cstddef> 
 
 struct tcp_socket{
     uint32_t destport;
@@ -60,9 +57,8 @@ struct surveillance {
 
 struct InotifyPathUpdated{
     char* path;
-    enum InotifyEvent event;
+    enum InotifyEvent *event;
     int size;
-    int size_limit;
 };
 
 typedef struct s_command{ //template for deserialized struct which contained all the info for all possible command. CAN BE MODIFIED
@@ -79,6 +75,7 @@ typedef struct s_command{ //template for deserialized struct which contained all
 
 
 enum Event {
+    NONE = -1,
     RUN_COMMAND,
     KILL_PROCESS,
     ESTABLISH_TCP_CONNECTION,
@@ -91,35 +88,26 @@ enum Event {
     INOTIFY_PATH_UPDATED,
 };
 
-int32_t receive_kill(void *buffer, size_t size);
+buffer_info* send_command_to_demon(command *cmd);
+buffer_info* send_kill_to_demon(int32_t pid);
+command* receive_command(uint8_t *buffer, int size);
+int32_t receive_kill(uint8_t *buffer, int size);
 
-struct socket_info* establish_connection(int port); //exemple of function i want for the daemon 
+Event receive_message_from_user(uint8_t *buffer, int size);
 
-int accept_new_connexion(struct socket_info* info);
+buffer_info* send_processlaunched_to_user(int32_t pid);
+buffer_info* send_childcreationerror_to_user(uint32_t error_code);
+buffer_info* send_processterminated_to_user(int32_t pid, uint32_t error_code);
+buffer_info* send_tcpsocketlistening_to_user(uint16_t port);
+buffer_info* send_inotifypathupdated_to_user(InotifyPathUpdated *inotify);
 
-void send_command(command *cmd);
+int32_t receive_processlaunched(uint8_t *buffer, int size);
+int32_t receive_childcreationerror(uint8_t *buffer, int size);
+process_terminated_info* receive_processterminated(uint8_t *buffer, int size);
+uint16_t receive_TCPSocketListening(uint8_t *buffer, int size);
+InotifyPathUpdated* receive_inotifypathupdated(uint8_t *buffer, int size);
 
-struct buffer_info* send_processlaunched_to_user(int32_t pid);
+Event receive_message_from_demon(uint8_t *buffer, int size);
 
-int32_t receive_processlaunched(void *buffer, size_t size);
 
-uint16_t receive_TCPSocket(void *buffer, size_t size);
-
-struct buffer_info* send_tcpsocketlistening_to_user(uint16_t port);
-
-struct buffer_info* send_childcreationerror_to_user(uint32_t error_code);
-
-void serialize_command(flatcc_builder_t *B, command *cmd);
-
-struct buffer_info* send_command_to_demon(command *cmd);
-
-int send_message(int socket, void* buffer, int size);
-
-struct buffer_info* send_processterminated_to_user(int32_t pid, uint32_t errno);
-
-int read_socket(int serveur_fd, void* buffer, int size);
-
-enum Event receive_message_from_user(void *buffer);
-
-command* receive_command(void *buffer, size_t size);    //exemple of function i want for the daemon; Return NULL in case of failure 
-#endif 
+#endif // SERIALIZE_H
