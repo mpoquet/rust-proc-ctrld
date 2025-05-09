@@ -44,7 +44,7 @@ typedef struct {
 
 typedef struct s_process_info process_info;
 
-void process_surveillance_requests(command* com, int InotifyFd, int epollfd);
+void process_surveillance_requests(command* com, int InotifyFd, int epollfd, int communication_socket);
 
 info_child* handle_clone_event(struct clone_parameters* param, int errorfd);
 

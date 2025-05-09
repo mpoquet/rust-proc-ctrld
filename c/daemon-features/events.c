@@ -15,6 +15,7 @@
 #include "../include/events.h"
 #include <errno.h>
 #include "../include/Errors.h"
+#include "../include/Detect_socket.h"
 
 
 #define MAX_EVENTS 128
@@ -56,7 +57,7 @@ static void process_Event(struct inotify_event *i, struct InotifyPathUpdated* in
         if((info->size=findSize(i->name))>size){
             info->event=SIZE_REACHED;
         }
-    }        
+    }
 }
 
 void handle_inotify_event(int fd, int size){
@@ -74,9 +75,8 @@ void handle_inotify_event(int fd, int size){
 
 }
 
-//Add new file to inotify and new sockets to epoll
-//Todo finish the socket part
-void process_surveillance_requests(command* com, int InotifyFd, int epollfd){
+//Todo add the network part when serialiation is finished
+void process_surveillance_requests(command* com, int InotifyFd, int epollfd, int communication_socket){
     struct inotify_parameters* I_param;
     int* destport;
     if(com->to_watch_size>0){
@@ -100,6 +100,7 @@ void process_surveillance_requests(command* com, int InotifyFd, int epollfd){
                 break;
             case WATCH_SOCKET:
                 destport = com->to_watch[i].ptr_event;
+                detect_socket(*destport, communication_socket);
                 break;
             
             default:

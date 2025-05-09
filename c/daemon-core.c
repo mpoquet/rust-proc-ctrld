@@ -14,12 +14,10 @@
 #include <errno.h>
 
 #include "./include/clone.h"
-#include "./include/healthcheck.h"
 #include "./include/Errors.h"
 #include "./include/Network.h"
 #include "./include/events.h"
 #include "./include/process_manager.h"
-
 
 #define MAX_EVENTS 128
 
@@ -195,7 +193,7 @@ int main(int argc, char** argv){
                                 }else{
                                     send_message(edata->fd, (void*)send_childcreationerror_to_user((uint32_t)errno), sizeof(struct buffer_info));
                                 }
-                                process_surveillance_requests(com,inotifyFd,epollfd);
+                                process_surveillance_requests(com,inotifyFd,epollfd, communication_socket->sockfd);
 
                                 free(com);
                                 break;

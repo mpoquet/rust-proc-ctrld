@@ -19,26 +19,3 @@ int send_error(enum error_type type, void* err_data){
     return 0;
 }
 
-/*Initialize all the info necessary to handle error messages. A tube to communicate with the childs
-and a file to store error information.
-void initialize_error_data(int group_id, const char* filepath){
-    for(int i=0;i<128;i++){
-        if (i>=nb_groups || Error_data[i].state==UNACTIVE){
-            initialize_error_file(Error_data[i],filepath);
-            Error_data[i].group_id=group_id;
-            Error_data[i].state=ACTIVE;
-        }
-    }
-    nb_groups++;
-}
-
-void delete_error_data(int group_id){
-    for (int i=0; i<128; i++){
-        if(Error_data[i].group_id==group_id){
-            Error_data[i].state=UNACTIVE;
-            break;
-        }
-    }
-    nb_groups--;
-}*/
-

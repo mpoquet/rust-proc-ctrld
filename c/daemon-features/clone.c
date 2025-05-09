@@ -18,7 +18,6 @@ int child_function(void *arg) {
     
     if (dup2(params->error_file,STDOUT_FILENO)==-1) {
         perror("dup2");
-        exit(EXIT_FAILURE);
     }
 
     if (execve((const char*) params->filepath, (char* const*) params->args, (char* const*) params->envp)==-1){
