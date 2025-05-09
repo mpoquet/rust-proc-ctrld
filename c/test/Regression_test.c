@@ -10,6 +10,7 @@
 #include "../include/clone.h"
 #include <assert.h>
 #include "../include/Network.h"
+#include <sys/inotify.h>
 
 unsigned char buffer[512];
 
@@ -166,4 +167,22 @@ int main(int argc, char** argv){
 
     printf("TEST 2 succeeded, remotely executing programs works\n");
     fflush(stdout);
+
+    struct surveillance* to_watch= malloc(sizeof(struct surveillance)*1); //Fois 1 parce que la y'a que une élément
+    to_watch->event=INOTIFY;
+    struct inotify_parameters* I_param = malloc(sizeof(struct inotify_parameters));
+    I_param->root_paths="/home/etc";
+    I_param->size=0;
+    I_param->mask=IN_MODIFY;
+    to_watch->ptr_event=(void*)I_param;
+    cmd = malloc(sizeof(command));
+    cmd->args = NULL;
+    cmd->args_size=0;
+    cmd->envp=NULL;
+    cmd->envp_size=0;
+    cmd->flags=0;
+    cmd->path=NULL;
+    cmd->stack_size=0;
+    cmd->to_watch=to_watch;
+    cmd->to_watch_size=1;
 }

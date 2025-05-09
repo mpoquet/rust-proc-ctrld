@@ -47,6 +47,7 @@ info_child* handle_clone_event(struct clone_parameters* param, int errorfd){
 static void process_Event(struct inotify_event *i, struct InotifyPathUpdated* info, int size)
 {
     info->path=i->name;
+    info->size_limit=size;
     if (i->mask & IN_ACCESS)        info->event=ACCESSED;
     if (i->mask & IN_CREATE)        info->event=CREATED;
     if (i->mask & IN_DELETE)        info->event=DELETED;

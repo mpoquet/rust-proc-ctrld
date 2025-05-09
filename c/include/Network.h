@@ -61,6 +61,7 @@ struct InotifyPathUpdated{
     char* path;
     enum InotifyEvent event;
     int size;
+    int size_limit;
 };
 
 typedef struct s_command{ //template for deserialized struct which contained all the info for all possible command. CAN BE MODIFIED
