@@ -99,7 +99,7 @@ buffer_info* send_processlaunched_to_user(int32_t pid);
 buffer_info* send_childcreationerror_to_user(uint32_t error_code);
 buffer_info* send_processterminated_to_user(int32_t pid, uint32_t error_code);
 buffer_info* send_tcpsocketlistening_to_user(uint16_t port);
-buffer_info* send_inotifypathupdated_to_user(InotifyPathUpdated *inotify) 
+buffer_info* send_inotifypathupdated_to_user(InotifyPathUpdated *inotify);
 
 int32_t receive_processlaunched(uint8_t *buffer, int size);
 int32_t receive_childcreationerror(uint8_t *buffer, int size);
