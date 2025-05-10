@@ -1,3 +1,13 @@
+//implementation de code C++ dans un projet C
+//c/
+//├── include/
+//│   ├── serialize.h         // Header C++ original
+//│   └── serialize_c.h       // Header C (interface)
+//└── daemon-features/
+//    ├── serialize.cpp       // Implémentation C++ originale
+//    └── serialize_wrapper.cpp  // Implémentation du wrapper
+//Dans le code C, il faudra utiliser les fonctions de serialize_wrapper.cpp
+
 #include "../include/serialize.h"
 #include "../include/demon_generated.h"
 
