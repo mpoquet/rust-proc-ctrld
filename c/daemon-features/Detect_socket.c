@@ -144,13 +144,11 @@ void search_TCP_connection(int port, int communication_socket){
 
     signal(SIGALRM, timeout_handler);
 
-    int fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_SOCK_DIAG);
-
     // Socket Netlink SOCK_DIAG
     int nl_sock = socket(AF_NETLINK, SOCK_RAW, NETLINK_SOCK_DIAG);
     if (nl_sock < 0) {
         perror("socket");
-        return 1;
+        exit(1);
     }
 
     alarm(20); //if nothing is detected after 10 seconds exit
@@ -159,7 +157,7 @@ void search_TCP_connection(int port, int communication_socket){
         send_tcp_diag(nl_sock, AF_INET, port); //send message for IPV4 and IPV6
         send_tcp_diag(nl_sock, AF_INET6, port);
         recv_tcp_diag(nl_sock,port);
-        sleep(1);
+        exit(1);
     }
 
     //TODO : Envoyer un message au client en cas de detection ou pas
