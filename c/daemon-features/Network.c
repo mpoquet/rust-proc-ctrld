@@ -519,7 +519,7 @@ struct socket_info* establish_connection(int port){
     }
 
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = htonl(INADDR_LOOPBACK); //Wont work for internet connexion, just to simplify testing
+    address.sin_addr.s_addr = INADDR_ANY; //Wont work for internet connexion, just to simplify testing
     address.sin_port = htons(port);
 
     //Making the port reusable if the server is not closed properly
@@ -549,7 +549,7 @@ struct socket_info* establish_connection(int port){
         exit(EXIT_FAILURE);
     }
 
-    printf("daemon now listening\n");
+    printf("Socket listening\n");
 
     info->address=address;
     info->port=port;

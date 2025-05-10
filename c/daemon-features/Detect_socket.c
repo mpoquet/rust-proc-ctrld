@@ -140,7 +140,7 @@ static int send_tcp_diag(int nl_sock, int family, uint16_t port_filter)
     return 0;
 }
 
-int search_TCP_connection(int port, int communication_socket){
+void search_TCP_connection(int port, int communication_socket){
 
     signal(SIGALRM, timeout_handler);
 
@@ -171,7 +171,7 @@ int search_TCP_connection(int port, int communication_socket){
 
     }
 
-    return 0;
+    exit(0);
 
 }
 

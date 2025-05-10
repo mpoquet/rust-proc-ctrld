@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
-#include "../include/clone.h"
+#include "../c/include/clone.h"
 #include <sys/epoll.h>
 #include <fcntl.h>
 #include <sys/types.h>
