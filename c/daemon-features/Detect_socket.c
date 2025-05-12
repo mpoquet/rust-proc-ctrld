@@ -112,7 +112,7 @@ static int send_tcp_diag(int nl_sock, int family, uint16_t port_filter)
     packet.nlh.nlmsg_type  = SOCK_DIAG_BY_FAMILY;
     packet.nlh.nlmsg_flags = NLM_F_REQUEST | NLM_F_DUMP;
 
-    // 2) Remplissage de la requête
+    // 2) Netlink request
     packet.req.sdiag_family   = family;       // AF_INET or AF_INET6
     packet.req.sdiag_protocol = IPPROTO_TCP;  // Only TCP
     packet.req.idiag_states   = 0x0002 | 0x0400; //bit for TCP_ESTABLISHED and TCP_LISTEN
@@ -151,25 +151,23 @@ void search_TCP_connection(int port, int communication_socket){
         exit(1);
     }
 
-    alarm(20); //if nothing is detected after 10 seconds exit
+    alarm(10); //if nothing is detected after 10 seconds exit
 
     while(!found && !timeout){
         send_tcp_diag(nl_sock, AF_INET, port); //send message for IPV4 and IPV6
         send_tcp_diag(nl_sock, AF_INET6, port);
         recv_tcp_diag(nl_sock,port);
-        exit(1);
+        sleep(1);
     }
 
     //TODO : Envoyer un message au client en cas de detection ou pas
     if(found==1){
         printf("Socket found\n");
-        
+
     }else{
         printf("Socket not found\n");
 
     }
-
-    exit(0);
 
 }
 
@@ -183,6 +181,7 @@ static void* detector_thread(void *arg) {
     // On appelle la fonction bloquante. Quand elle retourne, le thread meurt.
     search_TCP_connection(args->port, args->communication_socket);
     free(arg);
+    exit(0);
     return NULL;
 }
 

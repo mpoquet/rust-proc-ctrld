@@ -49,6 +49,7 @@ static void process_Event(struct inotify_event *i, struct InotifyPathUpdated* in
 {
     info->path=i->name;
     info->size_limit=size;
+    info->size=size;
     if (i->mask & IN_ACCESS)        info->event=ACCESSED;
     if (i->mask & IN_CREATE)        info->event=CREATED;
     if (i->mask & IN_DELETE)        info->event=DELETED;
@@ -60,19 +61,49 @@ static void process_Event(struct inotify_event *i, struct InotifyPathUpdated* in
     }
 }
 
-void handle_inotify_event(int fd, int size){
+void handle_inotify_event(int fd, int size, int com_sock){
     struct InotifyPathUpdated info;
     char buf[512];
+    struct buffer_info* data;
     ssize_t s = read(fd, buf, sizeof(buf));
     printf("read %zd bytes: %.*s\n",s, (int) s, buf);
     for(char *p = buf; p<buf+s;){
         struct inotify_event* event = (struct inotify_event *)p;
         process_Event(event,&info, size);
-        //TODO serialize and send message
-
+        data = send_inotifypathupdated_to_user_c(&info);
+        send_message(com_sock,data);
         p += sizeof(struct inotify_event) + event->len;
     }
 
+}
+
+void process_command_request(process_info **process_manager, int* nb_process, int com_sock, command* com ){
+    int err_file;
+    struct clone_parameters* param = extract_clone_parameters(com);
+    if(param!=NULL){
+        char buffer[20]="errFile";
+        //On créer un fichier avec un nom unique normalement. Pours ça il faut que les valeurs soit proprement initalisé.
+        if(snprintf(buffer, sizeof(buffer), "%d-%s", *nb_process, param->pathname)){
+            printf("Error while formatting the name of the errFile for the process %s\n", param->pathname);
+        }
+        err_file = initialize_error_file(buffer);
+        err_file = err_file==-1?STDOUT_FILENO:err_file;
+        info_child* res;
+        res = handle_clone_event(param,err_file);
+        if(res==NULL){
+            send_message(com_sock, (void*)send_childcreationerror_to_user_c((uint32_t)errno));
+        }else{
+            if(manager_add_process(res->child_id, process_manager, err_file, res->stack_p, MAX_PROCESS)){
+                *nb_process++;
+            }
+            struct buffer_info* result_message = send_processlaunched_to_user_c(res->child_id);
+            send_message(com_sock,(void*)result_message);
+        }
+        free(res);
+        free(param);
+    }else{
+        send_message(com_sock, (void*)send_childcreationerror_to_user_c((uint32_t)errno));
+    }
 }
 
 //Todo add the network part when serialiation is finished
@@ -95,6 +126,7 @@ void process_surveillance_requests(command* com, int InotifyFd, int epollfd, int
                     inotify_add_watch(InotifyFd, I_param->root_paths, I_param->mask);
                     add_event_inotifyFd(inotifyFd,epollfd, I_param->size);
                 }else{
+                    //if size<0 no need to store size value and no need to create new inotify instance
                     inotify_add_watch(InotifyFd, I_param->root_paths, I_param->mask);
                 }
                 break;

@@ -103,7 +103,6 @@ int main(int argc, char** argv){
     //Add the signal SIGCHLD to the watch list for future child creation
     sigset_t mask;
     int sfd;
-    struct signalfd_siginfo fdsi;
     sigemptyset(&mask);
     sigaddset(&mask, SIGCHLD);
 
@@ -119,8 +118,6 @@ int main(int argc, char** argv){
     }
 
     add_event_signalFd(sfd, epollfd);
-
-    int error_code;
 
     while(num_inotifyFD>0){
         printf("Waiting for incoming notifications\n");
@@ -138,23 +135,24 @@ int main(int argc, char** argv){
                     {
                     case INOTIFYFD: {
                         event_data_Inotify_size* I_edata = (event_data_Inotify_size*)events[i].data.ptr;
-                        handle_inotify_event(edata->fd, I_edata->size);
+                        handle_inotify_event(edata->fd, I_edata->size,communication_socket->sockfd);
                         break;
                     }
                     
                     case SIGNALFD: {
                         void* res;
-                        if ( (res=handle_signalfd_event(edata->fd, process_manager, nb_process)) == NULL){
+                        if ((res=handle_signalfd_event(edata->fd, process_manager, nb_process)) == NULL){
                             printf("Unable to read signalfd\n");
+                        }else{
+                            send_message(edata->fd,res);
                         }
-                        send_message(edata->fd,res);
                         break;
                     }
                     
                     case SOCK_MESSAGE: {
                         printf("Incoming job...\n");
                         struct buffer_info* info = read_socket_message(edata->fd);
-                        uint8_t buffer = info->buffer;
+                        uint8_t* buffer = info->buffer;
                         int size = info->size;
                         if(size==0){
                             printf("The socket has been closed\n");
@@ -170,33 +168,8 @@ int main(int argc, char** argv){
                                 //First check if there is a program to execute
                                 printf("RUNCOMMAND\n");
                                 com= receive_command_c(buffer,size);
-                                struct clone_parameters* param = extract_clone_parameters(com);
-                                if(param!=NULL){
-                                    char buffer[20]="errFile";
-                                    //On créer un fichier avec un nom unique normalement. Pours ça il faut que les valeurs soit proprement initalisé.
-                                    if(snprintf(buffer, sizeof(buffer), "%d-%s", nb_process, param->pathname)){
-                                        printf("Error while formatting the name of the errFile for the process %s\n", param->pathname);
-                                    }
-                                    err_file = initialize_error_file(buffer);
-                                    err_file = err_file==-1?STDOUT_FILENO:err_file;
-                                    info_child* res;
-                                    res = handle_clone_event(param,err_file);
-                                    if(res==NULL){
-                                        send_message(edata->fd, (void*)send_childcreationerror_to_user_c((uint32_t)errno));
-                                    }else{
-                                        if(manager_add_process(res->child_id, process_manager, err_file, res->stack_p, MAX_PROCESS)){
-                                            nb_process++;
-                                        }
-                                        struct buffer_info* result_message = send_processlaunched_to_user_c(res->child_id);
-                                        send_message(edata->fd,(void*)result_message);
-                                    }
-                                    free(res);
-                                    free(param);
-                                }else{
-                                    send_message(edata->fd, (void*)send_childcreationerror_to_user_c((uint32_t)errno));
-                                }
+                                process_command_request(process_manager,&nb_process,communication_socket->sockfd,com);
                                 process_surveillance_requests(com,inotifyFd,epollfd, communication_socket->sockfd);
-
                                 free(com);
                                 break;
 
@@ -209,6 +182,7 @@ int main(int argc, char** argv){
                                 }else{
                                     kill(pid,SIGKILL);
                                     manager_remove_process(pid,process_manager,size);
+                                    nb_process--;
                                 }
                                 break;
 
@@ -238,27 +212,24 @@ int main(int argc, char** argv){
                         num_inotifyFD++;
 
                         struct buffer_info* info = send_tcpsocketlistening_to_user_c(destPort);
-                        printf("size : %u", info->size);
                         send_message(new_connexion, info);
                         break;
-
+                    }
                     default:
                         break;
                     }
-                }
-                    
                 } else {                /* POLLERR | POLLHUP */
                     printf("    closing fd %d\n", edata->fd);
                     if (close(events[i].data.fd) == -1)
                         perror("close");
-                        exit(3);
                     num_inotifyFD--;
                 }
             }
         }
+        
     }
-
-
     return 0;
-
 }
+
+
+   

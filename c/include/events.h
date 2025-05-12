@@ -47,6 +47,8 @@ typedef struct s_process_info process_info;
 
 void process_surveillance_requests(command* com, int InotifyFd, int epollfd, int communication_socket);
 
+void process_command_request(process_info **process_manager, int* nb_process, int com_sock, command* com );
+
 info_child* handle_clone_event(struct clone_parameters* param, int errorfd);
 
 int add_event_signalFd(int fd, int epollfd);
@@ -55,7 +57,7 @@ int add_event_inotifyFd(int fd, int epollfd, int size);
 
 void* handle_signalfd_event(int fd, process_info** manager, int size);
 
-void handle_inotify_event(int fd, int size);
+void handle_inotify_event(int fd, int size, int com_sock);
 
 struct clone_parameters* extract_clone_parameters(command* com);
 

@@ -1,10 +1,6 @@
 #include "../include/Network.h"
 #include "../include/data_structs.h" 
 
-
-/*===============================================PART TCP CONNEXION======================================================*/
-
-
 struct socket_info* establish_connection(int port){
     int server_fd;
     struct sockaddr_in address;
@@ -82,20 +78,20 @@ struct buffer_info* read_socket_message(int socket) {
         return NULL;
     }
 
-    // Lire d'abord la taille
+    // read size
     if (read(socket, &info->size, sizeof(size_t)) != sizeof(size_t)) {
         free(info);
         return NULL;
     }
 
-    // Allouer le buffer pour les données
+    // allocate data
     info->buffer = malloc(info->size);
     if (!info->buffer) {
         free(info);
         return NULL;
     }
 
-    // Lire les données
+    // read data
     if (read(socket, info->buffer, info->size) != info->size) {
         free(info->buffer);
         free(info);
@@ -106,17 +102,17 @@ struct buffer_info* read_socket_message(int socket) {
 }
 
 int send_message(int socket, struct buffer_info* info) {
-    // Allouer un buffer temporaire pour contenir size + données
+    // allocate data
     uint8_t* temp_buffer = malloc(sizeof(size_t) + info->size);
     if (!temp_buffer) {
         return -1;
     }
 
-    // Copier la taille puis les données
+    // append size to data
     memcpy(temp_buffer, &info->size, sizeof(size_t));
     memcpy(temp_buffer + sizeof(size_t), info->buffer, info->size);
 
-    // Envoyer en un seul send()
+    // send data+size
     ssize_t sent = send(socket, temp_buffer, sizeof(size_t) + info->size, 0);
     free(temp_buffer);
 
