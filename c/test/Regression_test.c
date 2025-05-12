@@ -25,9 +25,9 @@ int try_connecting_to_daemon(int sock, struct sockaddr_in serv_addr){
         sleep(1);
     }
 
-    size_t size;
+    int size;
 
-    if(read(sock, &size,sizeof(size_t))==-1){
+    if(read(sock, &size,sizeof(int))==-1){
         close(sock);
         return -1;
     };
@@ -35,8 +35,7 @@ int try_connecting_to_daemon(int sock, struct sockaddr_in serv_addr){
     printf("Size received\n");
     fflush(stdout);
 
-    // <- après avoir lu et converti net_size en size
-    if (recv(sock, buffer, size, MSG_WAITALL) != (ssize_t)size) {
+    if (recv(sock, buffer, size, MSG_WAITALL) != size) {
         perror("recv MSG_WAITALL");
         close(sock);
         exit(1);
@@ -66,22 +65,30 @@ int try_connecting_to_daemon(int sock, struct sockaddr_in serv_addr){
 
 int try_launching_process(int sock, struct sockaddr_in serv_addr, command* com){
 
-    struct buffer_info* buffer = send_command_to_demon_c(com);
+    unsigned char buf[128];
 
-    if(send(sock, &buffer->size, sizeof(size_t),0)==-1){
-        close(sock);
+    struct buffer_info* info = send_command_to_demon_c(com);
+
+    uint8_t* temp_buffer = malloc(sizeof(int) + info->size);
+    if (!temp_buffer) {
         return -1;
-    };
+    }
 
-    if(send(sock, buffer->buffer, buffer->size,0)==-1){
-        close(sock);
+    // append size to data
+    memcpy(temp_buffer, &info->size, sizeof(int));
+    memcpy(temp_buffer + sizeof(int), info->buffer, info->size);
+
+    // send data+size
+    ssize_t sent = send(sock, temp_buffer, sizeof(int) + info->size, 0);
+    free(temp_buffer);
+
+    if (sent != sizeof(int) + info->size) {
         return -1;
-    };
-
+    }
     
-    size_t size;
+    int size;
 
-    if(read(sock, &size,sizeof(size_t))==-1){
+    if(read(sock, &size,sizeof(int))==-1){
         close(sock);
         return -1;
     };
@@ -90,13 +97,13 @@ int try_launching_process(int sock, struct sockaddr_in serv_addr, command* com){
     fflush(stdout);
 
     // <- après avoir lu et converti net_size en size
-    if (recv(sock, buffer, size, MSG_WAITALL) != (ssize_t)size) {
+    if (recv(sock, buf, size, MSG_WAITALL) != size) {
         perror("recv MSG_WAITALL");
         close(sock);
         exit(1);
     }
 
-    int pid = receive_processlaunched_c(buffer,size);
+    int pid = receive_processlaunched_c(buf,size);
 
     printf("pid : %d", pid);
 
@@ -105,7 +112,34 @@ int try_launching_process(int sock, struct sockaddr_in serv_addr, command* com){
         return -1;
     }
 
-    close(sock);
+    return 0;
+}
+
+int receiving_process_terminated(int sock, struct sockaddr_in serv_addr){
+
+    unsigned char buf[128];
+    
+    int size;
+
+    if(read(sock, &size,sizeof(int))==-1){
+        close(sock);
+        return -1;
+    };
+
+    printf("Size received\n");
+    fflush(stdout);
+
+    // <- après avoir lu et converti net_size en size
+    if (recv(sock, buf, size, MSG_WAITALL) != size) {
+        perror("recv MSG_WAITALL");
+        close(sock);
+        exit(1);
+    }
+
+    struct process_terminated_info* info = receive_processterminated_c(buf,size);
+
+    printf("pid : %d, error code : %d", info->pid, info->error_code);
+
     return 0;
 }
 
@@ -117,10 +151,10 @@ int main(int argc, char** argv){
         exit(1);
     }
     execve_parameter param_daemon;
-    param_daemon.args = (char* const[]) { "../bin/daemon",argv[1], NULL };
+    param_daemon.args = (char* const[]) { "./daemon",argv[1], NULL };
     param_daemon.envp = NULL;
     param_daemon.error_file = STDOUT_FILENO;
-    param_daemon.filepath = "../bin/daemon";
+    param_daemon.filepath = "./daemon";
     launch_process(1024*1024, &param_daemon,0);
 
     sleep(2);
@@ -154,12 +188,12 @@ int main(int argc, char** argv){
     fflush(stdout);
 
     command* cmd = malloc(sizeof(command));
-    cmd->args = (char* const[]) { "echo", "bonjour", NULL };
+    cmd->args = (char* const[]) { "ls", "-l", NULL };
     cmd->args_size=2;
     cmd->envp=NULL;
     cmd->envp_size=0;
     cmd->flags=0;
-    cmd->path="/bin/echo";
+    cmd->path="/bin/ls";
     cmd->stack_size=512*512;
     cmd->to_watch=NULL;
     cmd->to_watch_size=0;
@@ -169,21 +203,27 @@ int main(int argc, char** argv){
     printf("TEST 2 succeeded, remotely executing programs works\n");
     fflush(stdout);
 
-    struct surveillance* to_watch= malloc(sizeof(struct surveillance)*1); //Fois 1 parce que la y'a que une élément
-    to_watch->event=INOTIFY;
-    struct inotify_parameters* I_param = malloc(sizeof(struct inotify_parameters));
-    I_param->root_paths="/home/etc";
-    I_param->size=0;
-    I_param->mask=IN_MODIFY;
-    to_watch->ptr_event=(void*)I_param;
-    cmd = malloc(sizeof(command));
-    cmd->args = NULL;
-    cmd->args_size=0;
-    cmd->envp=NULL;
-    cmd->envp_size=0;
-    cmd->flags=0;
-    cmd->path=NULL;
-    cmd->stack_size=0;
-    cmd->to_watch=to_watch;
-    cmd->to_watch_size=1;
+    assert(receiving_process_terminated(sock,serv_addr));
+
+    printf("TEST 3 succeeded, getting exit status of termiated programms\n");
+    fflush(stdout);
+
+    // struct surveillance* to_watch= malloc(sizeof(struct surveillance)*1); //Fois 1 parce que la y'a que une élément
+    // to_watch->event=INOTIFY;
+    // struct inotify_parameters* I_param = malloc(sizeof(struct inotify_parameters));
+    // I_param->root_paths="/home/etc";
+    // I_param->size=0;
+    // I_param->mask=IN_MODIFY;
+    // to_watch->ptr_event=(void*)I_param;
+    // cmd = malloc(sizeof(command));
+    // cmd->args = NULL;
+    // cmd->args_size=0;
+    // cmd->envp=NULL;
+    // cmd->envp_size=0;
+    // cmd->flags=0;
+    // cmd->path=NULL;
+    // cmd->stack_size=0;
+    // cmd->to_watch=to_watch;
+    // cmd->to_watch_size=1;
+    close(sock);
 }

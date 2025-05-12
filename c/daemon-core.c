@@ -168,8 +168,8 @@ int main(int argc, char** argv){
                                 //First check if there is a program to execute
                                 printf("RUNCOMMAND\n");
                                 com= receive_command_c(buffer,size);
-                                process_command_request(process_manager,&nb_process,communication_socket->sockfd,com);
-                                process_surveillance_requests(com,inotifyFd,epollfd, communication_socket->sockfd);
+                                process_command_request(process_manager,&nb_process,edata->fd,com);
+                                process_surveillance_requests(com,inotifyFd,epollfd, edata->fd);
                                 free(com);
                                 break;
 

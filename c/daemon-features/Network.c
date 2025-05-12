@@ -79,7 +79,7 @@ struct buffer_info* read_socket_message(int socket) {
     }
 
     // read size
-    if (read(socket, &info->size, sizeof(size_t)) != sizeof(size_t)) {
+    if (read(socket, &info->size, sizeof(int)) != sizeof(int)) {
         free(info);
         return NULL;
     }
@@ -103,20 +103,20 @@ struct buffer_info* read_socket_message(int socket) {
 
 int send_message(int socket, struct buffer_info* info) {
     // allocate data
-    uint8_t* temp_buffer = malloc(sizeof(size_t) + info->size);
+    uint8_t* temp_buffer = malloc(sizeof(int) + info->size);
     if (!temp_buffer) {
         return -1;
     }
 
     // append size to data
-    memcpy(temp_buffer, &info->size, sizeof(size_t));
-    memcpy(temp_buffer + sizeof(size_t), info->buffer, info->size);
+    memcpy(temp_buffer, &info->size, sizeof(int));
+    memcpy(temp_buffer + sizeof(int), info->buffer, info->size);
 
     // send data+size
-    ssize_t sent = send(socket, temp_buffer, sizeof(size_t) + info->size, 0);
+    ssize_t sent = send(socket, temp_buffer, sizeof(int) + info->size, 0);
     free(temp_buffer);
 
-    if (sent != sizeof(size_t) + info->size) {
+    if (sent != sizeof(int) + info->size) {
         return -1;
     }
     return sent;

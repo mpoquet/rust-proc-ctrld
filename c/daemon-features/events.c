@@ -79,6 +79,7 @@ void handle_inotify_event(int fd, int size, int com_sock){
 
 void process_command_request(process_info **process_manager, int* nb_process, int com_sock, command* com ){
     int err_file;
+    printf("nbProcess : %d", *nb_process);
     struct clone_parameters* param = extract_clone_parameters(com);
     if(param!=NULL){
         char buffer[20]="errFile";
@@ -93,9 +94,10 @@ void process_command_request(process_info **process_manager, int* nb_process, in
         if(res==NULL){
             send_message(com_sock, (void*)send_childcreationerror_to_user_c((uint32_t)errno));
         }else{
-            if(manager_add_process(res->child_id, process_manager, err_file, res->stack_p, MAX_PROCESS)){
+            if(manager_add_process(res->child_id, process_manager, err_file, res->stack_p, *nb_process)){
                 *nb_process++;
             }
+            printf("process successfully launched\n");
             struct buffer_info* result_message = send_processlaunched_to_user_c(res->child_id);
             send_message(com_sock,(void*)result_message);
         }
