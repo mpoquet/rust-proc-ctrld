@@ -1,9 +1,8 @@
-CC  = gcc
+CC = gcc
+CXX = g++
 SYS = -std=gnu11 -Wall -Wextra -O2 -g
-CFLAGS += -I./flatcc/include
-
-FLATCC_INC = -Iflatcc/include
-FLATCC_LIB = flatcc/lib/libflatccrt.a
+CXXFLAGS = -std=c++17 -Wall -Wextra -O2 -g -I./include
+FLATBUFFERS = -I/usr/local/include
 
 SRCDIR = daemon-features
 OBJDIR = obj
@@ -12,49 +11,70 @@ DAEMONDIR = .
 TESTDIR = test
 
 DAEMON = $(BINDIR)/daemon
-
 TEST = $(BINDIR)/test
 
-OBJ_COMMON = $(OBJDIR)/clone.o $(OBJDIR)/Errors.o $(OBJDIR)/events.o $(OBJDIR)/process_manager.o $(OBJDIR)/healthcheck.o $(OBJDIR)/Network.o 
+# Objets C++
+CPP_SRCS = $(SRCDIR)/serialize.cpp $(SRCDIR)/serialize_wrapper.cpp
+CPP_OBJ = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(CPP_SRCS))
+
+# Objets C
+OBJ_COMMON = $(OBJDIR)/clone.o $(OBJDIR)/Errors.o $(OBJDIR)/events.o \
+	$(OBJDIR)/process_manager.o $(OBJDIR)/healthcheck.o $(OBJDIR)/Network.o
 
 OBJ_COMMON2 = $(OBJDIR)/clone.o $(OBJDIR)/Network.o 
 
 OBJ_DAEMON = $(DAEMONDIR)/daemon-core.o
+OBJ_TEST = $(TESTDIR)/Regression_test.o
 
-OBJ_TEST =  $(TESTDIR)/Regression_test.o
+# Règles pour les fichiers C++
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+	@mkdir -p $(OBJDIR)
+	$(CXX) $(CXXFLAGS) $(FLATBUFFERS) -c $< -o $@
 
+# Règles explicites pour s'assurer que serialize.cpp est compilé avant serialize_wrapper.cpp
+$(OBJDIR)/serialize_wrapper.o: $(SRCDIR)/serialize_wrapper.cpp $(OBJDIR)/serialize.o
+	@mkdir -p $(OBJDIR)
+	$(CXX) $(CXXFLAGS) $(FLATBUFFERS) -c $< -o $@
 
+$(OBJDIR)/serialize.o: $(SRCDIR)/serialize.cpp
+	@mkdir -p $(OBJDIR)
+	$(CXX) $(CXXFLAGS) $(FLATBUFFERS) -c $< -o $@
 
-# make daemon
-# -------
-daemon: dirs $(OBJ_COMMON)
-	$(eval export OBJ_CRYPT = $(OBJ_DAEMON))
-	make $(DAEMON)
+# Règles pour les fichiers C
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
+	@mkdir -p $(OBJDIR)
+	$(CC) $(SYS) -c $< -o $@
 
-# make test
-# -------
-test: dirs $(OBJ_COMMON2)
-	$(eval export OBJ_CRYPT = $(OBJ_TEST))
-	make $(TEST)
+$(OBJ_TEST): $(TESTDIR)/%.o: $(TESTDIR)/%.c
+	@mkdir -p $(OBJDIR)
+	$(CC) $(SYS) -c $< -o $@
 
 # EXEC daemon
-# -----
-$(DAEMON): $(OBJ_COMMON) $(OBJ_DAEMON)
-	$(CC) -o $(DAEMON) $(OBJ_COMMON) $(OBJ_DAEMON) $(FLATCC_LIB)
+$(DAEMON): $(OBJ_COMMON) $(CPP_OBJ) $(OBJ_DAEMON)
+	@mkdir -p $(BINDIR)
+	$(CXX) -o $@ $^ -L/usr/local/lib -lflatbuffers
 
 # EXEC test
-# -----
-$(TEST): $(OBJ_COMMON2) $(OBJ_TEST)
-	$(CC) -o $(TEST) $(OBJ_COMMON2) $(OBJ_TEST) $(FLATCC_LIB)
+$(TEST): $(OBJ_COMMON2) $(OBJDIR)/serialize.o $(OBJDIR)/serialize_wrapper.o $(OBJ_TEST)
+	@mkdir -p $(BINDIR)
+	$(CXX) -o $@ $(OBJ_COMMON2) $(OBJDIR)/serialize.o $(OBJDIR)/serialize_wrapper.o $(OBJ_TEST) -L/usr/local/lib -lflatbuffers
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.c
-	$(CC) -o $@ -c $< $(SYS) $(FLATCC_INC)
+# make daemon
+daemon: dirs $(OBJ_COMMON) $(CPP_OBJ) $(OBJ_DAEMON)
+	$(eval export OBJ_CRYPT = $(OBJ_DAEMON))
+	$(MAKE) $(DAEMON)
 
+# make test
+test: dirs $(OBJ_COMMON2) $(CPP_OBJ) $(OBJ_TEST)
+	$(eval export OBJ_CRYPT = $(OBJ_TEST))
+	$(MAKE) $(TEST)
 
 dirs:
-	@if [ ! -d "./$(OBJDIR)" ]; then mkdir $(OBJDIR); fi
-	@if [ ! -d "./$(BINDIR)" ]; then mkdir $(BINDIR); fi
+	@mkdir -p $(OBJDIR)
+	@mkdir -p $(BINDIR)
 
 clean:
 	rm -f $(OBJDIR)/*.o
-	rm -f $(BINDIR)/* 
+	rm -f $(BINDIR)/*
+
+.PHONY: clean dirs daemon test

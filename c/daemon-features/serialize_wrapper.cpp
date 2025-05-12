@@ -14,7 +14,7 @@
 
 extern "C" {
 
-    buffer_info* send_command_to_demon_c(command *cmd) {
+    struct buffer_info* send_command_to_demon_c(command *cmd) {
         try {
             return send_command_to_demon(cmd);
         } catch (...) {
@@ -22,7 +22,7 @@ extern "C" {
         }
     }
 
-    buffer_info* send_kill_to_demon_c(int32_t pid) {
+    struct buffer_info* send_kill_to_demon_c(int32_t pid) {
         try {
             return send_kill_to_demon(pid);
         } catch (...) {
@@ -46,7 +46,7 @@ extern "C" {
         }
     }
 
-    Event receive_message_from_user_c(uint8_t *buffer, int size) {
+    enum Event receive_message_from_user_c(uint8_t *buffer, int size) {
         try {
             return receive_message_from_user(buffer, size);
         } catch (...) {
@@ -54,7 +54,7 @@ extern "C" {
         }
     }
 
-    buffer_info* send_processlaunched_to_user_c(int32_t pid) {
+    struct buffer_info* send_processlaunched_to_user_c(int32_t pid) {
         try {
             return send_processlaunched_to_user(pid);
         } catch (...) {
@@ -62,7 +62,7 @@ extern "C" {
         }
     }
 
-    buffer_info* send_childcreationerror_to_user_c(uint32_t error_code) {
+    struct buffer_info* send_childcreationerror_to_user_c(uint32_t error_code) {
         try {
             return send_childcreationerror_to_user(error_code);
         } catch (...) {
@@ -70,7 +70,7 @@ extern "C" {
         }
     }
 
-    buffer_info* send_processterminated_to_user_c(int32_t pid, uint32_t error_code) {
+    struct buffer_info* send_processterminated_to_user_c(int32_t pid, uint32_t error_code) {
         try {
             return send_processterminated_to_user(pid, error_code);
         } catch (...) {
@@ -78,7 +78,7 @@ extern "C" {
         }
     }
 
-    buffer_info* send_tcpsocketlistening_to_user_c(uint16_t port) {
+    struct buffer_info* send_tcpsocketlistening_to_user_c(uint16_t port) {
         try {
             return send_tcpsocketlistening_to_user(port);
         } catch (...) {
@@ -86,7 +86,7 @@ extern "C" {
         }
     }
 
-    buffer_info* send_inotifypathupdated_to_user_c(InotifyPathUpdated *inotify) {
+    struct buffer_info* send_inotifypathupdated_to_user_c(InotifyPathUpdated *inotify) {
         try {
             return send_inotifypathupdated_to_user(inotify);
         } catch (...) {
@@ -110,7 +110,7 @@ extern "C" {
         }
     }
 
-    process_terminated_info* receive_processterminated_c(uint8_t *buffer, int size) {
+    struct process_terminated_info* receive_processterminated_c(uint8_t *buffer, int size) {
         try {
             return receive_processterminated(buffer, size);
         } catch (...) {
@@ -126,7 +126,7 @@ extern "C" {
         }
     }
 
-    InotifyPathUpdated* receive_inotifypathupdated_c(uint8_t *buffer, int size) {
+    struct InotifyPathUpdated* receive_inotifypathupdated_c(uint8_t *buffer, int size) {
         try {
             return receive_inotifypathupdated(buffer, size);
         } catch (...) {
@@ -134,7 +134,7 @@ extern "C" {
         }
     }
 
-    Event receive_message_from_demon_c(uint8_t *buffer, int size) {
+    enum Event receive_message_from_demon_c(uint8_t *buffer, int size) {
         try {
             return receive_message_from_demon(buffer, size);
         } catch (...) {

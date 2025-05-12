@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <sys/epoll.h>
 #include <sys/types.h>
+#include "./serialize_c.h"  
 #include "./Network.h"
 #include "./clone.h"
 #include "./process_manager.h"

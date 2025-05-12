@@ -9,7 +9,8 @@
 //Dans le code C, il faudra utiliser les fonctions de serialize_wrapper.cpp
 
 #include "../include/serialize.h"
-#include "../include/demon_generated.h"
+#include <flatbuffers/flatbuffers.h>
+#include "../include/demon_generated.h"  // Path relative to source file
 
 //
 ///PARTIE USER->DEMON
@@ -53,8 +54,7 @@ void serialize_command(flatbuffers::FlatBufferBuilder *builder, command *cmd) {
                     *builder,
                     builder->CreateString(inotify_params->root_paths),
                     inotify_params->mask,
-                    inotify_params->size,
-                    inotify_params->size_limit
+                    inotify_params->size
                 ).Union();
                 event_type = demon::Surveillance_Inotify;
                 break;
@@ -214,7 +214,6 @@ command* receive_command(uint8_t *buffer, int size) {
                     inotify_params->root_paths = strdup(inotify_event->root_paths()->c_str());
                     inotify_params->mask = inotify_event->mask();
                     inotify_params->size = inotify_event->size();
-                    inotify_params->size_limit = inotify_event->size_limit();
                     final_command->to_watch[i].event = INOTIFY;
                     final_command->to_watch[i].ptr_event = inotify_params;
                     break;
@@ -363,7 +362,7 @@ buffer_info* send_processterminated_to_user(int32_t pid, uint32_t error_code) {
 }
 
 //fonction pour envoyer un TCPSocketListening a l'user
-buffer_info* send_TCPSocketListening_to_user(uint16_t port) {
+buffer_info* send_tcpsocketlistening_to_user(uint16_t port) {
     flatbuffers::FlatBufferBuilder builder(1024);
     buffer_info* info = new buffer_info();  
     if (!info) {
@@ -398,25 +397,16 @@ buffer_info* send_inotifypathupdated_to_user(InotifyPathUpdated *inotify) {
     }
     
     try {
-        // Create string from path
         auto path_str = builder.CreateString(inotify->path);
         
-        // Convert InotifyEvent array to vector of int8_t
-        std::vector<int8_t> events_vec;
-        for (int i = 0; i < inotify->size; i++) {
-            events_vec.push_back(static_cast<int8_t>(inotify->event[i]));
-        }
-        auto events = builder.CreateVector(events_vec);
-        
-        // Create InotifyPathUpdated table
         auto inotify_path_updated = demon::CreateInotifyPathUpdated(
             builder,
             path_str,
-            events,
-            inotify->size
+            static_cast<demon::InotifyEvent>(inotify->event),  
+            inotify->size,
+            inotify->size_limit  
         );
         
-        // Create Message with InotifyPathUpdated as event
         auto event = demon::CreateMessage(
             builder, 
             demon::Event_InotifyPathUpdated, 
@@ -425,7 +415,6 @@ buffer_info* send_inotifypathupdated_to_user(InotifyPathUpdated *inotify) {
         
         builder.Finish(event);
         
-        // Copy the buffer
         size_t size = builder.GetSize();
         uint8_t* buffer_copy = new uint8_t[size];
         memcpy(buffer_copy, builder.GetBufferPointer(), size);
@@ -552,24 +541,19 @@ InotifyPathUpdated* receive_inotifypathupdated(uint8_t *buffer, int size) {
     
     try {
         inotify->path = strdup(inotify_path_updated->path()->c_str());
-        inotify->size = inotify_path_updated->size();
-        
-        // Allocate and copy the events array
-        auto events_vec = inotify_path_updated->trigger_events();
-        if (events_vec) {
-            inotify->event = new InotifyEvent[events_vec->size()];
-            for (size_t i = 0; i < events_vec->size(); i++) {
-                // Convert from flatbuffer enum to our enum
-                inotify->event[i] = static_cast<InotifyEvent>(events_vec->Get(i));
-            }
-        } else {
-            inotify->event = nullptr;
+        if (!inotify->path) {
+            delete inotify;
+            return nullptr;
         }
+
+        inotify->event = static_cast<InotifyEvent>(inotify_path_updated->trigger_events());
+        
+        inotify->size = inotify_path_updated->size();
+        inotify->size_limit = inotify_path_updated->size_limit();
         
         return inotify;
     } catch (...) {
         if (inotify->path) free(inotify->path);
-        if (inotify->event) delete[] inotify->event;
         delete inotify;
         throw;
     }
@@ -602,8 +586,4 @@ Event receive_message_from_demon(uint8_t *buffer, int size) {
         default:
             return NONE;
     }
-}
-
-int main(int argc, char* argv[]) {
-    return 0;
 }

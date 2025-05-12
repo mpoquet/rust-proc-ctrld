@@ -143,7 +143,7 @@ void* handle_SIGCHLD(struct signalfd_siginfo fdsi, process_info** manager, int s
         exit_status= WTERMSIG(wstatus);     
     }
     manager_remove_process(fdsi.ssi_pid,manager,size);
-    struct buffer_info* info = send_processterminated_to_user(fdsi.ssi_pid,exit_status);
+    struct buffer_info* info = send_processterminated_to_user_c(fdsi.ssi_pid,exit_status);
     return (void*) info;
 }
 

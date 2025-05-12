@@ -12,7 +12,6 @@ table Inotify {
     root_paths: string;
     mask: int32;
     size: uint32;
-    size_limit: uint32;
 }
 
 table TCPSocket {
@@ -60,8 +59,9 @@ table TCPSocketListening {
 
 table InotifyPathUpdated {
     path: string;
-    trigger_events: [InotifyEvent];
+    trigger_events: InotifyEvent;
     size: uint32;
+    size_limit : uint32;
 }
 
 table EstablishTCPConnection {

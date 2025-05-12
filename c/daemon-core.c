@@ -18,6 +18,7 @@
 #include "./include/Network.h"
 #include "./include/events.h"
 #include "./include/process_manager.h"
+#include "./include/serialize_c.h"
 
 #define MAX_EVENTS 128
 
@@ -135,20 +136,22 @@ int main(int argc, char** argv){
                 if (events[i].events & EPOLLIN) {
                     switch (edata->type)
                     {
-                    case INOTIFYFD:
+                    case INOTIFYFD: {
                         event_data_Inotify_size* I_edata = (event_data_Inotify_size*)events[i].data.ptr;
                         handle_inotify_event(edata->fd, I_edata->size);
                         break;
+                    }
                     
-                    case SIGNALFD:
+                    case SIGNALFD: {
                         void* res;
                         if ( (res=handle_signalfd_event(edata->fd, process_manager, nb_process)) == NULL){
                             printf("Unable to read signalfd\n");
                         }
                         send_message(edata->fd,res,sizeof(struct buffer_info));
                         break;
+                    }
                     
-                    case SOCK_MESSAGE:
+                    case SOCK_MESSAGE: {
                         printf("Incoming job...\n");
                         unsigned char buffer[512];
                         size_t size;
@@ -163,11 +166,11 @@ int main(int argc, char** argv){
                         }
                         read_socket(edata->fd, buffer, size);
                         printf("Command received\n");
-                        switch (receive_message_from_user(buffer)){
+                        switch (receive_message_from_user_c(buffer, size)){
                             case RUN_COMMAND:
                                 //First check if there is a program to execute
                                 printf("RUNCOMMAND\n");
-                                com= receive_command(buffer,size);
+                                com= receive_command_c(buffer,size);
                                 struct clone_parameters* param = extract_clone_parameters(com);
                                 if(param!=NULL){
                                     char buffer[20]="errFile";
@@ -180,18 +183,18 @@ int main(int argc, char** argv){
                                     info_child* res;
                                     res = handle_clone_event(param,err_file);
                                     if(res==NULL){
-                                        send_message(edata->fd, (void*)send_childcreationerror_to_user((uint32_t)errno), sizeof(struct buffer_info));
+                                        send_message(edata->fd, (void*)send_childcreationerror_to_user_c((uint32_t)errno), sizeof(struct buffer_info));
                                     }else{
                                         if(manager_add_process(res->child_id, process_manager, err_file, res->stack_p, MAX_PROCESS)){
                                             nb_process++;
                                         }
-                                        struct buffer_info* result_message = send_processlaunched_to_user(res->child_id);
+                                        struct buffer_info* result_message = send_processlaunched_to_user_c(res->child_id);
                                         send_message(edata->fd,(void*)result_message,sizeof(struct buffer_info));
                                     }
                                     free(res);
                                     free(param);
                                 }else{
-                                    send_message(edata->fd, (void*)send_childcreationerror_to_user((uint32_t)errno), sizeof(struct buffer_info));
+                                    send_message(edata->fd, (void*)send_childcreationerror_to_user_c((uint32_t)errno), sizeof(struct buffer_info));
                                 }
                                 process_surveillance_requests(com,inotifyFd,epollfd, communication_socket->sockfd);
 
@@ -200,7 +203,7 @@ int main(int argc, char** argv){
 
                             case KILL_PROCESS:
                                 printf("KILLPROCESS\n");
-                                int pid = receive_kill(buffer,size);
+                                int pid = receive_kill_c(buffer,size);
                                 if (pid==0){ //Kill Daemon
                                     free_manager(process_manager, nb_process);
                                     kill(-getpgrp(), SIGTERM); // Kill all process of the group
@@ -216,7 +219,8 @@ int main(int argc, char** argv){
                     
                         }
                         break;
-                    case SOCK_CONNEXION:
+                    }
+                    case SOCK_CONNEXION: {
                         event_data_sock* edata_sock = (event_data_sock*)events[i].data.ptr;
                         int new_connexion = accept_new_connexion(edata_sock->sock_info);
                         //Add our communication socket to the event list
@@ -234,8 +238,8 @@ int main(int argc, char** argv){
                         }
                         num_inotifyFD++;
 
-                        struct buffer_info* info = send_tcpsocketlistening_to_user(destPort);
-                        printf("size : %zu", info->size);
+                        struct buffer_info* info = send_tcpsocketlistening_to_user_c(destPort);
+                        printf("size : %u", info->size);
                         send_message(new_connexion,&info->size,sizeof(info->size));
                         send_message(new_connexion,info->buffer,info->size);
                         break;
@@ -243,6 +247,7 @@ int main(int argc, char** argv){
                     default:
                         break;
                     }
+                }
                     
                 } else {                /* POLLERR | POLLHUP */
                     printf("    closing fd %d\n", edata->fd);

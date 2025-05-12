@@ -10,6 +10,7 @@
 #include "../include/clone.h"
 #include <assert.h>
 #include "../include/Network.h"
+#include "../include/serialize_c.h"
 #include <sys/inotify.h>
 
 unsigned char buffer[512];
@@ -44,7 +45,7 @@ int try_connecting_to_daemon(int sock, struct sockaddr_in serv_addr){
     printf("Mess received\n");
     fflush(stdout);
 
-    int port = receive_TCPSocket(buffer,size);
+    int port = receive_TCPSocketListening_c(buffer,size);
 
     printf("Mess deserialized\n");
     fflush(stdout);
@@ -65,7 +66,7 @@ int try_connecting_to_daemon(int sock, struct sockaddr_in serv_addr){
 
 int try_launching_process(int sock, struct sockaddr_in serv_addr, command* com){
 
-    struct buffer_info* buffer = send_command_to_demon(com);
+    struct buffer_info* buffer = send_command_to_demon_c(com);
 
     if(send(sock, &buffer->size, sizeof(size_t),0)==-1){
         close(sock);
@@ -95,7 +96,7 @@ int try_launching_process(int sock, struct sockaddr_in serv_addr, command* com){
         exit(1);
     }
 
-    int pid = receive_processlaunched(buffer,size);
+    int pid = receive_processlaunched_c(buffer,size);
 
     printf("pid : %d", pid);
 
