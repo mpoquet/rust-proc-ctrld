@@ -1,4 +1,5 @@
 #include "../include/Network.h"
+#include "../include/data_structs.h" 
 
 
 /*===============================================PART TCP CONNEXION======================================================*/
@@ -75,15 +76,52 @@ int accept_new_connexion(struct socket_info* info){
     return new_socket;
 }
 
-int read_socket(int serveur_fd, void* buffer, int size){
-    int valread = read(serveur_fd, buffer, size);
+struct buffer_info* read_socket_message(int socket) {
+    struct buffer_info* info = malloc(sizeof(struct buffer_info));
+    if (!info) {
+        return NULL;
+    }
 
-    return valread;
+    // Lire d'abord la taille
+    if (read(socket, &info->size, sizeof(size_t)) != sizeof(size_t)) {
+        free(info);
+        return NULL;
+    }
+
+    // Allouer le buffer pour les données
+    info->buffer = malloc(info->size);
+    if (!info->buffer) {
+        free(info);
+        return NULL;
+    }
+
+    // Lire les données
+    if (read(socket, info->buffer, info->size) != info->size) {
+        free(info->buffer);
+        free(info);
+        return NULL;
+    }
+
+    return info;
 }
 
-int send_message(int socket, void* buffer, int size){
-    if(send(socket, buffer, size, 0)!=size){
+int send_message(int socket, struct buffer_info* info) {
+    // Allouer un buffer temporaire pour contenir size + données
+    uint8_t* temp_buffer = malloc(sizeof(size_t) + info->size);
+    if (!temp_buffer) {
         return -1;
     }
-    return size;
+
+    // Copier la taille puis les données
+    memcpy(temp_buffer, &info->size, sizeof(size_t));
+    memcpy(temp_buffer + sizeof(size_t), info->buffer, info->size);
+
+    // Envoyer en un seul send()
+    ssize_t sent = send(socket, temp_buffer, sizeof(size_t) + info->size, 0);
+    free(temp_buffer);
+
+    if (sent != sizeof(size_t) + info->size) {
+        return -1;
+    }
+    return sent;
 }

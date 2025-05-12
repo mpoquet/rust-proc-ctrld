@@ -147,16 +147,16 @@ int main(int argc, char** argv){
                         if ( (res=handle_signalfd_event(edata->fd, process_manager, nb_process)) == NULL){
                             printf("Unable to read signalfd\n");
                         }
-                        send_message(edata->fd,res,sizeof(struct buffer_info));
+                        send_message(edata->fd,res);
                         break;
                     }
                     
                     case SOCK_MESSAGE: {
                         printf("Incoming job...\n");
-                        unsigned char buffer[512];
-                        size_t size;
-                        int Size = read_socket(edata->fd, &size, sizeof(size_t));
-                        if(Size==0){
+                        struct buffer_info* info = read_socket_message(edata->fd);
+                        uint8_t buffer = info->buffer;
+                        int size = info->size;
+                        if(size==0){
                             printf("The socket has been closed\n");
                             epoll_ctl(epollfd, EPOLL_CTL_DEL, edata->fd, NULL);
                             close(edata->fd);          
@@ -164,7 +164,6 @@ int main(int argc, char** argv){
                             num_inotifyFD--;
                             break;
                         }
-                        read_socket(edata->fd, buffer, size);
                         printf("Command received\n");
                         switch (receive_message_from_user_c(buffer, size)){
                             case RUN_COMMAND:
@@ -183,18 +182,18 @@ int main(int argc, char** argv){
                                     info_child* res;
                                     res = handle_clone_event(param,err_file);
                                     if(res==NULL){
-                                        send_message(edata->fd, (void*)send_childcreationerror_to_user_c((uint32_t)errno), sizeof(struct buffer_info));
+                                        send_message(edata->fd, (void*)send_childcreationerror_to_user_c((uint32_t)errno));
                                     }else{
                                         if(manager_add_process(res->child_id, process_manager, err_file, res->stack_p, MAX_PROCESS)){
                                             nb_process++;
                                         }
                                         struct buffer_info* result_message = send_processlaunched_to_user_c(res->child_id);
-                                        send_message(edata->fd,(void*)result_message,sizeof(struct buffer_info));
+                                        send_message(edata->fd,(void*)result_message);
                                     }
                                     free(res);
                                     free(param);
                                 }else{
-                                    send_message(edata->fd, (void*)send_childcreationerror_to_user_c((uint32_t)errno), sizeof(struct buffer_info));
+                                    send_message(edata->fd, (void*)send_childcreationerror_to_user_c((uint32_t)errno));
                                 }
                                 process_surveillance_requests(com,inotifyFd,epollfd, communication_socket->sockfd);
 
@@ -240,8 +239,7 @@ int main(int argc, char** argv){
 
                         struct buffer_info* info = send_tcpsocketlistening_to_user_c(destPort);
                         printf("size : %u", info->size);
-                        send_message(new_connexion,&info->size,sizeof(info->size));
-                        send_message(new_connexion,info->buffer,info->size);
+                        send_message(new_connexion, info);
                         break;
 
                     default:
