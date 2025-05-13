@@ -94,7 +94,7 @@ def serialisation(path, args, envp, flags, stack_size):
     demon.SurveillanceEvent.AddEventType(bldr, demon.Surveillance.Surveillance().Inotify)
     demon.SurveillanceEvent.AddEvent(bldr, inotify)
     surveillance2 = demon.SurveillanceEvent.End(bldr)
-
+    
 
     #sérialisation de toWatch
     demon.RunCommand.StartToWatchVector(bldr, 2)
@@ -102,6 +102,7 @@ def serialisation(path, args, envp, flags, stack_size):
     bldr.PrependUOffsetTRelative(surveillance2)
     to_watch = bldr.EndVector()
     '''
+    
 
 
     #Serialisation RunCommand
@@ -111,14 +112,16 @@ def serialisation(path, args, envp, flags, stack_size):
     demon.RunCommand.AddEnvp(bldr, envp_bldr)
     demon.RunCommand.AddFlags(bldr, flags)
     demon.RunCommand.AddStackSize(bldr, stack_size)
-    #demon.RunCommand.AddToWatch(bldr, to_watch)
+    # demon.RunCommand.AddToWatch(bldr, to_watch)
 
     commande = demon.RunCommand.End(bldr)
     bldr.Finish(commande)
 
     buf = bldr.Output()
+    message_length = len(buf)
+    message = message_length.to_bytes(4, byteorder='little') + buf
 
-    return buf
+    return message
 
     #Pour tester l'objet envoyé
     #test = demon.RunCommand.RunCommand.GetRootAs(buf, 0)

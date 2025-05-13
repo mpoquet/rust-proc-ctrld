@@ -37,3 +37,6 @@ cmake-build-*/
 # ======================
 **/*.rs.bk
 Cargo.lock
+
+.pytest_cache/
+__pycache__/

@@ -1,3 +1,6 @@
+from serialisation_python import serialisation
+from deserialisation import handler
+
 import subprocess
 import time
 import os
@@ -57,4 +60,12 @@ def test_echo_bonjour(daemon_process):
         pytest.fail("Échec de la connexion au démon.")
 
     # Envoi via la sérialisation
-    command = "echo bonjour"
+    buf = serialisation("echo", "bonjour", "", 0, 0)
+    client.sendall(buf)
+
+    # Réception de la réponse
+    response = client.recv(1024)
+    if not response:
+        pytest.fail("Aucune réponse reçue du démon.")
+    handler(response)
+    
