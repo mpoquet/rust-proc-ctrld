@@ -64,8 +64,6 @@ fn handle_message(buff: &[u8]) -> ReturnHandleMessage {
 
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("Command to the daemon :");
-
     let mut presence_clone = false;
     let mut flag: u32 = 0;
     let mut stack: u32 = 0;
@@ -105,9 +103,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         presence_clone = true;
     }
 
-    println!("path : {}", path_command);
-    println!("arguments : {}", args_command);
-    println!("environnements : {}", envs_command);
+    // println!("path : {}", path_command);
+    // println!("arguments : {}", args_command);
+    // println!("environnements : {}", envs_command);
 
     if presence_clone{
         println!("flag : {}", flag);
@@ -116,10 +114,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     //Attention : Le dernier string contient un \n
     let args_tab: Vec<&str> = args_command.split(" ").collect();
-    println!("args_tab = {:?}", args_tab);
+    // println!("args_tab = {:?}", args_tab);
 
     let args_envs: Vec<&str> = envs_command.split(" ").collect();
-    println!("envs_tab = {:?}", args_envs);
+    // println!("envs_tab = {:?}", args_envs);
 
     // Match vers sérialisation
 
