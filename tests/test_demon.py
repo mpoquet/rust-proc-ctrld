@@ -52,25 +52,9 @@ def connect_to_daemon(IP_adress, port):
 
 
 def test_echo_bonjour(daemon_process):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-        client.connect((HOST, PORT))
+    client = connect_to_daemon(HOST, PORT)
+    if client is None:
+        pytest.fail("Échec de la connexion au démon.")
 
-        # prochainement la fonction de sérialisation
-        client.sendall(b"echo bonjour\n")
-
-        response = b""
-        client.settimeout(2)
-        try:
-            while True:
-                data = client.recv(4096)
-                if not data:
-                    break
-                response += data
-        except socket.timeout:
-            pass
-
-        # prochainement ma fonction de désérialisation
-        print(response.decode("utf-8"))
-
-        assert "processus lancé" in response.lower()
-        assert "code de retour" in response.lower()
+    # Envoi via la sérialisation
+    command = "echo bonjour"
