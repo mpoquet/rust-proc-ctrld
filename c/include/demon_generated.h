@@ -45,6 +45,15 @@ struct TCPSocketListeningBuilder;
 struct InotifyPathUpdated;
 struct InotifyPathUpdatedBuilder;
 
+struct InotifyWatchListUpdated;
+struct InotifyWatchListUpdatedBuilder;
+
+struct SocketWatched;
+struct SocketWatchedBuilder;
+
+struct SocketWatchTerminated;
+struct SocketWatchTerminatedBuilder;
+
 struct EstablishTCPConnection;
 struct EstablishTCPConnectionBuilder;
 
@@ -91,6 +100,39 @@ inline const char *EnumNameInotifyEvent(InotifyEvent e) {
   if (::flatbuffers::IsOutRange(e, InotifyEvent_modified, InotifyEvent_accessed)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesInotifyEvent()[index];
+}
+
+enum SocketState : int8_t {
+  SocketState_unknown = 0,
+  SocketState_created = 1,
+  SocketState_listeing = 2,
+  SocketState_MIN = SocketState_unknown,
+  SocketState_MAX = SocketState_listeing
+};
+
+inline const SocketState (&EnumValuesSocketState())[3] {
+  static const SocketState values[] = {
+    SocketState_unknown,
+    SocketState_created,
+    SocketState_listeing
+  };
+  return values;
+}
+
+inline const char * const *EnumNamesSocketState() {
+  static const char * const names[4] = {
+    "unknown",
+    "created",
+    "listeing",
+    nullptr
+  };
+  return names;
+}
+
+inline const char *EnumNameSocketState(SocketState e) {
+  if (::flatbuffers::IsOutRange(e, SocketState_unknown, SocketState_listeing)) return "";
+  const size_t index = static_cast<size_t>(e);
+  return EnumNamesSocketState()[index];
 }
 
 enum Surveillance : uint8_t {
@@ -155,11 +197,14 @@ enum Event : uint8_t {
   Event_ProcessTerminated = 7,
   Event_TCPSocketListening = 8,
   Event_InotifyPathUpdated = 9,
+  Event_InotifyWatchListUpdated = 10,
+  Event_SocketWatched = 11,
+  Event_SocketWatchTerminated = 12,
   Event_MIN = Event_NONE,
-  Event_MAX = Event_InotifyPathUpdated
+  Event_MAX = Event_SocketWatchTerminated
 };
 
-inline const Event (&EnumValuesEvent())[10] {
+inline const Event (&EnumValuesEvent())[13] {
   static const Event values[] = {
     Event_NONE,
     Event_RunCommand,
@@ -170,13 +215,16 @@ inline const Event (&EnumValuesEvent())[10] {
     Event_ChildCreationError,
     Event_ProcessTerminated,
     Event_TCPSocketListening,
-    Event_InotifyPathUpdated
+    Event_InotifyPathUpdated,
+    Event_InotifyWatchListUpdated,
+    Event_SocketWatched,
+    Event_SocketWatchTerminated
   };
   return values;
 }
 
 inline const char * const *EnumNamesEvent() {
-  static const char * const names[11] = {
+  static const char * const names[14] = {
     "NONE",
     "RunCommand",
     "KillProcess",
@@ -187,13 +235,16 @@ inline const char * const *EnumNamesEvent() {
     "ProcessTerminated",
     "TCPSocketListening",
     "InotifyPathUpdated",
+    "InotifyWatchListUpdated",
+    "SocketWatched",
+    "SocketWatchTerminated",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameEvent(Event e) {
-  if (::flatbuffers::IsOutRange(e, Event_NONE, Event_InotifyPathUpdated)) return "";
+  if (::flatbuffers::IsOutRange(e, Event_NONE, Event_SocketWatchTerminated)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesEvent()[index];
 }
@@ -236,6 +287,18 @@ template<> struct EventTraits<demon::TCPSocketListening> {
 
 template<> struct EventTraits<demon::InotifyPathUpdated> {
   static const Event enum_value = Event_InotifyPathUpdated;
+};
+
+template<> struct EventTraits<demon::InotifyWatchListUpdated> {
+  static const Event enum_value = Event_InotifyWatchListUpdated;
+};
+
+template<> struct EventTraits<demon::SocketWatched> {
+  static const Event enum_value = Event_SocketWatched;
+};
+
+template<> struct EventTraits<demon::SocketWatchTerminated> {
+  static const Event enum_value = Event_SocketWatchTerminated;
 };
 
 bool VerifyEvent(::flatbuffers::Verifier &verifier, const void *obj, Event type);
@@ -846,6 +909,149 @@ inline ::flatbuffers::Offset<InotifyPathUpdated> CreateInotifyPathUpdatedDirect(
       size_limit);
 }
 
+struct InotifyWatchListUpdated FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef InotifyWatchListUpdatedBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_PATH = 4
+  };
+  const ::flatbuffers::String *path() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_PATH);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_PATH) &&
+           verifier.VerifyString(path()) &&
+           verifier.EndTable();
+  }
+};
+
+struct InotifyWatchListUpdatedBuilder {
+  typedef InotifyWatchListUpdated Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_path(::flatbuffers::Offset<::flatbuffers::String> path) {
+    fbb_.AddOffset(InotifyWatchListUpdated::VT_PATH, path);
+  }
+  explicit InotifyWatchListUpdatedBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<InotifyWatchListUpdated> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<InotifyWatchListUpdated>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<InotifyWatchListUpdated> CreateInotifyWatchListUpdated(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> path = 0) {
+  InotifyWatchListUpdatedBuilder builder_(_fbb);
+  builder_.add_path(path);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<InotifyWatchListUpdated> CreateInotifyWatchListUpdatedDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *path = nullptr) {
+  auto path__ = path ? _fbb.CreateString(path) : 0;
+  return demon::CreateInotifyWatchListUpdated(
+      _fbb,
+      path__);
+}
+
+struct SocketWatched FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef SocketWatchedBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_PORT = 4
+  };
+  int32_t port() const {
+    return GetField<int32_t>(VT_PORT, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<int32_t>(verifier, VT_PORT, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct SocketWatchedBuilder {
+  typedef SocketWatched Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_port(int32_t port) {
+    fbb_.AddElement<int32_t>(SocketWatched::VT_PORT, port, 0);
+  }
+  explicit SocketWatchedBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<SocketWatched> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<SocketWatched>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<SocketWatched> CreateSocketWatched(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    int32_t port = 0) {
+  SocketWatchedBuilder builder_(_fbb);
+  builder_.add_port(port);
+  return builder_.Finish();
+}
+
+struct SocketWatchTerminated FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef SocketWatchTerminatedBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_PORT = 4,
+    VT_STATE = 6
+  };
+  int32_t port() const {
+    return GetField<int32_t>(VT_PORT, 0);
+  }
+  demon::SocketState state() const {
+    return static_cast<demon::SocketState>(GetField<int8_t>(VT_STATE, 0));
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<int32_t>(verifier, VT_PORT, 4) &&
+           VerifyField<int8_t>(verifier, VT_STATE, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct SocketWatchTerminatedBuilder {
+  typedef SocketWatchTerminated Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_port(int32_t port) {
+    fbb_.AddElement<int32_t>(SocketWatchTerminated::VT_PORT, port, 0);
+  }
+  void add_state(demon::SocketState state) {
+    fbb_.AddElement<int8_t>(SocketWatchTerminated::VT_STATE, static_cast<int8_t>(state), 0);
+  }
+  explicit SocketWatchTerminatedBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<SocketWatchTerminated> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<SocketWatchTerminated>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<SocketWatchTerminated> CreateSocketWatchTerminated(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    int32_t port = 0,
+    demon::SocketState state = demon::SocketState_unknown) {
+  SocketWatchTerminatedBuilder builder_(_fbb);
+  builder_.add_port(port);
+  builder_.add_state(state);
+  return builder_.Finish();
+}
+
 struct EstablishTCPConnection FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef EstablishTCPConnectionBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -978,6 +1184,15 @@ struct Message FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const demon::InotifyPathUpdated *events_as_InotifyPathUpdated() const {
     return events_type() == demon::Event_InotifyPathUpdated ? static_cast<const demon::InotifyPathUpdated *>(events()) : nullptr;
   }
+  const demon::InotifyWatchListUpdated *events_as_InotifyWatchListUpdated() const {
+    return events_type() == demon::Event_InotifyWatchListUpdated ? static_cast<const demon::InotifyWatchListUpdated *>(events()) : nullptr;
+  }
+  const demon::SocketWatched *events_as_SocketWatched() const {
+    return events_type() == demon::Event_SocketWatched ? static_cast<const demon::SocketWatched *>(events()) : nullptr;
+  }
+  const demon::SocketWatchTerminated *events_as_SocketWatchTerminated() const {
+    return events_type() == demon::Event_SocketWatchTerminated ? static_cast<const demon::SocketWatchTerminated *>(events()) : nullptr;
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint8_t>(verifier, VT_EVENTS_TYPE, 1) &&
@@ -1021,6 +1236,18 @@ template<> inline const demon::TCPSocketListening *Message::events_as<demon::TCP
 
 template<> inline const demon::InotifyPathUpdated *Message::events_as<demon::InotifyPathUpdated>() const {
   return events_as_InotifyPathUpdated();
+}
+
+template<> inline const demon::InotifyWatchListUpdated *Message::events_as<demon::InotifyWatchListUpdated>() const {
+  return events_as_InotifyWatchListUpdated();
+}
+
+template<> inline const demon::SocketWatched *Message::events_as<demon::SocketWatched>() const {
+  return events_as_SocketWatched();
+}
+
+template<> inline const demon::SocketWatchTerminated *Message::events_as<demon::SocketWatchTerminated>() const {
+  return events_as_SocketWatchTerminated();
 }
 
 struct MessageBuilder {
@@ -1122,6 +1349,18 @@ inline bool VerifyEvent(::flatbuffers::Verifier &verifier, const void *obj, Even
     }
     case Event_InotifyPathUpdated: {
       auto ptr = reinterpret_cast<const demon::InotifyPathUpdated *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Event_InotifyWatchListUpdated: {
+      auto ptr = reinterpret_cast<const demon::InotifyWatchListUpdated *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Event_SocketWatched: {
+      auto ptr = reinterpret_cast<const demon::SocketWatched *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Event_SocketWatchTerminated: {
+      auto ptr = reinterpret_cast<const demon::SocketWatchTerminated *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

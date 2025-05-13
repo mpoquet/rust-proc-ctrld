@@ -15,12 +15,19 @@ buffer_info* send_childcreationerror_to_user(uint32_t error_code);
 buffer_info* send_processterminated_to_user(int32_t pid, uint32_t error_code);
 buffer_info* send_tcpsocketlistening_to_user(uint16_t port);
 buffer_info* send_inotifypathupdated_to_user(struct InotifyPathUpdated *inotify);
+buffer_info* send_inotifywatchlistupdated_to_user(char *path);
+buffer_info* send_socketwatched_to_user(int32_t port);
+buffer_info* send_socketwatchterminated_to_user(struct socket_watch_info* socket_info);
 
 int32_t receive_processlaunched(uint8_t *buffer, int size);
 int32_t receive_childcreationerror(uint8_t *buffer, int size);
 process_terminated_info* receive_processterminated(uint8_t *buffer, int size);
 uint16_t receive_TCPSocketListening(uint8_t *buffer, int size);
 InotifyPathUpdated* receive_inotifypathupdated(uint8_t *buffer, int size);
+char* receive_inotifywatchlistupdated(uint8_t *buffer, int size);
+int32_t receive_socketwatched(uint8_t *buffer, int size);
+struct socket_watch_info* receive_socketwatchterminated(uint8_t *buffer, int size)
+
 
 Event receive_message_from_demon(uint8_t *buffer, int size);
 

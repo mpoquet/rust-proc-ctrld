@@ -10,7 +10,7 @@
 
 #include "../include/serialize.h"
 #include <flatbuffers/flatbuffers.h>
-#include "../include/demon_generated.h"  // Path relative to source file
+#include "../include/demon_generated.h"
 
 //
 ///PARTIE USER->DEMON
@@ -428,6 +428,105 @@ buffer_info* send_inotifypathupdated_to_user(InotifyPathUpdated *inotify) {
     return info;
 }
 
+//fonction pour envoyer un inofitywatchlistupdated a l'user
+buffer_info* send_inotifywatchlistupdated_to_user(char *path) {
+    flatbuffers::FlatBufferBuilder builder(1024);
+    buffer_info* info = new buffer_info();  
+    if (!info) {
+        return nullptr;
+    }
+    
+    try {
+        auto path_str = builder.CreateString(path);
+        
+        auto inotify_watch_list_updated = demon::CreateInotifyWatchListUpdated(
+            builder,
+            path_str
+        );
+        
+        auto event = demon::CreateMessage(
+            builder, 
+            demon::Event_InotifyWatchListUpdated, 
+            inotify_watch_list_updated.Union()
+        );
+        
+        builder.Finish(event);
+        
+        size_t size = builder.GetSize();
+        uint8_t* buffer_copy = new uint8_t[size];
+        memcpy(buffer_copy, builder.GetBufferPointer(), size);
+        info->buffer = buffer_copy;
+        info->size = size;
+    } catch (...) {
+        delete info;
+        throw;
+    }
+    
+    return info;
+}
+
+//fonction pour envoyer un socketwatched a l'user
+buffer_info* send_socketwatched_to_user(int32_t port) {
+    flatbuffers::FlatBufferBuilder builder(1024);
+    buffer_info* info = new buffer_info();  
+    if (!info) {
+        return nullptr;
+    }
+    
+    try {
+        auto socket_watched = demon::CreateSocketWatched(builder, port);
+        auto event = demon::CreateMessage(builder, demon::Event_SocketWatched, socket_watched.Union());
+        builder.Finish(event);
+        
+        size_t size = builder.GetSize();
+        uint8_t* buffer_copy = new uint8_t[size];
+        memcpy(buffer_copy, builder.GetBufferPointer(), size);
+        info->buffer = buffer_copy;
+        info->size = size;
+    } catch (...) {
+        delete info;
+        throw;
+    }
+    
+    return info;
+}
+
+//fonction pour envoyer un socketwatchterminated a l'user
+buffer_info* send_socketwatchterminated_to_user(struct socket_watch_info* socket_info) {
+    flatbuffers::FlatBufferBuilder builder(1024);
+    buffer_info* info = new buffer_info();  
+    if (!info) {
+        return nullptr;
+    }
+    
+    try {
+        auto socket_watch_terminated = demon::CreateSocketWatchTerminated(
+            builder,
+            socket_info->port,
+            static_cast<demon::SocketState>(socket_info->state)
+        );
+        
+        auto event = demon::CreateMessage(
+            builder, 
+            demon::Event_SocketWatchTerminated, 
+            socket_watch_terminated.Union()
+        );
+        
+        builder.Finish(event);
+        
+        size_t size = builder.GetSize();
+        uint8_t* buffer_copy = new uint8_t[size];
+        memcpy(buffer_copy, builder.GetBufferPointer(), size);
+        info->buffer = buffer_copy;
+        info->size = size;
+    } catch (...) {
+        delete info;
+        throw;
+    }
+    
+    return info;
+}
+
 //fonction pour reçevoir processlaunched du démon
 int32_t receive_processlaunched(uint8_t *buffer, int size) {
     if (!buffer || size <= 0) {
@@ -559,6 +658,76 @@ InotifyPathUpdated* receive_inotifypathupdated(uint8_t *buffer, int size) {
     }
 }
 
+//fonction pour reçevoir inotifywatchlistupdated du démon
+char* receive_inotifywatchlistupdated(uint8_t *buffer, int size) {
+    if (!buffer || size <= 0) {
+        return nullptr;
+    }
+
+    flatbuffers::Verifier verifier(buffer, size);
+    if (!demon::VerifyMessageBuffer(verifier)) {
+        return nullptr;
+    }
+
+    auto message = demon::GetMessage(buffer);
+    if (message->events_type() != demon::Event_InotifyWatchListUpdated) {
+        return nullptr;
+    }
+
+    auto inotify_watch_list_updated = message->events_as_InotifyWatchListUpdated();
+    char* path = strdup(inotify_watch_list_updated->path()->c_str());
+    
+    return path;
+}
+
+//fonction pour reçevoir socketwatched du démon
+int32_t receive_socketwatched(uint8_t *buffer, int size) {
+    if (!buffer || size <= 0) {
+        return -1;
+    }
+
+    flatbuffers::Verifier verifier(buffer, size);
+    if (!demon::VerifyMessageBuffer(verifier)) {
+        return -1;
+    }
+
+    auto message = demon::GetMessage(buffer);
+    if (message->events_type() != demon::Event_SocketWatched) {
+        return -1;
+    }
+
+    auto socket_watched = message->events_as_SocketWatched();
+    return socket_watched->port();
+}
+
+//fonction pour reçevoir socketwatchterminated du démon
+struct socket_watch_info* receive_socketwatchterminated(uint8_t *buffer, int size) {
+    if (!buffer || size <= 0) {
+        return nullptr;
+    }
+
+    flatbuffers::Verifier verifier(buffer, size);
+    if (!demon::VerifyMessageBuffer(verifier)) {
+        return nullptr;
+    }
+
+    auto message = demon::GetMessage(buffer);
+    if (message->events_type() != demon::Event_SocketWatchTerminated) {
+        return nullptr;
+    }
+
+    auto socket_watch_terminated = message->events_as_SocketWatchTerminated();
+    struct socket_watch_info* socket_info = new socket_watch_info();  
+    if (!socket_info) {
+        return nullptr;
+    }
+    
+    socket_info->port = socket_watch_terminated->port();
+    socket_info->state = static_cast<SocketState>(socket_watch_terminated->state());
+    
+    return socket_info;
+}
+
 //permet a l'user de savoir de quel type est le message reçu
 // (processlaunched, childcreationerror, processterminated, tcpsocketlistening, inotifypathupdated)
 Event receive_message_from_demon(uint8_t *buffer, int size) {
@@ -583,6 +752,12 @@ Event receive_message_from_demon(uint8_t *buffer, int size) {
             return TCP_SOCKET_LISTENING;
         case demon::Event_InotifyPathUpdated:
             return INOTIFY_PATH_UPDATED;
+        case demon::Event_InotifyWatchListUpdated:
+            return INOTIFY_WATCH_LIST_UPDATED;
+        case demon::Event_SocketWatched:
+            return SOCKET_WATCHED;
+        case demon::Event_SocketWatchTerminated:
+            return SOCKET_WATCH_TERMINATED;
         default:
             return NONE;
     }

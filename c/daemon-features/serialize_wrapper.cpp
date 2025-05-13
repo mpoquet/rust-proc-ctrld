@@ -94,6 +94,30 @@ extern "C" {
         }
     }
 
+    struct buffer_info* send_inotifywatchlistupdated_to_user_c(char *path) {
+        try {
+            return send_inotifywatchlistupdated_to_user(path);
+        } catch (...) {
+            return nullptr;
+        }
+    }
+
+    struct buffer_info* send_socketwatched_to_user_c(int32_t port) {
+        try {
+            return send_socketwatched_to_user(port);
+        } catch (...) {
+            return nullptr;
+        }
+    }
+
+    struct buffer_info* send_socketwatchterminated_to_user_c(struct socket_watch_info* socket_info) {
+        try {
+            return send_socketwatchterminated_to_user(socket_info);
+        } catch (...) {
+            return nullptr;
+        }
+    }
+
     int32_t receive_processlaunched_c(uint8_t *buffer, int size) {
         try {
             return receive_processlaunched(buffer, size);
@@ -129,6 +153,30 @@ extern "C" {
     struct InotifyPathUpdated* receive_inotifypathupdated_c(uint8_t *buffer, int size) {
         try {
             return receive_inotifypathupdated(buffer, size);
+        } catch (...) {
+            return nullptr;
+        }
+    }
+
+    char* receive_inotifywatchlistupdated_c(uint8_t *buffer, int size) {
+        try {
+            return receive_inotifywatchlistupdated(buffer, size);
+        } catch (...) {
+            return nullptr;
+        }
+    }
+
+    int32_t receive_socketwatched_c(uint8_t *buffer, int size) {
+        try {
+            return receive_socketwatched(buffer, size);
+        } catch (...) {
+            return -1;
+        }
+    }
+
+    struct socket_watch_info* receive_socketwatchterminated_c(uint8_t *buffer, int size) {
+        try {
+            return receive_socketwatchterminated(buffer, size);
         } catch (...) {
             return nullptr;
         }

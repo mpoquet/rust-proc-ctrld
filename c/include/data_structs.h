@@ -24,6 +24,17 @@ struct process_terminated_info{
     uint32_t error_code;
 };
 
+enum SocketState{
+    UNKNOWN,
+    LISTENING,
+    CREATED,
+};
+
+struct socket_watch_info{
+    int32_t port;
+    enum SocketState state;
+};
+
 enum InotifyEvent{
     MODIFIED,
     CREATED,
@@ -79,6 +90,9 @@ enum Event {
     PROCESS_TERMINATED,
     TCP_SOCKET_LISTENING,
     INOTIFY_PATH_UPDATED,
+    INOTIFY_WATCH_LIST_UPDATED,
+    SOCKET_WATCHED,
+    SOCKET_WATCH_TERMINATED,
 };
 
 
