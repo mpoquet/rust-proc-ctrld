@@ -119,5 +119,8 @@ int send_message(int socket, struct buffer_info* info) {
     if (sent != sizeof(int) + info->size) {
         return -1;
     }
+
+    printf("data sent : %ld", sent);
+    free(info);
     return sent;
 }

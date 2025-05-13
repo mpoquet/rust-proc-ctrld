@@ -12,6 +12,7 @@
 #include "../include/Network.h"
 #include "../include/serialize_c.h"
 #include <sys/inotify.h>
+#include <sys/signalfd.h>
 
 unsigned char buffer[512];
 
@@ -93,7 +94,7 @@ int try_launching_process(int sock, struct sockaddr_in serv_addr, command* com){
         return -1;
     };
 
-    printf("Size received\n");
+    printf("Size received : %d\n", size);
     fflush(stdout);
 
     // <- après avoir lu et converti net_size en size
@@ -105,7 +106,7 @@ int try_launching_process(int sock, struct sockaddr_in serv_addr, command* com){
 
     int pid = receive_processlaunched_c(buf,size);
 
-    printf("pid : %d", pid);
+    printf("pid : %d\n", pid);
 
     if(pid<0){
         close(sock);
@@ -129,16 +130,18 @@ int receiving_process_terminated(int sock, struct sockaddr_in serv_addr){
     printf("Size received\n");
     fflush(stdout);
 
-    // <- après avoir lu et converti net_size en size
     if (recv(sock, buf, size, MSG_WAITALL) != size) {
         perror("recv MSG_WAITALL");
         close(sock);
         exit(1);
     }
 
+    printf("size : %d\n", size);
+    fflush(stdout);
+
     struct process_terminated_info* info = receive_processterminated_c(buf,size);
 
-    printf("pid : %d, error code : %d", info->pid, info->error_code);
+    printf("pid : %d, error code : %d\n", info->pid, info->error_code);
 
     return 0;
 }
@@ -203,7 +206,7 @@ int main(int argc, char** argv){
     printf("TEST 2 succeeded, remotely executing programs works\n");
     fflush(stdout);
 
-    assert(receiving_process_terminated(sock,serv_addr));
+    assert(receiving_process_terminated(sock,serv_addr)==0);
 
     printf("TEST 3 succeeded, getting exit status of termiated programms\n");
     fflush(stdout);

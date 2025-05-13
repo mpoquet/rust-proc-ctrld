@@ -46,7 +46,9 @@ int manager_remove_process(int pid, process_info** manager, int size){
         if (manager[i]->child_id==pid){
             free(manager[i]->stack_p);
             manager[i]->stack_p=NULL;
-            close(manager[i]->err_file);
+            if(manager[i]->err_file!=STDOUT_FILENO){
+                close(manager[i]->err_file);
+            }
             return 0;
         }
     }
@@ -62,7 +64,7 @@ int manager_add_process(pid_t pid, process_info** manager, int err_file, void* s
                 manager[j]->child_id=pid;
                 manager[j]->stack_p=stack;
                 manager[j]->err_file=err_file;
-                return 0;
+                return 1;
             }
         }
         return -1;

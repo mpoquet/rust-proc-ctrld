@@ -33,13 +33,11 @@ void timeout_handler(int signum){
     timeout=1;
 }
 
-static int process_inet_diag(const struct inet_diag_msg *diag, int port_filter)
+static int process_inet_diag(const struct inet_diag_msg *diag, int port_filter, struct socket_watch_info* sock_info)
 {
-    // On récupère les ports au format host
     uint16_t sport = ntohs(diag->id.idiag_sport);
     uint16_t dport = ntohs(diag->id.idiag_dport);
 
-    // Si ça vous intéresse, on peut aussi récupérer adresses et uid
     char src_addr[INET6_ADDRSTRLEN], dst_addr[INET6_ADDRSTRLEN];
     if (diag->idiag_family == AF_INET) {
         inet_ntop(AF_INET, &diag->id.idiag_src, src_addr, sizeof(src_addr));
@@ -49,7 +47,19 @@ static int process_inet_diag(const struct inet_diag_msg *diag, int port_filter)
         inet_ntop(AF_INET6, &diag->id.idiag_dst, dst_addr, sizeof(dst_addr));
     }
 
-    if (sport == port_filter || dport == port_filter) {
+    switch (diag->idiag_state) {
+        case 1://TCP_ESTABLISHED
+            sock_info->state=SOCKET_CREATED;
+            break;
+        case 10: //TCP_LISTEN
+            sock_info->state=SOCKET_LISTENING;
+            break;
+        default:
+            sock_info->state=SOCKET_UNKNOWN;
+            break;
+    }
+
+    if (dport == port_filter) {
         printf("[%s] %s:%u → %s:%u (inode %u, uid %u)\n",
                diag->idiag_family == AF_INET ? "IPv4" : "IPv6",
                src_addr, sport,
@@ -62,7 +72,7 @@ static int process_inet_diag(const struct inet_diag_msg *diag, int port_filter)
     return 0;
 }
 
-static int recv_tcp_diag(int nl_sock, int port_filter)
+static int recv_tcp_diag(int nl_sock, int port_filter, struct socket_watch_info* sock_info)
 {
     char buf[8192];
     struct iovec iov = { buf, sizeof(buf) };
@@ -89,7 +99,7 @@ static int recv_tcp_diag(int nl_sock, int port_filter)
             }
 
             struct inet_diag_msg *diag = NLMSG_DATA(nh);
-            if (process_inet_diag(diag, port_filter))
+            if (process_inet_diag(diag, port_filter,sock_info))
                 return 1;
         }
     }
@@ -144,6 +154,11 @@ void search_TCP_connection(int port, int communication_socket){
 
     signal(SIGALRM, timeout_handler);
 
+    struct buffer_info* info;
+    struct socket_watch_info sock_info;
+    sock_info.port=port;
+    
+
     // Socket Netlink SOCK_DIAG
     int nl_sock = socket(AF_NETLINK, SOCK_RAW, NETLINK_SOCK_DIAG);
     if (nl_sock < 0) {
@@ -156,19 +171,15 @@ void search_TCP_connection(int port, int communication_socket){
     while(!found && !timeout){
         send_tcp_diag(nl_sock, AF_INET, port); //send message for IPV4 and IPV6
         send_tcp_diag(nl_sock, AF_INET6, port);
-        recv_tcp_diag(nl_sock,port);
+        recv_tcp_diag(nl_sock,port,&sock_info);
         sleep(1);
     }
 
-    //TODO : Envoyer un message au client en cas de detection ou pas
-    if(found==1){
-        printf("Socket found\n");
-
-    }else{
-        printf("Socket not found\n");
-
+    if(found!=1){
+        sock_info.state=SOCKET_UNKNOWN;
     }
-
+    info = send_socketwatchterminated_to_user_c(&sock_info);
+    send_message(communication_socket,info);
 }
 
 struct detector_args {

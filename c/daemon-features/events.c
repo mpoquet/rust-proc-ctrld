@@ -95,14 +95,13 @@ void process_command_request(process_info **process_manager, int* nb_process, in
             send_message(com_sock, (void*)send_childcreationerror_to_user_c((uint32_t)errno));
         }else{
             if(manager_add_process(res->child_id, process_manager, err_file, res->stack_p, *nb_process)){
-                *nb_process++;
+                (*nb_process)++;
             }
             printf("process successfully launched\n");
             struct buffer_info* result_message = send_processlaunched_to_user_c(res->child_id);
             send_message(com_sock,(void*)result_message);
         }
         free(res);
-        free(param);
     }else{
         send_message(com_sock, (void*)send_childcreationerror_to_user_c((uint32_t)errno));
     }
@@ -111,6 +110,7 @@ void process_command_request(process_info **process_manager, int* nb_process, in
 //Todo add the network part when serialiation is finished
 void process_surveillance_requests(command* com, int InotifyFd, int epollfd, int communication_socket){
     struct inotify_parameters* I_param;
+    struct buffer_info* info;
     int* destport;
     if(com->to_watch_size>0){
         for(int i=0; i< com->to_watch_size;i++){
@@ -131,9 +131,13 @@ void process_surveillance_requests(command* com, int InotifyFd, int epollfd, int
                     //if size<0 no need to store size value and no need to create new inotify instance
                     inotify_add_watch(InotifyFd, I_param->root_paths, I_param->mask);
                 }
+                info = send_inotifywatchlistupdated_to_user_c(I_param->root_paths);
+                send_message(communication_socket,info);
                 break;
             case WATCH_SOCKET:
                 destport = com->to_watch[i].ptr_event;
+                info = send_socketwatched_to_user_c(*destport);
+                send_message(communication_socket,info);
                 detect_socket(*destport, communication_socket);
                 break;
             
@@ -166,7 +170,7 @@ struct clone_parameters* extract_clone_parameters(command* com){
     return NULL;
 }
 
-void* handle_SIGCHLD(struct signalfd_siginfo fdsi, process_info** manager, int size){
+struct buffer_info* handle_SIGCHLD(struct signalfd_siginfo fdsi, process_info** manager, int size){
     int wstatus;
     int exit_status;
     waitpid(fdsi.ssi_pid, &wstatus, 0);
@@ -176,66 +180,79 @@ void* handle_SIGCHLD(struct signalfd_siginfo fdsi, process_info** manager, int s
     }else if (WIFSIGNALED(wstatus)){
         exit_status= WTERMSIG(wstatus);     
     }
+    printf("child : %d exited with status : %d\n", fdsi.ssi_pid, exit_status);
     manager_remove_process(fdsi.ssi_pid,manager,size);
-    struct buffer_info* info = send_processterminated_to_user_c(fdsi.ssi_pid,exit_status);
-    return (void*) info;
+    struct buffer_info* info = send_processterminated_to_user_c((int32_t)fdsi.ssi_pid,(uint32_t)exit_status);
+    return info;
 }
 
-void* handle_signalfd_event(int fd, process_info** manager, int size){
+struct buffer_info* handle_signalfd_event(int fd, process_info** manager, int size){
     ssize_t s;
     struct signalfd_siginfo fdsi;
-    void* res=NULL;
+    struct buffer_info* res = NULL;
     s = read(fd, &fdsi, sizeof(fdsi));
     if (s != sizeof(fdsi)){
         perror("read");
         return NULL;
-        
     } 
     switch (fdsi.ssi_signo)
     {
     case SIGCHLD:
         res = handle_SIGCHLD(fdsi, manager, size);
-        return res;
         break;
     
     default:
         printf("Read unexpected signal\n");
-        return res;
         break;
     }
+    return res;
 
 }
 
 int add_event_inotifyFd(int fd, int epollfd, int size){
-    struct epoll_event* ev = malloc(sizeof(struct epoll_event));
+    struct epoll_event ev;
     event_data_Inotify_size *edata = malloc(sizeof(event_data_Inotify_size));
+    if (edata == NULL) {
+        perror("malloc");
+        close(fd);
+        return -1;
+    }
     edata->fd = fd;
     edata->type = INOTIFYFD;
     edata->size=size;
-    ev->events=EPOLLIN;
-    ev->data.ptr=edata;
+    ev.events=EPOLLIN;
+    ev.data.ptr=edata;
     printf("adding file descriptor : %d\n", fd);
-    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, ev)==-1){
+    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev)==-1){
+        perror("epoll_ctl");
         printf("error while trying to add file descriptor to epoll interest list");
         free(edata);
-        free(ev);
     }
     return 0;
 }
 
-int add_event_signalFd(int fd, int epollfd){
-    struct epoll_event* ev = malloc(sizeof(struct epoll_event));
+int add_event_signalFd(int fd, int epollfd) {
+    struct epoll_event ev;
     event_data_t *edata = malloc(sizeof(event_data_t));
-    edata->fd = fd;
-    edata->type = SIGNALFD;
-    ev->events=EPOLLIN;
-    ev->data.ptr=edata;
-    printf("adding file descriptor : %d\n", fd);
-    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, ev)==-1){
-        printf("error while trying to add file descriptor to epoll interest list");
-        free(edata);
-        free(ev);
+    if (edata == NULL) {
+        perror("malloc");
+        close(fd);
         return -1;
     }
+
+    edata->fd = fd;
+    edata->type = SIGNALFD;
+    ev.events = EPOLLIN;
+    ev.data.ptr = edata;
+    
+    printf("adding file descriptor : %d\n", fd);
+    
+    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev) == -1) {
+        perror("epoll_ctl");
+        free(edata);
+        close(fd);
+        return -1;
+    }
+    
     return 0;
 }

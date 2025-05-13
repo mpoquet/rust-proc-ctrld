@@ -56,9 +56,9 @@ int main(int argc, char** argv){
     */
     process_info** process_manager = create_process_manager(MAX_PROCESS);
 
-    struct socket_info* communication_socket = establish_connection(destPort);
+    int communication_socket;
 
-    //TODO : Once the establish function is written do not forget to add the socket to inotify
+    struct socket_info* server_socket = establish_connection(destPort);
 
     int err_file = initialize_error_file("daemon_trace.txt");
 
@@ -80,12 +80,12 @@ int main(int argc, char** argv){
         perror("malloc");
         return -1;
     }
-    edata->fd = communication_socket->sockfd;
+    edata->fd = server_socket->sockfd;
     edata->type = SOCK_CONNEXION;
-    edata->sock_info=communication_socket;
+    edata->sock_info=server_socket;
     ev.events=EPOLLIN;
     ev.data.ptr=edata;
-    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, communication_socket->sockfd, &ev)==-1){
+    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, server_socket->sockfd, &ev)==-1){
         printf("error while trying to add file descriptor to epoll interest list");
         free(edata);
         return -1;
@@ -98,7 +98,7 @@ int main(int argc, char** argv){
         perror("inotify");
     }
 
-    add_event_inotifyFd(epollfd,inotifyFd,0);
+    add_event_inotifyFd(inotifyFd, epollfd,0);
 
     //Add the signal SIGCHLD to the watch list for future child creation
     sigset_t mask;
@@ -106,9 +106,9 @@ int main(int argc, char** argv){
     sigemptyset(&mask);
     sigaddset(&mask, SIGCHLD);
 
-    if (sigprocmask(SIG_BLOCK,&mask,NULL)==-1){
+    if (sigprocmask(SIG_SETMASK, &mask, NULL) == -1) {
         perror("sigprocmask");
-        exit(1);
+        return 1;
     }
 
     sfd=signalfd(-1,&mask,0);
@@ -135,16 +135,19 @@ int main(int argc, char** argv){
                     {
                     case INOTIFYFD: {
                         event_data_Inotify_size* I_edata = (event_data_Inotify_size*)events[i].data.ptr;
-                        handle_inotify_event(edata->fd, I_edata->size,communication_socket->sockfd);
+                        handle_inotify_event(edata->fd, I_edata->size,communication_socket);
                         break;
                     }
                     
                     case SIGNALFD: {
-                        void* res;
+                        printf("signal received\n");
+                        printf("nb_process : %d\n", nb_process);
+                        struct buffer_info* res;
                         if ((res=handle_signalfd_event(edata->fd, process_manager, nb_process)) == NULL){
                             printf("Unable to read signalfd\n");
                         }else{
-                            send_message(edata->fd,res);
+                            printf("sending child terminated\n");
+                            send_message(communication_socket,res);
                         }
                         break;
                     }
@@ -156,9 +159,10 @@ int main(int argc, char** argv){
                         int size = info->size;
                         if(size==0){
                             printf("The socket has been closed\n");
-                            epoll_ctl(epollfd, EPOLL_CTL_DEL, edata->fd, NULL);
+                            fflush(stdout);
                             close(edata->fd);          
                             free(edata);
+                            epoll_ctl(epollfd, EPOLL_CTL_DEL, edata->fd, NULL);
                             num_inotifyFD--;
                             break;
                         }
@@ -210,7 +214,7 @@ int main(int argc, char** argv){
                             return -1;
                         }
                         num_inotifyFD++;
-
+                        communication_socket=new_connexion; //Temporary, assume there is only one client
                         struct buffer_info* info = send_tcpsocketlistening_to_user_c(destPort);
                         send_message(new_connexion, info);
                         break;
