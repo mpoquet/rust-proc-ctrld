@@ -8,7 +8,7 @@ buffer_info* send_kill_to_demon(int32_t pid);
 command* receive_command(uint8_t *buffer, int size);
 int32_t receive_kill(uint8_t *buffer, int size);
 
-Event receive_message_from_user(uint8_t *buffer, int size);
+enum Event receive_message_from_user(uint8_t *buffer, int size);
 
 buffer_info* send_processlaunched_to_user(int32_t pid);
 buffer_info* send_childcreationerror_to_user(uint32_t error_code);
@@ -26,9 +26,9 @@ uint16_t receive_TCPSocketListening(uint8_t *buffer, int size);
 InotifyPathUpdated* receive_inotifypathupdated(uint8_t *buffer, int size);
 char* receive_inotifywatchlistupdated(uint8_t *buffer, int size);
 int32_t receive_socketwatched(uint8_t *buffer, int size);
-struct socket_watch_info* receive_socketwatchterminated(uint8_t *buffer, int size)
+struct socket_watch_info* receive_socketwatchterminated(uint8_t *buffer, int size);
 
 
-Event receive_message_from_demon(uint8_t *buffer, int size);
+enum Event receive_message_from_demon(uint8_t *buffer, int size);
 
 #endif // SERIALIZE_H

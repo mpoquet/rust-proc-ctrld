@@ -25,9 +25,9 @@ struct process_terminated_info{
 };
 
 enum SocketState{
-    UNKNOWN,
-    LISTENING,
-    CREATED,
+    SOCKET_UNKNOWN,
+    SOCKET_LISTENING,
+    SOCKET_CREATED,
 };
 
 struct socket_watch_info{
