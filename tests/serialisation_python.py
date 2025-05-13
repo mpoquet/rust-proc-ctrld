@@ -19,14 +19,12 @@ import demon.Surveillance
 import demon.SurveillanceEvent
 
 
-def serialisation():
-    #Variables de RunCommand à envoyer au démon
-    path = "echo"
-    args = "bonjour test"
-    envp = "oui non"
-    flags = 0
-    stack_size = 0
+#Fonction pour sérialiser un RunCommand à envoyer au démon
+#N'implémente pas pour l'instant la surveillance
+#Retourne le buffer à envoyer
 
+
+def serialisation(path, args, envp, flags, stack_size):
     #Variable TCPSocket
     destport = 42
 
@@ -70,7 +68,7 @@ def serialisation():
         bldr.PrependSOffsetTRelative(liste[i])
     envp_bldr = bldr.EndVector()
 
-
+    '''
     #sérialisation TCPSocket
     demon.TCPSocket.Start(bldr)
     demon.TCPSocket.AddDestport(bldr, destport)
@@ -103,6 +101,7 @@ def serialisation():
     bldr.PrependUOffsetTRelative(surveillance1)
     bldr.PrependUOffsetTRelative(surveillance2)
     to_watch = bldr.EndVector()
+    '''
 
 
     #Serialisation RunCommand
@@ -112,12 +111,14 @@ def serialisation():
     demon.RunCommand.AddEnvp(bldr, envp_bldr)
     demon.RunCommand.AddFlags(bldr, flags)
     demon.RunCommand.AddStackSize(bldr, stack_size)
-    demon.RunCommand.AddToWatch(bldr, to_watch)
+    #demon.RunCommand.AddToWatch(bldr, to_watch)
 
     commande = demon.RunCommand.End(bldr)
     bldr.Finish(commande)
 
     buf = bldr.Output()
+
+    return buf
 
     #Pour tester l'objet envoyé
     #test = demon.RunCommand.RunCommand.GetRootAs(buf, 0)
