@@ -8,6 +8,12 @@ enum InotifyEvent : byte {
     accessed,
 }
 
+enum SocketState : byte {
+    unknown,
+    created,
+    listeing,
+}
+
 table Inotify {
     root_paths: string;
     mask: int32;
@@ -64,6 +70,19 @@ table InotifyPathUpdated {
     size_limit : uint32;
 }
 
+table InotifyWatchListUpdated {
+    path : string;
+}
+
+table SocketWatched {
+    port : int32;
+}
+
+table SocketWatchTerminated{
+    port : int32;
+    state : SocketState;
+}
+
 table EstablishTCPConnection {
     destport: uint32;
 }
@@ -86,7 +105,10 @@ union Event {
     ChildCreationError,
     ProcessTerminated,
     TCPSocketListening,
-    InotifyPathUpdated
+    InotifyPathUpdated,
+    InotifyWatchListUpdated,
+    SocketWatched,
+    SocketWatchTerminated
 }
 
 table Message {

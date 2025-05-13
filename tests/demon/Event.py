@@ -16,3 +16,6 @@ class Event(object):
     ProcessTerminated = 7
     TCPSocketListening = 8
     InotifyPathUpdated = 9
+    InotifyWatchListUpdated = 10
+    SocketWatched = 11
+    SocketWatchTerminated = 12
