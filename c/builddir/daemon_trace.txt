@@ -1,3 +1,160 @@
 Serveur en écoute sur 0.0.0.0:9090
 Socket listening
 initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+total 1104
+-rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
+-rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
+-rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
+-rwx------ 1 telmo telmo   1307 May 14 22:15 daemon_trace.txt
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
+-rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+execve: No such file or directory
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+total 1104
+-rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
+-rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
+-rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
+-rwx------ 1 telmo telmo   2230 May 14 22:19 daemon_trace.txt
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
+-rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+execve: No such file or directory
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+total 1104
+-rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
+-rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
+-rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
+-rwx------ 1 telmo telmo   3153 May 14 22:19 daemon_trace.txt
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
+-rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+execve: No such file or directory
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+total 1104
+-rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
+-rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
+-rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
+-rwx------ 1 telmo telmo   4076 May 14 22:20 daemon_trace.txt
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
+-rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+execve: No such file or directory
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+total 1108
+-rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
+-rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
+-rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
+-rwx------ 1 telmo telmo   4999 May 14 22:22 daemon_trace.txt
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
+-rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
+drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+execve: No such file or directory
