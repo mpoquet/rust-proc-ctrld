@@ -182,16 +182,14 @@ def receive_command(buffer: bytes, size: int) -> Optional[Command]:
         return None
 
     try:
-
         # Get message and check type
         message = demon.Message.Message.GetRootAsMessage(buffer, 0)
         if message.EventsType() != demon.Event.Event.RunCommand:
             return None
 
         # Get RunCommand table
-        run_command = message.Events()
-        if not run_command:
-            return None
+        run_command = demon.RunCommand.RunCommand()
+        run_command.Init(message.Events().Bytes, message.Events().Pos)
 
         try:
             # Create Command object
@@ -209,7 +207,7 @@ def receive_command(buffer: bytes, size: int) -> Optional[Command]:
             if surveillances:
                 for i in range(surveillances.Length()):
                     surveillance_event = surveillances.Get(i)
-                
+                    
                     if surveillance_event.EventType() == demon.Surveillance.Surveillance.Inotify:
                         inotify_event = surveillance_event.Event()
                         inotify_params = InotifyParameters(
@@ -220,7 +218,7 @@ def receive_command(buffer: bytes, size: int) -> Optional[Command]:
                         final_command.to_watch.append(
                             Surveillance(event="INOTIFY", ptr_event=inotify_params)
                         )
-                
+                    
                     elif surveillance_event.EventType() == demon.Surveillance.Surveillance.TCPSocket:
                         socket_event = surveillance_event.Event()
                         socket_params = TCPSocket(
@@ -233,12 +231,12 @@ def receive_command(buffer: bytes, size: int) -> Optional[Command]:
             return final_command
 
         except Exception as e:
-            print(f"Error deserializing command: {e}")
+            print(f"Error deserializing command data: {e}")
             return None
         
     except Exception as e:
-        print(f"Error in buffer deserializing command: {e}")
-        return -1
+        print(f"Error deserializing command buffer: {e}")
+        return None
 
 def receive_kill(buffer: bytes, size: int) -> int:
     """Deserialize a KillProcess message from a FlatBuffer"""
@@ -252,7 +250,9 @@ def receive_kill(buffer: bytes, size: int) -> int:
             return -1
 
         # Get KillProcess table and return pid
-        kill_process = message.Events()
+        kill_process = demon.KillProcess.KillProcess()
+        kill_process.Init(message.Events().Bytes, message.Events().Pos)
+        
         return kill_process.Pid()
     
     except Exception as e:
@@ -522,7 +522,9 @@ def receive_processlaunched(buffer: bytes, size: int) -> int:
             return -1
 
         # Get ProcessLaunched table and return pid
-        process_launched = message.Events()
+        process_launched = demon.ProcessLaunched.ProcessLaunched()
+        process_launched.Init(message.Events().Bytes, message.Events().Pos)
+        
         return process_launched.Pid()
     
     except Exception as e:
@@ -549,13 +551,15 @@ def receive_childcreationerror(buffer: bytes, size: int) -> int:
             return -1
 
         # Get ChildCreationError table and return error code
-        child_creation_error = message.Events()
+        child_creation_error = demon.ChildCreationError.ChildCreationError()
+        child_creation_error.Init(message.Events().Bytes, message.Events().Pos)
+        
         return child_creation_error.ErrorCode()
     
     except Exception as e:
         print(f"Error deserializing ChildCreationError: {e}")
         return -1
-
+    
 def receive_processterminated(buffer: bytes, size: int) -> Optional[ProcessTerminatedInfo]:
     """Deserialize a ProcessTerminated message from a FlatBuffer
     
@@ -576,7 +580,9 @@ def receive_processterminated(buffer: bytes, size: int) -> Optional[ProcessTermi
             return None
 
         # Get ProcessTerminated table and return info
-        process_terminated = message.Events()
+        process_terminated = demon.ProcessTerminated.ProcessTerminated()
+        process_terminated.Init(message.Events().Bytes, message.Events().Pos)
+
         return ProcessTerminatedInfo(
             pid=process_terminated.Pid(),
             error_code=process_terminated.ErrorCode()
@@ -634,25 +640,21 @@ def receive_inotifypathupdated(buffer: bytes, size: int) -> Optional[InotifyPath
         if message.EventsType() != demon.Event.Event.InotifyPathUpdated:
             return None
 
-        try:
-            # Get InotifyPathUpdated table
-            inotify_path_updated = message.Events()
+        # Get InotifyPathUpdated table
+        inotify_path_updated = demon.InotifyPathUpdated.InotifyPathUpdated()
+        inotify_path_updated.Init(message.Events().Bytes, message.Events().Pos)
         
-            # Create and return InotifyPathUpdated object
-            return InotifyPathUpdated(
-                path=inotify_path_updated.Path().decode('utf-8'),
-                event=InotifyEvent(inotify_path_updated.TriggerEvents()),
-                size=inotify_path_updated.Size(),
-                size_limit=inotify_path_updated.SizeLimit()
-            )
+        # Create and return InotifyPathUpdated object
+        return InotifyPathUpdated(
+            path=inotify_path_updated.Path().decode('utf-8'),
+            event=InotifyEvent(inotify_path_updated.TriggerEvents()),
+            size=inotify_path_updated.Size(),
+            size_limit=inotify_path_updated.SizeLimit()
+        )
     
-        except Exception as e:
-            print(f"Error deserializing InotifyPathUpdated: {e}")
-            return None
-        
     except Exception as e:
-        print(f"Error in buffer when deserializing TCPSocketListening: {e}")
-        return -1
+        print(f"Error deserializing InotifyPathUpdated: {e}")
+        return None
     
 def receive_inotifywatchlistupdated(buffer: bytes, size: int) -> Optional[str]:
     """Deserialize an InotifyWatchListUpdated message from a FlatBuffer
@@ -674,12 +676,14 @@ def receive_inotifywatchlistupdated(buffer: bytes, size: int) -> Optional[str]:
             return None
 
         # Get InotifyWatchListUpdated table and return path
-        inotify_watch_list_updated = message.Events()
+        inotify_watch_list_updated = demon.InotifyWatchListUpdated.InotifyWatchListUpdated()
+        inotify_watch_list_updated.Init(message.Events().Bytes, message.Events().Pos)
+        
         return inotify_watch_list_updated.Path().decode('utf-8')
 
     except Exception as e:
-        print(f"Error deserializing InotifyWatchUpdated: {e}")
-        return -1
+        print(f"Error deserializing InotifyWatchListUpdated: {e}")
+        return None
 
 def receive_socketwatched(buffer: bytes, size: int) -> int:
     """Deserialize a SocketWatched message from a FlatBuffer
@@ -701,7 +705,9 @@ def receive_socketwatched(buffer: bytes, size: int) -> int:
             return -1
 
         # Get SocketWatched table and return port
-        socket_watched = message.Events()
+        socket_watched = demon.SocketWatched.SocketWatched()
+        socket_watched.Init(message.Events().Bytes, message.Events().Pos)
+        
         return socket_watched.Port()
     
     except Exception as e:
@@ -728,7 +734,9 @@ def receive_socketwatchterminated(buffer: bytes, size: int) -> Optional[SocketWa
             return None
 
         # Get SocketWatchTerminated table and create info
-        socket_watch_terminated = message.Events()
+        socket_watch_terminated = demon.SocketWatchTerminated.SocketWatchTerminated()
+        socket_watch_terminated.Init(message.Events().Bytes, message.Events().Pos)
+
         return SocketWatchInfo(
             port=socket_watch_terminated.Port(),
             state=SocketState(socket_watch_terminated.State())
@@ -736,7 +744,7 @@ def receive_socketwatchterminated(buffer: bytes, size: int) -> Optional[SocketWa
     
     except Exception as e:
         print(f"Error deserializing SocketWatchTerminated: {e}")
-        return -1
+        return None
 
 def receive_message_from_demon(buffer: bytes, size: int) -> Event:
     """Determine the type of message received from demon
