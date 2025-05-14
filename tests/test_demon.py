@@ -32,7 +32,7 @@ def daemon_process():
 
 def launch_C_daemon(port):
     proc = subprocess.Popen(
-        ["../c/bin/daemon", str(port)],
+        ["../c/builddir/daemon", str(port)],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
