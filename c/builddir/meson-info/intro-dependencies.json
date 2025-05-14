@@ -1,1 +1,1 @@
-[{"name": "threads", "version": "unknown", "compile_args": ["-pthread"], "link_args": ["-pthread"]}, {"name": "flatbuffers", "version": "25.2.10", "compile_args": ["-I/usr/local/include"], "link_args": ["/usr/local/lib/libflatbuffers.a"]}]
+[{"name": "threads", "version": "unknown", "compile_args": ["-pthread"], "link_args": ["-pthread"]}, {"name": "flatbuffers", "version": "1.12.0", "compile_args": ["-I/include"], "link_args": ["/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/libflatbuffers.so"]}]

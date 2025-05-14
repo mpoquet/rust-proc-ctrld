@@ -1,6 +1,3 @@
 Serveur en écoute sur 0.0.0.0:9090
 Socket listening
 initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest

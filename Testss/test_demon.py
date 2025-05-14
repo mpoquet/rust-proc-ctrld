@@ -75,6 +75,7 @@ def connect_to_daemon(IP_address, daemon):
         print(f"Erreur de socket : {e}")
         return -1
     
+@pytest.mark.timeout(3)  # Timeout de 5 secondes
 def test_daemon_connection(daemon):
     res = connect_to_daemon("127.0.0.1", daemon)
     assert res != -1, "Connexion échouée"
