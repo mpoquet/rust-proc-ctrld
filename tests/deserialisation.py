@@ -27,7 +27,7 @@ import demon.SurveillanceEvent
 
 
 def handler(buff):
-    msg = demon.Message.Message.GetRootAs(buff, 0)
+    msg = demon.Message.Message.GetRootAsMessage(buff, 4)
     type_message = msg.EventsType()
 
     match type_message:
@@ -61,4 +61,23 @@ def handler(buff):
             print("Reception d'un event inconnue")
 
 
+#test
+'''
+bldr = flatbuffers.Builder(1024)
 
+demon.ProcessLaunched.Start(bldr)
+demon.ProcessLaunched.AddPid(bldr, 5)
+pid_envoye = demon.ProcessLaunched.End(bldr)
+
+demon.Message.Start(bldr)
+demon.Message.AddEventsType(bldr, demon.Event.Event().ProcessLaunched)
+demon.Message.AddEvents(bldr, pid_envoye)
+termine = demon.Message.End(bldr)
+
+bldr.Finish(termine)
+
+buf = bldr.Output()
+
+handler(buf)
+
+'''

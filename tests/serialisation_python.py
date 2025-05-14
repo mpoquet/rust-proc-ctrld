@@ -109,7 +109,8 @@ def serialisation(path, args, envp, flags, stack_size):
     demon.RunCommand.Start(bldr)
     demon.RunCommand.AddPath(bldr, path_bldr)
     demon.RunCommand.AddArgs(bldr, args_bldr)
-    demon.RunCommand.AddEnvp(bldr, envp_bldr)
+    if (len(envp) > 0):
+        demon.RunCommand.AddEnvp(bldr, envp_bldr)
     demon.RunCommand.AddFlags(bldr, flags)
     demon.RunCommand.AddStackSize(bldr, stack_size)
     # demon.RunCommand.AddToWatch(bldr, to_watch)
@@ -124,6 +125,13 @@ def serialisation(path, args, envp, flags, stack_size):
     return message
 
     #Pour tester l'objet envoyé
-    #test = demon.RunCommand.RunCommand.GetRootAs(buf, 0)
+    test = demon.RunCommand.RunCommand.GetRootAs(buf, 0)
+    print(test.Path())
+    print(test.Args(0))
+    print(test.Envp(0))
+    print(test.Flags())
+    print(test.StackSize())
+
+
 
 
