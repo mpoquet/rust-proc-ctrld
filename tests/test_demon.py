@@ -67,5 +67,5 @@ def test_echo_bonjour(daemon_process):
     response = client.recv(1024)
     if not response:
         pytest.fail("Aucune réponse reçue du démon.")
-    handler(response)
-    
+    assert handler(response) in "test\n"
+    client.close()  
