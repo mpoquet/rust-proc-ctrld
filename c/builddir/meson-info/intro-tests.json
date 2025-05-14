@@ -1,0 +1,1 @@
+[{"cmd": ["/mnt/c/Fac/LFlex 3/BE/deamons/rust-proc-ctrld/c/builddir/regression_tests"], "env": {}, "name": "regression tests", "workdir": null, "timeout": 30, "suite": ["daemon"], "is_parallel": true, "priority": 0, "protocol": "exitcode"}]

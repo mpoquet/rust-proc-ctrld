@@ -1,0 +1,86 @@
+[
+  {
+    "directory": "/mnt/c/Fac/LFlex 3/BE/deamons/rust-proc-ctrld/c/builddir",
+    "command": "cc -Idaemon@exe -I. -I.. -I../include -I/usr/local/include -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=gnu11 -g -pthread -MD -MQ 'daemon@exe/daemon-features_clone.c.o' -MF 'daemon@exe/daemon-features_clone.c.o.d' -o 'daemon@exe/daemon-features_clone.c.o' -c ../daemon-features/clone.c",
+    "file": "../daemon-features/clone.c",
+    "output": "daemon@exe/daemon-features_clone.c.o"
+  },
+  {
+    "directory": "/mnt/c/Fac/LFlex 3/BE/deamons/rust-proc-ctrld/c/builddir",
+    "command": "cc -Idaemon@exe -I. -I.. -I../include -I/usr/local/include -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=gnu11 -g -pthread -MD -MQ 'daemon@exe/daemon-features_Errors.c.o' -MF 'daemon@exe/daemon-features_Errors.c.o.d' -o 'daemon@exe/daemon-features_Errors.c.o' -c ../daemon-features/Errors.c",
+    "file": "../daemon-features/Errors.c",
+    "output": "daemon@exe/daemon-features_Errors.c.o"
+  },
+  {
+    "directory": "/mnt/c/Fac/LFlex 3/BE/deamons/rust-proc-ctrld/c/builddir",
+    "command": "cc -Idaemon@exe -I. -I.. -I../include -I/usr/local/include -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=gnu11 -g -pthread -MD -MQ 'daemon@exe/daemon-features_events.c.o' -MF 'daemon@exe/daemon-features_events.c.o.d' -o 'daemon@exe/daemon-features_events.c.o' -c ../daemon-features/events.c",
+    "file": "../daemon-features/events.c",
+    "output": "daemon@exe/daemon-features_events.c.o"
+  },
+  {
+    "directory": "/mnt/c/Fac/LFlex 3/BE/deamons/rust-proc-ctrld/c/builddir",
+    "command": "cc -Idaemon@exe -I. -I.. -I../include -I/usr/local/include -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=gnu11 -g -pthread -MD -MQ 'daemon@exe/daemon-features_Network.c.o' -MF 'daemon@exe/daemon-features_Network.c.o.d' -o 'daemon@exe/daemon-features_Network.c.o' -c ../daemon-features/Network.c",
+    "file": "../daemon-features/Network.c",
+    "output": "daemon@exe/daemon-features_Network.c.o"
+  },
+  {
+    "directory": "/mnt/c/Fac/LFlex 3/BE/deamons/rust-proc-ctrld/c/builddir",
+    "command": "cc -Idaemon@exe -I. -I.. -I../include -I/usr/local/include -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=gnu11 -g -pthread -MD -MQ 'daemon@exe/daemon-features_process_manager.c.o' -MF 'daemon@exe/daemon-features_process_manager.c.o.d' -o 'daemon@exe/daemon-features_process_manager.c.o' -c ../daemon-features/process_manager.c",
+    "file": "../daemon-features/process_manager.c",
+    "output": "daemon@exe/daemon-features_process_manager.c.o"
+  },
+  {
+    "directory": "/mnt/c/Fac/LFlex 3/BE/deamons/rust-proc-ctrld/c/builddir",
+    "command": "cc -Idaemon@exe -I. -I.. -I../include -I/usr/local/include -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=gnu11 -g -pthread -MD -MQ 'daemon@exe/daemon-features_Detect_socket.c.o' -MF 'daemon@exe/daemon-features_Detect_socket.c.o.d' -o 'daemon@exe/daemon-features_Detect_socket.c.o' -c ../daemon-features/Detect_socket.c",
+    "file": "../daemon-features/Detect_socket.c",
+    "output": "daemon@exe/daemon-features_Detect_socket.c.o"
+  },
+  {
+    "directory": "/mnt/c/Fac/LFlex 3/BE/deamons/rust-proc-ctrld/c/builddir",
+    "command": "cc -Idaemon@exe -I. -I.. -I../include -I/usr/local/include -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=gnu11 -g -pthread -MD -MQ 'daemon@exe/daemon-core.c.o' -MF 'daemon@exe/daemon-core.c.o.d' -o 'daemon@exe/daemon-core.c.o' -c ../daemon-core.c",
+    "file": "../daemon-core.c",
+    "output": "daemon@exe/daemon-core.c.o"
+  },
+  {
+    "directory": "/mnt/c/Fac/LFlex 3/BE/deamons/rust-proc-ctrld/c/builddir",
+    "command": "c++ -Idaemon@exe -I. -I.. -I../include -I/usr/local/include -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wnon-virtual-dtor -std=c++17 -g -pthread -DFLATBUFFERS_DEBUG_VERIFICATION_FAILURE -MD -MQ 'daemon@exe/daemon-features_serialize.cpp.o' -MF 'daemon@exe/daemon-features_serialize.cpp.o.d' -o 'daemon@exe/daemon-features_serialize.cpp.o' -c ../daemon-features/serialize.cpp",
+    "file": "../daemon-features/serialize.cpp",
+    "output": "daemon@exe/daemon-features_serialize.cpp.o"
+  },
+  {
+    "directory": "/mnt/c/Fac/LFlex 3/BE/deamons/rust-proc-ctrld/c/builddir",
+    "command": "c++ -Idaemon@exe -I. -I.. -I../include -I/usr/local/include -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wnon-virtual-dtor -std=c++17 -g -pthread -DFLATBUFFERS_DEBUG_VERIFICATION_FAILURE -MD -MQ 'daemon@exe/daemon-features_serialize_wrapper.cpp.o' -MF 'daemon@exe/daemon-features_serialize_wrapper.cpp.o.d' -o 'daemon@exe/daemon-features_serialize_wrapper.cpp.o' -c ../daemon-features/serialize_wrapper.cpp",
+    "file": "../daemon-features/serialize_wrapper.cpp",
+    "output": "daemon@exe/daemon-features_serialize_wrapper.cpp.o"
+  },
+  {
+    "directory": "/mnt/c/Fac/LFlex 3/BE/deamons/rust-proc-ctrld/c/builddir",
+    "command": "cc -Iregression_tests@exe -I. -I.. -I../include -I/usr/local/include -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=gnu11 -g -pthread -MD -MQ 'regression_tests@exe/daemon-features_clone.c.o' -MF 'regression_tests@exe/daemon-features_clone.c.o.d' -o 'regression_tests@exe/daemon-features_clone.c.o' -c ../daemon-features/clone.c",
+    "file": "../daemon-features/clone.c",
+    "output": "regression_tests@exe/daemon-features_clone.c.o"
+  },
+  {
+    "directory": "/mnt/c/Fac/LFlex 3/BE/deamons/rust-proc-ctrld/c/builddir",
+    "command": "cc -Iregression_tests@exe -I. -I.. -I../include -I/usr/local/include -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=gnu11 -g -pthread -MD -MQ 'regression_tests@exe/daemon-features_Network.c.o' -MF 'regression_tests@exe/daemon-features_Network.c.o.d' -o 'regression_tests@exe/daemon-features_Network.c.o' -c ../daemon-features/Network.c",
+    "file": "../daemon-features/Network.c",
+    "output": "regression_tests@exe/daemon-features_Network.c.o"
+  },
+  {
+    "directory": "/mnt/c/Fac/LFlex 3/BE/deamons/rust-proc-ctrld/c/builddir",
+    "command": "c++ -Iregression_tests@exe -I. -I.. -I../include -I/usr/local/include -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wnon-virtual-dtor -std=c++17 -g -pthread -DFLATBUFFERS_DEBUG_VERIFICATION_FAILURE -MD -MQ 'regression_tests@exe/daemon-features_serialize.cpp.o' -MF 'regression_tests@exe/daemon-features_serialize.cpp.o.d' -o 'regression_tests@exe/daemon-features_serialize.cpp.o' -c ../daemon-features/serialize.cpp",
+    "file": "../daemon-features/serialize.cpp",
+    "output": "regression_tests@exe/daemon-features_serialize.cpp.o"
+  },
+  {
+    "directory": "/mnt/c/Fac/LFlex 3/BE/deamons/rust-proc-ctrld/c/builddir",
+    "command": "c++ -Iregression_tests@exe -I. -I.. -I../include -I/usr/local/include -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wnon-virtual-dtor -std=c++17 -g -pthread -DFLATBUFFERS_DEBUG_VERIFICATION_FAILURE -MD -MQ 'regression_tests@exe/daemon-features_serialize_wrapper.cpp.o' -MF 'regression_tests@exe/daemon-features_serialize_wrapper.cpp.o.d' -o 'regression_tests@exe/daemon-features_serialize_wrapper.cpp.o' -c ../daemon-features/serialize_wrapper.cpp",
+    "file": "../daemon-features/serialize_wrapper.cpp",
+    "output": "regression_tests@exe/daemon-features_serialize_wrapper.cpp.o"
+  },
+  {
+    "directory": "/mnt/c/Fac/LFlex 3/BE/deamons/rust-proc-ctrld/c/builddir",
+    "command": "cc -Iregression_tests@exe -I. -I.. -I../include -I/usr/local/include -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=gnu11 -g -pthread -MD -MQ 'regression_tests@exe/test_Regression_test.c.o' -MF 'regression_tests@exe/test_Regression_test.c.o.d' -o 'regression_tests@exe/test_Regression_test.c.o' -c ../test/Regression_test.c",
+    "file": "../test/Regression_test.c",
+    "output": "regression_tests@exe/test_Regression_test.c.o"
+  }
+]
