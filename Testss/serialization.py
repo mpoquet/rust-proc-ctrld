@@ -84,18 +84,18 @@ class Command:
 
 class Event(Enum):
     NONE = -1
-    RUN_COMMAND = auto()
-    KILL_PROCESS = auto()
-    ESTABLISH_TCP_CONNECTION = auto()
-    ESTABLISH_UNIX_CONNECTION = auto()
-    PROCESS_LAUNCHED = auto()
-    CHILD_CREATION_ERROR = auto()
-    PROCESS_TERMINATED = auto()
-    TCP_SOCKET_LISTENING = auto()
-    INOTIFY_PATH_UPDATED = auto()
-    INOTIFY_WATCH_LIST_UPDATED = auto()
-    SOCKET_WATCHED = auto()
-    SOCKET_WATCH_TERMINATED = auto()
+    RUN_COMMAND = 0
+    KILL_PROCESS = 1
+    ESTABLISH_TCP_CONNECTION = 2
+    ESTABLISH_UNIX_CONNECTION = 3
+    PROCESS_LAUNCHED = 4
+    CHILD_CREATION_ERROR = 5
+    PROCESS_TERMINATED = 6
+    TCP_SOCKET_LISTENING = 7
+    INOTIFY_PATH_UPDATED = 8
+    INOTIFY_WATCH_LIST_UPDATED = 9
+    SOCKET_WATCHED = 10
+    SOCKET_WATCH_TERMINATED = 11
 
 def send_command_to_demon(cmd: Command) -> BufferInfo:
     builder = flatbuffers.Builder(1024)
@@ -514,12 +514,20 @@ def receive_processlaunched(buffer: bytes, size: int) -> int:
     """
     if not buffer or size <= 0:
         return -1
+    
+    print("1")
 
     try:
+        print("1.5")
         # Get message and check type
         message = demon.Message.Message.GetRootAsMessage(buffer, 0)
+        actual_type = message.EventsType()
+        print(f"Actual event type (numeric): {actual_type}")
+        print(f"ProcessLaunched type (numeric): {demon.Event.Event.ProcessLaunched}")
         if message.EventsType() != demon.Event.Event.ProcessLaunched:
             return -1
+        
+        print("2")
 
         # Get ProcessLaunched table and return pid
         process_launched = demon.ProcessLaunched.ProcessLaunched()
