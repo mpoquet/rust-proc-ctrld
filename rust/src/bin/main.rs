@@ -15,7 +15,7 @@ use rust_proc_ctrl::monitoring_tools::command::exec_command;
 use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message,Event, InotifyEvent};
 
 // sérialisation
-use rust_proc_ctrl::proto::serialisation::{serialize_child_creation_error, serialize_process_launched, serialize_process_terminated};
+use rust_proc_ctrl::proto::serialisation::{serialize_child_creation_error, serialize_established_tcp_connection, serialize_process_launched, serialize_process_terminated};
 
 async fn handle_message(buf: &[u8], socket: &mut TcpStream) -> Vec<u8> {
 
@@ -106,7 +106,7 @@ async fn send_on_socket(retour: Vec<u8>, socket: &mut TcpStream) {
 
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn Error>> {
-    let port: u16 = 8080;
+    let port: u32 = 8080;
     println!("The demon pid is {}", std::process::id());
     println!("We listen on the port {}", port);
 
@@ -115,6 +115,8 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
     loop {
         let (mut socket, addr) = listener.accept().await?;
         println!("Connexion de : {}", addr);
+        let established_connection = serialize_established_tcp_connection(port);
+        send_on_socket(established_connection, &mut socket).await;
 
         tokio::spawn(async move {
             loop {

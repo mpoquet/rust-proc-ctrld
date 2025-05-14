@@ -5,6 +5,27 @@ use crate::proto::serialisation::demon::MessageArgs;
 use crate::proto::serialisation::demon::Event;
 
 
+pub fn serialize_established_tcp_connection(port: u32) -> Vec<u8> {
+    let mut builder = FlatBufferBuilder::new();
+
+    let established = demon::EstablishTCPConnection::create(
+        &mut builder, 
+        &demon::EstablishTCPConnectionArgs {destport: port}    
+    );
+
+    let mess = demon::Message::create(
+        &mut builder, 
+        &demon::MessageArgs {
+            events_type: demon::Event::EstablishTCPConnection,
+            events: Some(established.as_union_value())
+        }
+    );
+
+    builder.finish(mess, None);
+    builder.finished_data().to_vec()
+}
+
+
 pub fn serialize_process_launched(pid: i32) -> Vec<u8> {
     let mut builder = FlatBufferBuilder::new();
 

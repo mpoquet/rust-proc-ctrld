@@ -33,6 +33,14 @@ fn handle_message(buff: &[u8]) -> ReturnHandleMessage {
             println!("Processus lancé \npid:{}", pid);
             ReturnHandleMessage::Continue
         }
+        Event::EstablishTCPConnection => {
+            let from_mess = msg.events_as_establish_tcpconnection().expect("error event as established tcp connection");
+            let port = from_mess.destport();
+
+            println!("Established TCP Connection\n port:{}", port);
+
+            ReturnHandleMessage::Continue
+        }
 
         Event::ChildCreationError => {
             //Recupération de l'objet ChildCreationError et du errno
