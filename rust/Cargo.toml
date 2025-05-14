@@ -30,23 +30,3 @@ path = "src/bin/main.rs"
 [[bin]]
 name = "run_client"
 path = "src/bin/proto_client.rs"
-
-[[bin]]
-name = "clone"
-path = "src/monitoring_tools/clone.rs"
-
-[[bin]]
-name = "test_inotify"
-path = "tests/test_inotify.rs"
-
-[[bin]]
-name = "test_signal"
-path = "tests/test_signal.rs"
-
-[[bin]]
-name = "test_signal_select"
-path = "tests/test_signal_select.rs"
-
-[[bin]]
-name = "test_socketfd"
-path = "tests/test_socketfd.rs"

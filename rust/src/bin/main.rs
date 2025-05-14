@@ -26,29 +26,28 @@ async fn handle_message(buf: &[u8], socket: &mut TcpStream) -> Vec<u8> {
             let from_message =
                 msg.events_as_inotify_path_updated().expect("error events_as_inotify...");
             let path = from_message.path().expect("No path from the message");
-            let trigger_events = from_message.trigger_events().expect("No vector of trigger events for inotify");
+            let event = from_message.trigger_events();
             let reach_size = from_message.size();
 
             // new vector of "real" Inotify Event not from flatbuffer
             let mut trig_events = Vec::<EventMask>::new();
 
-            for event in trigger_events {
-                match event {
-                    InotifyEvent::accessed => trig_events.push(EventMask::ACCESS),
-                    InotifyEvent::created => {
-                        trig_events.push(EventMask::CREATE);
-                        trig_events.push(EventMask::ISDIR);                        
-                    }
-                    InotifyEvent::deleted => trig_events.push(EventMask::DELETE),
-                    InotifyEvent::modified => trig_events.push(EventMask::MODIFY),
-                    // when we want to know the size of a file, we watch when the file is Close
-                    InotifyEvent::size_reached => {
-                        trig_events.push(EventMask::CLOSE_NOWRITE);
-                        trig_events.push(EventMask::CLOSE_WRITE);
-                    }
-                    _ => {
-                        eprintln!("flags error for inotify events");
-                    }
+            
+            match event {
+                InotifyEvent::accessed => trig_events.push(EventMask::ACCESS),
+                InotifyEvent::created => {
+                    trig_events.push(EventMask::CREATE);
+                    trig_events.push(EventMask::ISDIR);                        
+                }
+                InotifyEvent::deleted => trig_events.push(EventMask::DELETE),
+                InotifyEvent::modified => trig_events.push(EventMask::MODIFY),
+                // when we want to know the size of a file, we watch when the file is Close
+                InotifyEvent::size_reached => {
+                    trig_events.push(EventMask::CLOSE_NOWRITE);
+                    trig_events.push(EventMask::CLOSE_WRITE);
+                }
+                _ => {
+                    eprintln!("flags error for inotify events");
                 }
             }
 

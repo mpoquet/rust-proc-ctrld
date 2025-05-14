@@ -116,6 +116,95 @@ impl<'a> flatbuffers::Verifiable for InotifyEvent {
 
 impl flatbuffers::SimpleToVerifyInSlice for InotifyEvent {}
 #[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
+pub const ENUM_MIN_SOCKET_STATE: i8 = 0;
+#[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
+pub const ENUM_MAX_SOCKET_STATE: i8 = 2;
+#[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
+#[allow(non_camel_case_types)]
+pub const ENUM_VALUES_SOCKET_STATE: [SocketState; 3] = [
+  SocketState::unknown,
+  SocketState::created,
+  SocketState::listeing,
+];
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[repr(transparent)]
+pub struct SocketState(pub i8);
+#[allow(non_upper_case_globals)]
+impl SocketState {
+  pub const unknown: Self = Self(0);
+  pub const created: Self = Self(1);
+  pub const listeing: Self = Self(2);
+
+  pub const ENUM_MIN: i8 = 0;
+  pub const ENUM_MAX: i8 = 2;
+  pub const ENUM_VALUES: &'static [Self] = &[
+    Self::unknown,
+    Self::created,
+    Self::listeing,
+  ];
+  /// Returns the variant's name or "" if unknown.
+  pub fn variant_name(self) -> Option<&'static str> {
+    match self {
+      Self::unknown => Some("unknown"),
+      Self::created => Some("created"),
+      Self::listeing => Some("listeing"),
+      _ => None,
+    }
+  }
+}
+impl core::fmt::Debug for SocketState {
+  fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+    if let Some(name) = self.variant_name() {
+      f.write_str(name)
+    } else {
+      f.write_fmt(format_args!("<UNKNOWN {:?}>", self.0))
+    }
+  }
+}
+impl<'a> flatbuffers::Follow<'a> for SocketState {
+  type Inner = Self;
+  #[inline]
+  unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+    let b = flatbuffers::read_scalar_at::<i8>(buf, loc);
+    Self(b)
+  }
+}
+
+impl flatbuffers::Push for SocketState {
+    type Output = SocketState;
+    #[inline]
+    unsafe fn push(&self, dst: &mut [u8], _written_len: usize) {
+        flatbuffers::emplace_scalar::<i8>(dst, self.0);
+    }
+}
+
+impl flatbuffers::EndianScalar for SocketState {
+  type Scalar = i8;
+  #[inline]
+  fn to_little_endian(self) -> i8 {
+    self.0.to_le()
+  }
+  #[inline]
+  #[allow(clippy::wrong_self_convention)]
+  fn from_little_endian(v: i8) -> Self {
+    let b = i8::from_le(v);
+    Self(b)
+  }
+}
+
+impl<'a> flatbuffers::Verifiable for SocketState {
+  #[inline]
+  fn run_verifier(
+    v: &mut flatbuffers::Verifier, pos: usize
+  ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+    use self::flatbuffers::Verifiable;
+    i8::run_verifier(v, pos)
+  }
+}
+
+impl flatbuffers::SimpleToVerifyInSlice for SocketState {}
+#[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
 pub const ENUM_MIN_SURVEILLANCE: u8 = 0;
 #[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
 pub const ENUM_MAX_SURVEILLANCE: u8 = 2;
@@ -209,10 +298,10 @@ pub struct SurveillanceUnionTableOffset {}
 #[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
 pub const ENUM_MIN_EVENT: u8 = 0;
 #[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
-pub const ENUM_MAX_EVENT: u8 = 9;
+pub const ENUM_MAX_EVENT: u8 = 12;
 #[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
 #[allow(non_camel_case_types)]
-pub const ENUM_VALUES_EVENT: [Event; 10] = [
+pub const ENUM_VALUES_EVENT: [Event; 13] = [
   Event::NONE,
   Event::RunCommand,
   Event::KillProcess,
@@ -223,6 +312,9 @@ pub const ENUM_VALUES_EVENT: [Event; 10] = [
   Event::ProcessTerminated,
   Event::TCPSocketListening,
   Event::InotifyPathUpdated,
+  Event::InotifyWatchListUpdated,
+  Event::SocketWatched,
+  Event::SocketWatchTerminated,
 ];
 
 ///
@@ -243,9 +335,12 @@ impl Event {
   pub const ProcessTerminated: Self = Self(7);
   pub const TCPSocketListening: Self = Self(8);
   pub const InotifyPathUpdated: Self = Self(9);
+  pub const InotifyWatchListUpdated: Self = Self(10);
+  pub const SocketWatched: Self = Self(11);
+  pub const SocketWatchTerminated: Self = Self(12);
 
   pub const ENUM_MIN: u8 = 0;
-  pub const ENUM_MAX: u8 = 9;
+  pub const ENUM_MAX: u8 = 12;
   pub const ENUM_VALUES: &'static [Self] = &[
     Self::NONE,
     Self::RunCommand,
@@ -257,6 +352,9 @@ impl Event {
     Self::ProcessTerminated,
     Self::TCPSocketListening,
     Self::InotifyPathUpdated,
+    Self::InotifyWatchListUpdated,
+    Self::SocketWatched,
+    Self::SocketWatchTerminated,
   ];
   /// Returns the variant's name or "" if unknown.
   pub fn variant_name(self) -> Option<&'static str> {
@@ -271,6 +369,9 @@ impl Event {
       Self::ProcessTerminated => Some("ProcessTerminated"),
       Self::TCPSocketListening => Some("TCPSocketListening"),
       Self::InotifyPathUpdated => Some("InotifyPathUpdated"),
+      Self::InotifyWatchListUpdated => Some("InotifyWatchListUpdated"),
+      Self::SocketWatched => Some("SocketWatched"),
+      Self::SocketWatchTerminated => Some("SocketWatchTerminated"),
       _ => None,
     }
   }
@@ -1427,6 +1528,7 @@ impl<'a> InotifyPathUpdated<'a> {
   pub const VT_PATH: flatbuffers::VOffsetT = 4;
   pub const VT_TRIGGER_EVENTS: flatbuffers::VOffsetT = 6;
   pub const VT_SIZE: flatbuffers::VOffsetT = 8;
+  pub const VT_SIZE_LIMIT: flatbuffers::VOffsetT = 10;
 
   #[inline]
   pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
@@ -1438,9 +1540,10 @@ impl<'a> InotifyPathUpdated<'a> {
     args: &'args InotifyPathUpdatedArgs<'args>
   ) -> flatbuffers::WIPOffset<InotifyPathUpdated<'bldr>> {
     let mut builder = InotifyPathUpdatedBuilder::new(_fbb);
+    builder.add_size_limit(args.size_limit);
     builder.add_size(args.size);
-    if let Some(x) = args.trigger_events { builder.add_trigger_events(x); }
     if let Some(x) = args.path { builder.add_path(x); }
+    builder.add_trigger_events(args.trigger_events);
     builder.finish()
   }
 
@@ -1453,11 +1556,11 @@ impl<'a> InotifyPathUpdated<'a> {
     unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(InotifyPathUpdated::VT_PATH, None)}
   }
   #[inline]
-  pub fn trigger_events(&self) -> Option<flatbuffers::Vector<'a, InotifyEvent>> {
+  pub fn trigger_events(&self) -> InotifyEvent {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'a, InotifyEvent>>>(InotifyPathUpdated::VT_TRIGGER_EVENTS, None)}
+    unsafe { self._tab.get::<InotifyEvent>(InotifyPathUpdated::VT_TRIGGER_EVENTS, Some(InotifyEvent::modified)).unwrap()}
   }
   #[inline]
   pub fn size(&self) -> u32 {
@@ -1465,6 +1568,13 @@ impl<'a> InotifyPathUpdated<'a> {
     // Created from valid Table for this object
     // which contains a valid value in this slot
     unsafe { self._tab.get::<u32>(InotifyPathUpdated::VT_SIZE, Some(0)).unwrap()}
+  }
+  #[inline]
+  pub fn size_limit(&self) -> u32 {
+    // Safety:
+    // Created from valid Table for this object
+    // which contains a valid value in this slot
+    unsafe { self._tab.get::<u32>(InotifyPathUpdated::VT_SIZE_LIMIT, Some(0)).unwrap()}
   }
 }
 
@@ -1476,24 +1586,27 @@ impl flatbuffers::Verifiable for InotifyPathUpdated<'_> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
      .visit_field::<flatbuffers::ForwardsUOffset<&str>>("path", Self::VT_PATH, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, InotifyEvent>>>("trigger_events", Self::VT_TRIGGER_EVENTS, false)?
+     .visit_field::<InotifyEvent>("trigger_events", Self::VT_TRIGGER_EVENTS, false)?
      .visit_field::<u32>("size", Self::VT_SIZE, false)?
+     .visit_field::<u32>("size_limit", Self::VT_SIZE_LIMIT, false)?
      .finish();
     Ok(())
   }
 }
 pub struct InotifyPathUpdatedArgs<'a> {
     pub path: Option<flatbuffers::WIPOffset<&'a str>>,
-    pub trigger_events: Option<flatbuffers::WIPOffset<flatbuffers::Vector<'a, InotifyEvent>>>,
+    pub trigger_events: InotifyEvent,
     pub size: u32,
+    pub size_limit: u32,
 }
 impl<'a> Default for InotifyPathUpdatedArgs<'a> {
   #[inline]
   fn default() -> Self {
     InotifyPathUpdatedArgs {
       path: None,
-      trigger_events: None,
+      trigger_events: InotifyEvent::modified,
       size: 0,
+      size_limit: 0,
     }
   }
 }
@@ -1508,12 +1621,16 @@ impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> InotifyPathUpdatedBuilder<'a, '
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(InotifyPathUpdated::VT_PATH, path);
   }
   #[inline]
-  pub fn add_trigger_events(&mut self, trigger_events: flatbuffers::WIPOffset<flatbuffers::Vector<'b , InotifyEvent>>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(InotifyPathUpdated::VT_TRIGGER_EVENTS, trigger_events);
+  pub fn add_trigger_events(&mut self, trigger_events: InotifyEvent) {
+    self.fbb_.push_slot::<InotifyEvent>(InotifyPathUpdated::VT_TRIGGER_EVENTS, trigger_events, InotifyEvent::modified);
   }
   #[inline]
   pub fn add_size(&mut self, size: u32) {
     self.fbb_.push_slot::<u32>(InotifyPathUpdated::VT_SIZE, size, 0);
+  }
+  #[inline]
+  pub fn add_size_limit(&mut self, size_limit: u32) {
+    self.fbb_.push_slot::<u32>(InotifyPathUpdated::VT_SIZE_LIMIT, size_limit, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> InotifyPathUpdatedBuilder<'a, 'b, A> {
@@ -1536,6 +1653,315 @@ impl core::fmt::Debug for InotifyPathUpdated<'_> {
       ds.field("path", &self.path());
       ds.field("trigger_events", &self.trigger_events());
       ds.field("size", &self.size());
+      ds.field("size_limit", &self.size_limit());
+      ds.finish()
+  }
+}
+pub enum InotifyWatchListUpdatedOffset {}
+#[derive(Copy, Clone, PartialEq)]
+
+pub struct InotifyWatchListUpdated<'a> {
+  pub _tab: flatbuffers::Table<'a>,
+}
+
+impl<'a> flatbuffers::Follow<'a> for InotifyWatchListUpdated<'a> {
+  type Inner = InotifyWatchListUpdated<'a>;
+  #[inline]
+  unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+    Self { _tab: flatbuffers::Table::new(buf, loc) }
+  }
+}
+
+impl<'a> InotifyWatchListUpdated<'a> {
+  pub const VT_PATH: flatbuffers::VOffsetT = 4;
+
+  #[inline]
+  pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+    InotifyWatchListUpdated { _tab: table }
+  }
+  #[allow(unused_mut)]
+  pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr, A: flatbuffers::Allocator + 'bldr>(
+    _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
+    args: &'args InotifyWatchListUpdatedArgs<'args>
+  ) -> flatbuffers::WIPOffset<InotifyWatchListUpdated<'bldr>> {
+    let mut builder = InotifyWatchListUpdatedBuilder::new(_fbb);
+    if let Some(x) = args.path { builder.add_path(x); }
+    builder.finish()
+  }
+
+
+  #[inline]
+  pub fn path(&self) -> Option<&'a str> {
+    // Safety:
+    // Created from valid Table for this object
+    // which contains a valid value in this slot
+    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(InotifyWatchListUpdated::VT_PATH, None)}
+  }
+}
+
+impl flatbuffers::Verifiable for InotifyWatchListUpdated<'_> {
+  #[inline]
+  fn run_verifier(
+    v: &mut flatbuffers::Verifier, pos: usize
+  ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+    use self::flatbuffers::Verifiable;
+    v.visit_table(pos)?
+     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("path", Self::VT_PATH, false)?
+     .finish();
+    Ok(())
+  }
+}
+pub struct InotifyWatchListUpdatedArgs<'a> {
+    pub path: Option<flatbuffers::WIPOffset<&'a str>>,
+}
+impl<'a> Default for InotifyWatchListUpdatedArgs<'a> {
+  #[inline]
+  fn default() -> Self {
+    InotifyWatchListUpdatedArgs {
+      path: None,
+    }
+  }
+}
+
+pub struct InotifyWatchListUpdatedBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+  fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+  start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+}
+impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> InotifyWatchListUpdatedBuilder<'a, 'b, A> {
+  #[inline]
+  pub fn add_path(&mut self, path: flatbuffers::WIPOffset<&'b  str>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(InotifyWatchListUpdated::VT_PATH, path);
+  }
+  #[inline]
+  pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> InotifyWatchListUpdatedBuilder<'a, 'b, A> {
+    let start = _fbb.start_table();
+    InotifyWatchListUpdatedBuilder {
+      fbb_: _fbb,
+      start_: start,
+    }
+  }
+  #[inline]
+  pub fn finish(self) -> flatbuffers::WIPOffset<InotifyWatchListUpdated<'a>> {
+    let o = self.fbb_.end_table(self.start_);
+    flatbuffers::WIPOffset::new(o.value())
+  }
+}
+
+impl core::fmt::Debug for InotifyWatchListUpdated<'_> {
+  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    let mut ds = f.debug_struct("InotifyWatchListUpdated");
+      ds.field("path", &self.path());
+      ds.finish()
+  }
+}
+pub enum SocketWatchedOffset {}
+#[derive(Copy, Clone, PartialEq)]
+
+pub struct SocketWatched<'a> {
+  pub _tab: flatbuffers::Table<'a>,
+}
+
+impl<'a> flatbuffers::Follow<'a> for SocketWatched<'a> {
+  type Inner = SocketWatched<'a>;
+  #[inline]
+  unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+    Self { _tab: flatbuffers::Table::new(buf, loc) }
+  }
+}
+
+impl<'a> SocketWatched<'a> {
+  pub const VT_PORT: flatbuffers::VOffsetT = 4;
+
+  #[inline]
+  pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+    SocketWatched { _tab: table }
+  }
+  #[allow(unused_mut)]
+  pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr, A: flatbuffers::Allocator + 'bldr>(
+    _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
+    args: &'args SocketWatchedArgs
+  ) -> flatbuffers::WIPOffset<SocketWatched<'bldr>> {
+    let mut builder = SocketWatchedBuilder::new(_fbb);
+    builder.add_port(args.port);
+    builder.finish()
+  }
+
+
+  #[inline]
+  pub fn port(&self) -> i32 {
+    // Safety:
+    // Created from valid Table for this object
+    // which contains a valid value in this slot
+    unsafe { self._tab.get::<i32>(SocketWatched::VT_PORT, Some(0)).unwrap()}
+  }
+}
+
+impl flatbuffers::Verifiable for SocketWatched<'_> {
+  #[inline]
+  fn run_verifier(
+    v: &mut flatbuffers::Verifier, pos: usize
+  ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+    use self::flatbuffers::Verifiable;
+    v.visit_table(pos)?
+     .visit_field::<i32>("port", Self::VT_PORT, false)?
+     .finish();
+    Ok(())
+  }
+}
+pub struct SocketWatchedArgs {
+    pub port: i32,
+}
+impl<'a> Default for SocketWatchedArgs {
+  #[inline]
+  fn default() -> Self {
+    SocketWatchedArgs {
+      port: 0,
+    }
+  }
+}
+
+pub struct SocketWatchedBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+  fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+  start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+}
+impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> SocketWatchedBuilder<'a, 'b, A> {
+  #[inline]
+  pub fn add_port(&mut self, port: i32) {
+    self.fbb_.push_slot::<i32>(SocketWatched::VT_PORT, port, 0);
+  }
+  #[inline]
+  pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> SocketWatchedBuilder<'a, 'b, A> {
+    let start = _fbb.start_table();
+    SocketWatchedBuilder {
+      fbb_: _fbb,
+      start_: start,
+    }
+  }
+  #[inline]
+  pub fn finish(self) -> flatbuffers::WIPOffset<SocketWatched<'a>> {
+    let o = self.fbb_.end_table(self.start_);
+    flatbuffers::WIPOffset::new(o.value())
+  }
+}
+
+impl core::fmt::Debug for SocketWatched<'_> {
+  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    let mut ds = f.debug_struct("SocketWatched");
+      ds.field("port", &self.port());
+      ds.finish()
+  }
+}
+pub enum SocketWatchTerminatedOffset {}
+#[derive(Copy, Clone, PartialEq)]
+
+pub struct SocketWatchTerminated<'a> {
+  pub _tab: flatbuffers::Table<'a>,
+}
+
+impl<'a> flatbuffers::Follow<'a> for SocketWatchTerminated<'a> {
+  type Inner = SocketWatchTerminated<'a>;
+  #[inline]
+  unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+    Self { _tab: flatbuffers::Table::new(buf, loc) }
+  }
+}
+
+impl<'a> SocketWatchTerminated<'a> {
+  pub const VT_PORT: flatbuffers::VOffsetT = 4;
+  pub const VT_STATE: flatbuffers::VOffsetT = 6;
+
+  #[inline]
+  pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+    SocketWatchTerminated { _tab: table }
+  }
+  #[allow(unused_mut)]
+  pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr, A: flatbuffers::Allocator + 'bldr>(
+    _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
+    args: &'args SocketWatchTerminatedArgs
+  ) -> flatbuffers::WIPOffset<SocketWatchTerminated<'bldr>> {
+    let mut builder = SocketWatchTerminatedBuilder::new(_fbb);
+    builder.add_port(args.port);
+    builder.add_state(args.state);
+    builder.finish()
+  }
+
+
+  #[inline]
+  pub fn port(&self) -> i32 {
+    // Safety:
+    // Created from valid Table for this object
+    // which contains a valid value in this slot
+    unsafe { self._tab.get::<i32>(SocketWatchTerminated::VT_PORT, Some(0)).unwrap()}
+  }
+  #[inline]
+  pub fn state(&self) -> SocketState {
+    // Safety:
+    // Created from valid Table for this object
+    // which contains a valid value in this slot
+    unsafe { self._tab.get::<SocketState>(SocketWatchTerminated::VT_STATE, Some(SocketState::unknown)).unwrap()}
+  }
+}
+
+impl flatbuffers::Verifiable for SocketWatchTerminated<'_> {
+  #[inline]
+  fn run_verifier(
+    v: &mut flatbuffers::Verifier, pos: usize
+  ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+    use self::flatbuffers::Verifiable;
+    v.visit_table(pos)?
+     .visit_field::<i32>("port", Self::VT_PORT, false)?
+     .visit_field::<SocketState>("state", Self::VT_STATE, false)?
+     .finish();
+    Ok(())
+  }
+}
+pub struct SocketWatchTerminatedArgs {
+    pub port: i32,
+    pub state: SocketState,
+}
+impl<'a> Default for SocketWatchTerminatedArgs {
+  #[inline]
+  fn default() -> Self {
+    SocketWatchTerminatedArgs {
+      port: 0,
+      state: SocketState::unknown,
+    }
+  }
+}
+
+pub struct SocketWatchTerminatedBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+  fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+  start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+}
+impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> SocketWatchTerminatedBuilder<'a, 'b, A> {
+  #[inline]
+  pub fn add_port(&mut self, port: i32) {
+    self.fbb_.push_slot::<i32>(SocketWatchTerminated::VT_PORT, port, 0);
+  }
+  #[inline]
+  pub fn add_state(&mut self, state: SocketState) {
+    self.fbb_.push_slot::<SocketState>(SocketWatchTerminated::VT_STATE, state, SocketState::unknown);
+  }
+  #[inline]
+  pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> SocketWatchTerminatedBuilder<'a, 'b, A> {
+    let start = _fbb.start_table();
+    SocketWatchTerminatedBuilder {
+      fbb_: _fbb,
+      start_: start,
+    }
+  }
+  #[inline]
+  pub fn finish(self) -> flatbuffers::WIPOffset<SocketWatchTerminated<'a>> {
+    let o = self.fbb_.end_table(self.start_);
+    flatbuffers::WIPOffset::new(o.value())
+  }
+}
+
+impl core::fmt::Debug for SocketWatchTerminated<'_> {
+  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    let mut ds = f.debug_struct("SocketWatchTerminated");
+      ds.field("port", &self.port());
+      ds.field("state", &self.state());
       ds.finish()
   }
 }
@@ -1917,6 +2343,51 @@ impl<'a> Message<'a> {
     }
   }
 
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn events_as_inotify_watch_list_updated(&self) -> Option<InotifyWatchListUpdated<'a>> {
+    if self.events_type() == Event::InotifyWatchListUpdated {
+      self.events().map(|t| {
+       // Safety:
+       // Created from a valid Table for this object
+       // Which contains a valid union in this slot
+       unsafe { InotifyWatchListUpdated::init_from_table(t) }
+     })
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn events_as_socket_watched(&self) -> Option<SocketWatched<'a>> {
+    if self.events_type() == Event::SocketWatched {
+      self.events().map(|t| {
+       // Safety:
+       // Created from a valid Table for this object
+       // Which contains a valid union in this slot
+       unsafe { SocketWatched::init_from_table(t) }
+     })
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
+  pub fn events_as_socket_watch_terminated(&self) -> Option<SocketWatchTerminated<'a>> {
+    if self.events_type() == Event::SocketWatchTerminated {
+      self.events().map(|t| {
+       // Safety:
+       // Created from a valid Table for this object
+       // Which contains a valid union in this slot
+       unsafe { SocketWatchTerminated::init_from_table(t) }
+     })
+    } else {
+      None
+    }
+  }
+
 }
 
 impl flatbuffers::Verifiable for Message<'_> {
@@ -1937,6 +2408,9 @@ impl flatbuffers::Verifiable for Message<'_> {
           Event::ProcessTerminated => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ProcessTerminated>>("Event::ProcessTerminated", pos),
           Event::TCPSocketListening => v.verify_union_variant::<flatbuffers::ForwardsUOffset<TCPSocketListening>>("Event::TCPSocketListening", pos),
           Event::InotifyPathUpdated => v.verify_union_variant::<flatbuffers::ForwardsUOffset<InotifyPathUpdated>>("Event::InotifyPathUpdated", pos),
+          Event::InotifyWatchListUpdated => v.verify_union_variant::<flatbuffers::ForwardsUOffset<InotifyWatchListUpdated>>("Event::InotifyWatchListUpdated", pos),
+          Event::SocketWatched => v.verify_union_variant::<flatbuffers::ForwardsUOffset<SocketWatched>>("Event::SocketWatched", pos),
+          Event::SocketWatchTerminated => v.verify_union_variant::<flatbuffers::ForwardsUOffset<SocketWatchTerminated>>("Event::SocketWatchTerminated", pos),
           _ => Ok(()),
         }
      })?
@@ -2049,6 +2523,27 @@ impl core::fmt::Debug for Message<'_> {
         },
         Event::InotifyPathUpdated => {
           if let Some(x) = self.events_as_inotify_path_updated() {
+            ds.field("events", &x)
+          } else {
+            ds.field("events", &"InvalidFlatbuffer: Union discriminant does not match value.")
+          }
+        },
+        Event::InotifyWatchListUpdated => {
+          if let Some(x) = self.events_as_inotify_watch_list_updated() {
+            ds.field("events", &x)
+          } else {
+            ds.field("events", &"InvalidFlatbuffer: Union discriminant does not match value.")
+          }
+        },
+        Event::SocketWatched => {
+          if let Some(x) = self.events_as_socket_watched() {
+            ds.field("events", &x)
+          } else {
+            ds.field("events", &"InvalidFlatbuffer: Union discriminant does not match value.")
+          }
+        },
+        Event::SocketWatchTerminated => {
+          if let Some(x) = self.events_as_socket_watch_terminated() {
             ds.field("events", &x)
           } else {
             ds.field("events", &"InvalidFlatbuffer: Union discriminant does not match value.")
