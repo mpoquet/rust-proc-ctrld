@@ -606,7 +606,9 @@ def receive_TCPSocketListening(buffer: bytes, size: int) -> int:
             return -1
 
         # Get TCPSocketListening table and return port
-        tcp_socket_listening = message.Events()
+        tcp_socket_listening = demon.TCPSocketListening.TCPSocketListening()
+        tcp_socket_listening.Init(message.Events().Bytes, message.Events().Pos)
+        
         return tcp_socket_listening.Port()
     
     except Exception as e:
