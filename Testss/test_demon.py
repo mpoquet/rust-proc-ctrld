@@ -330,19 +330,22 @@ def test_receiving_process_terminated(daemon):
     res = process_terminated("127.0.0.1", daemon,command)
     assert res != -1, "Receiving process_terminated failed"
 
-
-
-# def test_echo_bonjour(daemon_process):
-#     client = connect_to_daemon(HOST, PORT)
-#     if client is None:
-#         pytest.fail("Échec de la connexion au démon.")
-
-#     # Envoi via la sérialisation
-#     buf = serialisation("echo", "bonjour", "", 0, 0)
-#     client.sendall(buf)
-
-#     # Réception de la réponse
-#     response = client.recv(1024)
-#     if not response:
-#         pytest.fail("Aucune réponse reçue du démon.")
-#     handler(response)
+@pytest.mark.timeout(3)
+def test_echo(daemon):
+    path = "/bin/echo"
+    args = ["echo", "bonjour"]
+    envp = []
+    flags = 0
+    stack_size = 1024 * 1024  # 1 MB de stack
+    to_watch = []
+    command = Command(
+        path=path,
+        args=args,
+        envp=envp,
+        flags=flags,
+        stack_size=stack_size,
+        to_watch=to_watch,
+        to_watch_size=len(to_watch)
+    )
+    res = process_terminated("127.0.0.1", daemon,command)
+    assert res != -1, "Receiving process_terminated failed"

@@ -740,3 +740,147 @@ drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
 drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
 -rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
 drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+total 1124
+-rw-rw-r-- 1 wer wer   9281 May 14 22:06 build.ninja
+-rw-rw-r-- 1 wer wer   7801 May 14 22:06 compile_commands.json
+-rwxrwxr-x 1 wer wer 555240 May 14 22:06 daemon
+-rwxrwxr-x 1 wer wer  29850 May 15 08:53 daemon_trace.txt
+drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-info
+drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-logs
+drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-private
+-rwxrwxr-x 1 wer wer 525784 May 14 22:06 regression_tests
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+total 1124
+-rw-rw-r-- 1 wer wer   9281 May 14 22:06 build.ninja
+-rw-rw-r-- 1 wer wer   7801 May 14 22:06 compile_commands.json
+-rwxrwxr-x 1 wer wer 555240 May 14 22:06 daemon
+-rwxrwxr-x 1 wer wer  30664 May 15 09:01 daemon_trace.txt
+drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-info
+drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-logs
+drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-private
+-rwxrwxr-x 1 wer wer 525784 May 14 22:06 regression_tests
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+bonjour
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+total 1124
+-rw-rw-r-- 1 wer wer   9281 May 14 22:06 build.ninja
+-rw-rw-r-- 1 wer wer   7801 May 14 22:06 compile_commands.json
+-rwxrwxr-x 1 wer wer 555240 May 14 22:06 daemon
+-rwxrwxr-x 1 wer wer  31593 May 15 09:04 daemon_trace.txt
+drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-info
+drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-logs
+drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-private
+-rwxrwxr-x 1 wer wer 525784 May 14 22:06 regression_tests
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+bonjour
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+total 1124
+-rw-rw-r-- 1 wer wer   9281 May 14 22:06 build.ninja
+-rw-rw-r-- 1 wer wer   7801 May 14 22:06 compile_commands.json
+-rwxrwxr-x 1 wer wer 555240 May 14 22:06 daemon
+-rwxrwxr-x 1 wer wer  32522 May 15 09:26 daemon_trace.txt
+drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-info
+drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-logs
+drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-private
+-rwxrwxr-x 1 wer wer 525784 May 14 22:06 regression_tests
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+bonjour
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+total 1128
+-rw-rw-r-- 1 wer wer   9281 May 14 22:06 build.ninja
+-rw-rw-r-- 1 wer wer   7801 May 14 22:06 compile_commands.json
+-rwxrwxr-x 1 wer wer 555240 May 14 22:06 daemon
+-rwxrwxr-x 1 wer wer  33451 May 15 09:38 daemon_trace.txt
+drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-info
+drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-logs
+drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-private
+-rwxrwxr-x 1 wer wer 525784 May 14 22:06 regression_tests
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+open: No such file or directory
+bonjour
