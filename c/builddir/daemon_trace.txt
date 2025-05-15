@@ -1,886 +1,198 @@
 Serveur en écoute sur 0.0.0.0:9090
 Socket listening
 initializing filetest
+adding file descriptor : 6
+adding file descriptor : 7
+Waiting for incoming notifications
+received notification, processing it...
+accepting new connexion
+New connexion accepted
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+Incoming job...
+open: No such file or directory
+execve: No such file or directory
+Command received
+RUNCOMMAND
+nbProcess : 0Error while formatting the name of the errFile for the process /bin/OIHDOEJ
+initializing fileprocess successfully launched
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+signal received
+nb_process : 1
 Serveur en écoute sur 0.0.0.0:9090
 Socket listening
 initializing filetest
+adding file descriptor : 6
+adding file descriptor : 7
+Waiting for incoming notifications
+received notification, processing it...
+accepting new connexion
+New connexion accepted
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+Incoming job...
+open: No such file or directory
+execve: No such file or directory
+Command received
+RUNCOMMAND
+nbProcess : 0Error while formatting the name of the errFile for the process /bin/OIHDOEJ
+initializing fileprocess successfully launched
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+signal received
+nb_process : 1
+child : 413616 exited with status : 2
+sending child terminated
+data sent : 48Waiting for incoming notifications
+received notification, processing it...
+Incoming job...
 Serveur en écoute sur 0.0.0.0:9090
 Socket listening
 initializing filetest
+adding file descriptor : 6
+adding file descriptor : 7
+Waiting for incoming notifications
+received notification, processing it...
+accepting new connexion
+New connexion accepted
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+Incoming job...
 Serveur en écoute sur 0.0.0.0:9090
 Socket listening
 initializing filetest
+adding file descriptor : 6
+adding file descriptor : 7
+Waiting for incoming notifications
+received notification, processing it...
+accepting new connexion
+New connexion accepted
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+Incoming job...
+open: No such file or directory
+Command received
+RUNCOMMAND
+nbProcess : 0Error while formatting the name of the errFile for the process /bin/ls
+initializing fileprocess successfully launched
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+Incoming job...
 Serveur en écoute sur 0.0.0.0:9090
 Socket listening
 initializing filetest
+adding file descriptor : 6
+adding file descriptor : 7
+Waiting for incoming notifications
+received notification, processing it...
+accepting new connexion
+New connexion accepted
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+Incoming job...
+open: No such file or directory
+execve: No such file or directory
+Command received
+RUNCOMMAND
+nbProcess : 0Error while formatting the name of the errFile for the process /bin/OIHDOEJ
+initializing fileprocess successfully launched
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+signal received
+nb_process : 1
+child : 414500 exited with status : 2
+sending child terminated
+data sent : 48Waiting for incoming notifications
+received notification, processing it...
+Incoming job...
 Serveur en écoute sur 0.0.0.0:9090
 Socket listening
 initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
+adding file descriptor : 6
+adding file descriptor : 7
+Waiting for incoming notifications
+received notification, processing it...
+accepting new connexion
+New connexion accepted
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+Incoming job...
 open: No such file or directory
 total 1104
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo   1307 May 14 22:15 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1104
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo   2230 May 14 22:19 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1104
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo   3153 May 14 22:19 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1104
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo   4076 May 14 22:20 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1108
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo   4999 May 14 22:22 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1108
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo   5922 May 14 22:35 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1108
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo   6845 May 14 22:59 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1108
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo   7693 May 14 22:59 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1112
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo   8691 May 14 23:00 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1112
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo   9473 May 14 23:06 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1112
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  10321 May 14 23:06 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1112
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  11103 May 14 23:07 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1112
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  11951 May 14 23:07 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1116
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  12733 May 14 23:23 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1116
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  13581 May 14 23:23 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1116
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  14363 May 14 23:33 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1116
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  15211 May 14 23:33 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1116
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  15993 May 14 23:43 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1124
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  16841 May 14 23:43 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1124
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  17623 May 14 23:46 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1124
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  18471 May 14 23:46 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1124
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  19501 May 14 23:59 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1128
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  20531 May 15 00:01 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1128
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  21561 May 15 00:03 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1128
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  22591 May 15 00:04 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1128
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  23621 May 15 00:07 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1132
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  24585 May 15 00:07 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1132
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  25615 May 15 00:08 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-execve: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1132
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  26645 May 15 00:15 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-clone: Invalid argument
-double free or corruption (out)
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1132
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  27697 May 15 00:15 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1132
--rw-rw-r-- 1 telmo telmo   9281 May 14 21:32 build.ninja
--rw-rw-r-- 1 telmo telmo   7801 May 14 21:32 compile_commands.json
--rwxrwxr-x 1 telmo telmo 555240 May 14 21:32 daemon
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 daemon.p
--rwx------ 1 telmo telmo  28661 May 15 00:16 daemon_trace.txt
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-info
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-logs
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 meson-private
--rwxrwxr-x 1 telmo telmo 525784 May 14 21:32 regression_tests
-drwxrwxr-x 2 telmo telmo   4096 May 14 21:32 regression_tests.p
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1124
--rw-rw-r-- 1 wer wer   9281 May 14 22:06 build.ninja
--rw-rw-r-- 1 wer wer   7801 May 14 22:06 compile_commands.json
--rwxrwxr-x 1 wer wer 555240 May 14 22:06 daemon
--rwxrwxr-x 1 wer wer  29850 May 15 08:53 daemon_trace.txt
-drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-info
-drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-logs
-drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-private
--rwxrwxr-x 1 wer wer 525784 May 14 22:06 regression_tests
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1124
--rw-rw-r-- 1 wer wer   9281 May 14 22:06 build.ninja
--rw-rw-r-- 1 wer wer   7801 May 14 22:06 compile_commands.json
--rwxrwxr-x 1 wer wer 555240 May 14 22:06 daemon
--rwxrwxr-x 1 wer wer  30664 May 15 09:01 daemon_trace.txt
-drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-info
-drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-logs
-drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-private
--rwxrwxr-x 1 wer wer 525784 May 14 22:06 regression_tests
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
+-rw-rw-r-- 1 telmo telmo   9281 May 15 11:20 build.ninja
+-rw-rw-r-- 1 telmo telmo   7801 May 15 11:20 compile_commands.json
+-rwxrwxr-x 1 telmo telmo 555856 May 15 11:30 daemon
+drwxrwxr-x 2 telmo telmo   4096 May 15 11:30 daemon.p
+-rwx------ 1 telmo telmo   3850 May 15 11:33 daemon_trace.txt
+drwxrwxr-x 2 telmo telmo   4096 May 15 11:20 meson-info
+drwxrwxr-x 2 telmo telmo   4096 May 15 11:20 meson-logs
+drwxrwxr-x 2 telmo telmo   4096 May 15 11:20 meson-private
+-rwxrwxr-x 1 telmo telmo 526408 May 15 11:20 regression_tests
+drwxrwxr-x 2 telmo telmo   4096 May 15 11:20 regression_tests.p
+Command received
+RUNCOMMAND
+nbProcess : 0Error while formatting the name of the errFile for the process /bin/ls
+initializing fileprocess successfully launched
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+signal received
+nb_process : 1
+child : 414597 exited with status : 0
+sending child terminated
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+Incoming job...
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+adding file descriptor : 6
+adding file descriptor : 7
+Waiting for incoming notifications
+received notification, processing it...
+accepting new connexion
+New connexion accepted
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+Incoming job...
 open: No such file or directory
 bonjour
+Command received
+RUNCOMMAND
+nbProcess : 0Error while formatting the name of the errFile for the process /bin/echo
+initializing fileprocess successfully launched
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+signal received
+nb_process : 1
+child : 414655 exited with status : 0
+sending child terminated
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+Incoming job...
 Serveur en écoute sur 0.0.0.0:9090
 Socket listening
 initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
+adding file descriptor : 6
+adding file descriptor : 7
+Waiting for incoming notifications
+received notification, processing it...
+accepting new connexion
+New connexion accepted
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+Incoming job...
 open: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1124
--rw-rw-r-- 1 wer wer   9281 May 14 22:06 build.ninja
--rw-rw-r-- 1 wer wer   7801 May 14 22:06 compile_commands.json
--rwxrwxr-x 1 wer wer 555240 May 14 22:06 daemon
--rwxrwxr-x 1 wer wer  31593 May 15 09:04 daemon_trace.txt
-drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-info
-drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-logs
-drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-private
--rwxrwxr-x 1 wer wer 525784 May 14 22:06 regression_tests
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-bonjour
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1124
--rw-rw-r-- 1 wer wer   9281 May 14 22:06 build.ninja
--rw-rw-r-- 1 wer wer   7801 May 14 22:06 compile_commands.json
--rwxrwxr-x 1 wer wer 555240 May 14 22:06 daemon
--rwxrwxr-x 1 wer wer  32522 May 15 09:26 daemon_trace.txt
-drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-info
-drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-logs
-drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-private
--rwxrwxr-x 1 wer wer 525784 May 14 22:06 regression_tests
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-bonjour
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-total 1128
--rw-rw-r-- 1 wer wer   9281 May 14 22:06 build.ninja
--rw-rw-r-- 1 wer wer   7801 May 14 22:06 compile_commands.json
--rwxrwxr-x 1 wer wer 555240 May 14 22:06 daemon
--rwxrwxr-x 1 wer wer  33451 May 15 09:38 daemon_trace.txt
-drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-info
-drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-logs
-drwxrwxr-x 2 wer wer   4096 May 14 22:06 meson-private
--rwxrwxr-x 1 wer wer 525784 May 14 22:06 regression_tests
-Serveur en écoute sur 0.0.0.0:9090
-Socket listening
-initializing filetest
-open: No such file or directory
-bonjour
+Command received
+RUNCOMMAND
+nbProcess : 0Error while formatting the name of the errFile for the process /bin/sleep
+initializing fileprocess successfully launched
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+signal received
+nb_process : 1
+child : 414741 exited with status : 0
+sending child terminated
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+Incoming job...

@@ -127,6 +127,7 @@ int main(int argc, char** argv){
             exit(EXIT_FAILURE);
         }
         printf("received notification, processing it...\n");
+        fflush(stdout);
         for (int i = 0; i<nfds; i++){
             if (events[i].events != 0) {
                 event_data_t* edata = (event_data_t*)events[i].data.ptr;
@@ -142,6 +143,7 @@ int main(int argc, char** argv){
                     case SIGNALFD: {
                         printf("signal received\n");
                         printf("nb_process : %d\n", nb_process);
+                        fflush(stdout);
                         struct buffer_info* res;
                         if ((res=handle_signalfd_event(edata->fd, process_manager, nb_process)) == NULL){
                             printf("Unable to read signalfd\n");
@@ -154,6 +156,7 @@ int main(int argc, char** argv){
                     
                     case SOCK_MESSAGE: {
                         printf("Incoming job...\n");
+                        fflush(stdout);
                         struct buffer_info* info = read_socket_message(edata->fd);
                         uint8_t* buffer = info->buffer;
                         int size = info->size;
@@ -185,8 +188,6 @@ int main(int argc, char** argv){
                                     kill(-getpgrp(), SIGTERM); // Kill all process of the group
                                 }else{
                                     kill(pid,SIGKILL);
-                                    manager_remove_process(pid,process_manager,size);
-                                    nb_process--;
                                 }
                                 break;
 

@@ -100,8 +100,8 @@ void process_command_request(process_info **process_manager, int* nb_process, in
             printf("process successfully launched\n");
             struct buffer_info* result_message = send_processlaunched_to_user_c(res->child_id);
             send_message(com_sock,(void*)result_message);
+            free(res);
         }
-        free(res);
     }else{
         send_message(com_sock, (void*)send_childcreationerror_to_user_c((uint32_t)errno));
     }

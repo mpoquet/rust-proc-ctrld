@@ -21,7 +21,7 @@ int child_function(void *arg) {
     }
 
     if (execve((const char*) params->filepath, (char* const*) params->args, (char* const*) params->envp)==-1){
-        printf("Something went wrong when opening executing program");
+        printf("Something went wrong when opening executing program\n");
         perror("execve");
         _exit(errno);
     };
@@ -47,8 +47,10 @@ info_child* launch_process(int stack_size, execve_parameter* parameters, int fla
 
     info_c->stack_p=stack;
 
-    pid_t child_pid = clone(child_function, stack + stack_size, flags, (void*) parameters);
+    pid_t child_pid = clone(child_function, stack + stack_size, SIGCHLD | flags, (void*) parameters);
     if (child_pid == -1) {
+        printf("clone failed\n");
+        fflush(stdout);
         perror("clone");
         free(stack);
         free(info_c);

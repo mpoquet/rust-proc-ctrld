@@ -116,61 +116,6 @@ def launch_process(IP_address, daemon, command):
     except socket.error as e:
         print(f"Erreur de socket : {e}")
         return -1
-
-# def launch_process(IP_address, daemon, command):
-#     process, daemon_type, port = daemon
-#     assert process.poll() is None
-#     print(f"Testing connection for {daemon_type} daemon on port {port}")
-
-#     try:
-#         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#         client.connect((IP_address, port))
-        
-#         # Envoi de la commande
-#         buf = send_command_to_demon(command)
-#         header = buf.size.to_bytes(4, byteorder='little')
-#         client.sendall(header + buf.buffer)
-#         print(f"Sent command buffer of size: {buf.size}")
-
-#         # Réception de la réponse
-#         size_bytes = client.recv(4)
-#         if not size_bytes:
-#             print("Failed to receive size bytes")
-#             client.close()
-#             return -1
-            
-#         size = int.from_bytes(size_bytes, byteorder='little')
-#         print(f"Expected response size: {size}")
-
-#         # Recevoir les données en plusieurs fois si nécessaire
-#         data = bytearray()
-#         remaining = size
-#         while remaining > 0:
-#             chunk = client.recv(remaining)
-#             if not chunk:
-#                 print("Connection closed prematurely")
-#                 client.close()
-#                 return -1
-#             data.extend(chunk)
-#             remaining -= len(chunk)
-            
-#         print(f"Received data size: {len(data)}")
-#         print(f"First few bytes: {data[:20].hex()}")
-
-#         # Convertir en bytes pour le traitement
-#         data = bytes(data)
-#         pid = receive_processlaunched(data, size)
-#         print(f"Received PID: {pid}")
-        
-#         client.close()
-#         return 1 if pid >= 0 else -1
-
-#     except ConnectionRefusedError:
-#         print(f"Connection refused at {IP_address}:{port}")
-#         return -1
-#     except socket.error as e:
-#         print(f"Socket error: {e}")
-#         return -1
     
 def fail_launch_process(IP_address, daemon, command):
     process, daemon_type, port = daemon
@@ -189,17 +134,22 @@ def fail_launch_process(IP_address, daemon, command):
         print(f"size : {size}")
         data = client.recv(int(size))
 
+        size_bytes = client.recv(4)
+        size = int.from_bytes(size_bytes, byteorder='little')
+        print(f"size : {size}")
+        data = client.recv(int(size))
+
         size_bytes= client.recv(4)
         size = int.from_bytes(size_bytes, byteorder='little')
         data = client.recv(int(size))
-        error_code = receive_childcreationerror(data,int(size))
-        print(f"error_code : {error_code}")
-        if error_code < 0 :
-            client.close()
-            return -1
-        else :
+        info = receive_processterminated(data,int(size))
+        print(f"error_code : {info.error_code}, pid: {info.pid}")
+        if info.pid>=0 and info.error_code!=0:
             client.close()
             return 1
+        else :
+            client.close()
+            return -1
     except ConnectionRefusedError:
         print(f"Échec de la connexion : Le serveur à {IP_address}:{port} a refusé la connexion.")
         print(f"Assurez-vous que le serveur {daemon_type} est lancé et écoute sur le bon port.")
@@ -235,12 +185,61 @@ def process_terminated(IP_address, daemon, command):
         data = client.recv(int(size))
         info = receive_processterminated(data,int(size))
         print(f"error_code : {info.error_code}, pid: {info.pid}")
-        if info.pid<0 or info.error_code<0:
-            client.close()
-            return -1
-        else :
+        if info.pid>=0 and info.error_code==0:
             client.close()
             return 1
+        else :
+            client.close()
+            return -1
+    except ConnectionRefusedError:
+        print(f"Échec de la connexion : Le serveur à {IP_address}:{port} a refusé la connexion.")
+        print(f"Assurez-vous que le serveur {daemon_type} est lancé et écoute sur le bon port.")
+        return -1
+    except socket.error as e:
+        print(f"Erreur de socket : {e}")
+        return -1
+    
+def response_time(IP_address, daemon, command):
+    process, daemon_type, port = daemon
+    assert process.poll() is None
+    print(f"Testing connection for {daemon_type} daemon on port {port}")
+
+    try:
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect((IP_address, port))
+
+        size_bytes = client.recv(4)
+        size = int.from_bytes(size_bytes, byteorder='little')
+        print(f"size : {size}")
+        data = client.recv(int(size))
+
+        buf=send_command_to_demon(command)
+        header = buf.size.to_bytes(4, byteorder='little')
+        client.sendall(header + buf.buffer)
+
+        start = time.perf_counter()
+
+
+        size_bytes = client.recv(4)
+        size = int.from_bytes(size_bytes, byteorder='little')
+        print(f"size : {size}")
+        data = client.recv(int(size))
+
+        size_bytes= client.recv(4)
+        size = int.from_bytes(size_bytes, byteorder='little')
+        data = client.recv(int(size))
+        info = receive_processterminated(data,int(size))
+
+        end = time.perf_counter()
+        print(f"Time elapsed : {end-start:.4f}")
+
+        print(f"error_code : {info.error_code}, pid: {info.pid}")
+        if info.pid>0 and info.error_code==0 and end-start<3.1:
+            client.close()
+            return 1
+        else :
+            client.close()
+            return -1
     except ConnectionRefusedError:
         print(f"Échec de la connexion : Le serveur à {IP_address}:{port} a refusé la connexion.")
         print(f"Assurez-vous que le serveur {daemon_type} est lancé et écoute sur le bon port.")
@@ -286,8 +285,8 @@ def test_receiving_failed_launch_process(daemon):
     path = "/bin/OIHDOEJ"
     args = ["lss", "-la"]
     envp = ["badenvp"]
-    flags = -1
-    stack_size = 0  # 1 MB de stack
+    flags = 0
+    stack_size = 1024*1024
 
     # Configuration des événements à surveiller
     to_watch = []
@@ -349,3 +348,23 @@ def test_echo(daemon):
     )
     res = process_terminated("127.0.0.1", daemon,command)
     assert res != -1, "Receiving process_terminated failed"
+
+@pytest.mark.timeout(6)
+def test_response_time(daemon):
+    path = "/bin/sleep"
+    args = ["sleep", "3"]
+    envp = []
+    flags = 0
+    stack_size = 1024 * 1024  # 1 MB de stack
+    to_watch = []
+    command = Command(
+        path=path,
+        args=args,
+        envp=envp,
+        flags=flags,
+        stack_size=stack_size,
+        to_watch=to_watch,
+        to_watch_size=len(to_watch)
+    )
+    res = response_time("127.0.0.1", daemon,command)
+    assert res != -1, "Response time is not good"
