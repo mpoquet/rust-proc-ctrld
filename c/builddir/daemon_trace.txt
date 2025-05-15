@@ -196,3 +196,35 @@ sending child terminated
 data sent : 44Waiting for incoming notifications
 received notification, processing it...
 Incoming job...
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+adding file descriptor : 6
+adding file descriptor : 7
+Waiting for incoming notifications
+received notification, processing it...
+accepting new connexion
+New connexion accepted
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+Incoming job...
+Serveur en écoute sur 0.0.0.0:9090
+Socket listening
+initializing filetest
+adding file descriptor : 6
+adding file descriptor : 7
+Waiting for incoming notifications
+received notification, processing it...
+accepting new connexion
+New connexion accepted
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+Incoming job...
+open: No such file or directory
+Command received
+RUNCOMMAND
+nbProcess : 0Error while formatting the name of the errFile for the process /bin/ls
+initializing fileprocess successfully launched
+data sent : 44Waiting for incoming notifications
+received notification, processing it...
+Incoming job...
