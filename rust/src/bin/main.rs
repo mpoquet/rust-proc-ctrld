@@ -15,7 +15,7 @@ use rust_proc_ctrl::monitoring_tools::command::exec_command;
 use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message,Event, InotifyEvent};
 
 // sérialisation
-use rust_proc_ctrl::proto::serialisation::{serialize_child_creation_error, serialize_established_tcp_connection, serialize_process_launched, serialize_process_terminated};
+use rust_proc_ctrl::proto::serialisation::{serialize_child_creation_error, serialize_process_launched, serialize_process_terminated, serialize_tcp_socket_listenning};
 
 async fn handle_message(buf: &[u8], socket: &mut TcpStream) -> Vec<u8> {
 
@@ -69,7 +69,12 @@ async fn handle_message(buf: &[u8], socket: &mut TcpStream) -> Vec<u8> {
             let from_mess = msg.events_as_run_command().expect("error events_as_run_command");
             let mut command = exec_command(&from_mess);
 
-            let mut child = command.spawn().expect("failed to spawn command");
+            let mut child = match command.spawn() {
+                Ok(child) => child,
+                Err(error_code) => {
+                    return serialize_process_terminated(-1, error_code.raw_os_error().unwrap_or(1) as u32);
+                }
+            };
             let pid = child.id().expect("could not get child pid");
 
             send_on_socket(serialize_process_launched(pid as i32), socket).await;
@@ -106,7 +111,7 @@ async fn send_on_socket(retour: Vec<u8>, socket: &mut TcpStream) {
 
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn Error>> {
-    let port: u32 = 8080;
+    let port: u16 = 8080;
     println!("The demon pid is {}", std::process::id());
     println!("We listen on the port {}", port);
 
@@ -115,7 +120,7 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
     loop {
         let (mut socket, addr) = listener.accept().await?;
         println!("Connexion de : {}", addr);
-        let established_connection = serialize_established_tcp_connection(port);
+        let established_connection = serialize_tcp_socket_listenning(port);
         send_on_socket(established_connection, &mut socket).await;
 
         tokio::spawn(async move {
