@@ -145,7 +145,7 @@ int main(int argc, char** argv){
                         printf("nb_process : %d\n", nb_process);
                         fflush(stdout);
                         struct buffer_info* res;
-                        if ((res=handle_signalfd_event(edata->fd, process_manager, nb_process)) == NULL){
+                        if ((res=handle_signalfd_event(edata->fd, process_manager, &nb_process)) == NULL){
                             printf("Unable to read signalfd\n");
                         }else{
                             printf("sending child terminated\n");

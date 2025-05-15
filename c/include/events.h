@@ -55,7 +55,7 @@ int add_event_signalFd(int fd, int epollfd);
 
 int add_event_inotifyFd(int fd, int epollfd, int size);
 
-struct buffer_info* handle_signalfd_event(int fd, process_info** manager, int size);
+struct buffer_info* handle_signalfd_event(int fd, process_info** manager, int* size);
 
 void handle_inotify_event(int fd, int size, int com_sock);
 

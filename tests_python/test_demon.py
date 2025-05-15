@@ -248,6 +248,53 @@ def response_time(IP_address, daemon, command):
         print(f"Erreur de socket : {e}")
         return -1
     
+def Daemon_overhead(IP_address, daemon, command):
+    process, daemon_type, port = daemon
+    assert process.poll() is None
+    print(f"Testing connection for {daemon_type} daemon on port {port}")
+
+    try:
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect((IP_address, port))
+
+        size_bytes = client.recv(4)
+        size = int.from_bytes(size_bytes, byteorder='little')
+        print(f"size : {size}")
+        data = client.recv(int(size))
+
+        start = time.perf_counter()
+
+        buf=send_command_to_demon(command)
+        header = buf.size.to_bytes(4, byteorder='little')
+        for i in range(100):
+            client.sendall(header + buf.buffer)
+
+            size_bytes = client.recv(4)
+            size = int.from_bytes(size_bytes, byteorder='little')
+            print(f"size : {size}")
+            data = client.recv(int(size))
+
+            size_bytes= client.recv(4)
+            size = int.from_bytes(size_bytes, byteorder='little')
+            data = client.recv(int(size))
+            info = receive_processterminated(data,int(size))
+            print(f"error_code : {info.error_code}, pid: {info.pid}")
+            if info.pid<0 and info.error_code!=0:
+                client.close()
+                return -1
+            
+        end = time.perf_counter()
+        print(f"Time elapsed : {end-start:.4f}")
+
+        return end-start
+
+    except ConnectionRefusedError:
+        print(f"Échec de la connexion : Le serveur à {IP_address}:{port} a refusé la connexion.")
+        print(f"Assurez-vous que le serveur {daemon_type} est lancé et écoute sur le bon port.")
+        return -1
+    except socket.error as e:
+        print(f"Erreur de socket : {e}")
+        return -1
 
 @pytest.mark.timeout(3)
 def test_daemon_connection(daemon):
@@ -368,3 +415,28 @@ def test_response_time(daemon):
     )
     res = response_time("127.0.0.1", daemon,command)
     assert res != -1, "Response time is not good"
+
+@pytest.mark.timeout(10)
+def test_overhead_daemon(daemon):
+    # Configuration des arguments
+    path = "/bin/ls"
+    args = ["ls", "-l"]
+    envp = []
+    flags = 0
+    stack_size = 1024 * 1024  # 1 MB de stack
+
+    # Configuration des événements à surveiller
+    to_watch = []
+
+    # Création de la commande
+    command = Command(
+        path=path,
+        args=args,
+        envp=envp,
+        flags=flags,
+        stack_size=stack_size,
+        to_watch=to_watch,
+        to_watch_size=len(to_watch)
+    )
+    res = Daemon_overhead("127.0.0.1", daemon,command)
+    assert res != -1, "All process were not execute properly"

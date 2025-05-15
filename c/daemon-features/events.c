@@ -170,7 +170,7 @@ struct clone_parameters* extract_clone_parameters(command* com){
     return NULL;
 }
 
-struct buffer_info* handle_SIGCHLD(struct signalfd_siginfo fdsi, process_info** manager, int size){
+struct buffer_info* handle_SIGCHLD(struct signalfd_siginfo fdsi, process_info** manager, int* size){
     int wstatus;
     int exit_status;
     waitpid(fdsi.ssi_pid, &wstatus, 0);
@@ -181,12 +181,13 @@ struct buffer_info* handle_SIGCHLD(struct signalfd_siginfo fdsi, process_info** 
         exit_status= WTERMSIG(wstatus);     
     }
     printf("child : %d exited with status : %d\n", fdsi.ssi_pid, exit_status);
-    manager_remove_process(fdsi.ssi_pid,manager,size);
+    manager_remove_process(fdsi.ssi_pid,manager,*size);
+    (*size)--;
     struct buffer_info* info = send_processterminated_to_user_c((int32_t)fdsi.ssi_pid,(uint32_t)exit_status);
     return info;
 }
 
-struct buffer_info* handle_signalfd_event(int fd, process_info** manager, int size){
+struct buffer_info* handle_signalfd_event(int fd, process_info** manager, int* size){
     ssize_t s;
     struct signalfd_siginfo fdsi;
     struct buffer_info* res = NULL;

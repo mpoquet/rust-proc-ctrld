@@ -1,1 +1,0 @@
-[{"cmd": ["/home/telmo/Bureau/Bureau d'\u00e9tude/Code/rust-proc-ctrld/c/builddir/regression_tests"], "env": {}, "name": "regression tests", "workdir": null, "timeout": 30, "suite": ["daemon"], "is_parallel": true, "priority": 0, "protocol": "exitcode", "depends": ["regression_tests@exe"]}]
