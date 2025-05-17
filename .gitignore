@@ -1,7 +1,7 @@
 # Dossiers de build et de distribution
 target/
 out/
-build/
+builddir/
 tmp/
 
 # Fichiers temporaires ou de sauvegarde
