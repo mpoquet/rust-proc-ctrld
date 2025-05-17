@@ -105,7 +105,6 @@ class Event(Enum):
     SOCKET_WATCH_TERMINATED = 11
 
 def send_command_to_demon(cmd: Command) -> BufferInfo:
-    cmd.to_watch_size = len(cmd.to_watch)
     # Create FlatBuffer builder
     builder = flatbuffers.Builder(1024)
     
@@ -114,18 +113,7 @@ def send_command_to_demon(cmd: Command) -> BufferInfo:
     envp_offsets = [builder.CreateString(env) for env in cmd.envp]
     path_offset = builder.CreateString(cmd.path)
     
-    # Create args and envp vectors
-    demon.RunCommand.RunCommandStartArgsVector(builder, len(args_offsets))
-    for arg in reversed(args_offsets):
-        builder.PrependUOffsetTRelative(arg)
-    args_vector = builder.EndVector()
-    
-    demon.RunCommand.RunCommandStartEnvpVector(builder, len(envp_offsets))
-    for env in reversed(envp_offsets):
-        builder.PrependUOffsetTRelative(env)
-    envp_vector = builder.EndVector()
-    
-    # Create surveillances vector
+    # Create surveillances vector first to avoir side effects
     surveillance_offsets = []
     for surv in cmd.to_watch:
         if surv.event == "INOTIFY":
@@ -144,12 +132,23 @@ def send_command_to_demon(cmd: Command) -> BufferInfo:
             socket_offset = demon.TCPSocket.End(builder)
             surveillance_offsets.append(socket_offset)
             
+    # Create vectors
+    demon.RunCommand.RunCommandStartArgsVector(builder, len(args_offsets))
+    for arg in reversed(args_offsets):
+        builder.PrependUOffsetTRelative(arg)
+    args_vector = builder.EndVector()
+    
+    demon.RunCommand.RunCommandStartEnvpVector(builder, len(envp_offsets))
+    for env in reversed(envp_offsets):
+        builder.PrependUOffsetTRelative(env)
+    envp_vector = builder.EndVector()
+    
     demon.RunCommand.RunCommandStartToWatchVector(builder, len(surveillance_offsets))
     for surv in reversed(surveillance_offsets):
         builder.PrependUOffsetTRelative(surv)
     surveillance_vector = builder.EndVector()
     
-    # Create RunCommand
+    # Create RunCommand with all fields
     demon.RunCommand.Start(builder)
     demon.RunCommand.AddPath(builder, path_offset)
     demon.RunCommand.AddArgs(builder, args_vector)
