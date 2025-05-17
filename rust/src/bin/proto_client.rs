@@ -49,12 +49,11 @@ fn handle_message(buff: &[u8]) -> ReturnHandleMessage {
 
             if succed {
                 println!("Execve success launched the command : {}\npid:{}", command, pid);
-                ReturnHandleMessage::Continue
             }
             else {
                 println!("Execve failed, the command was {}.\npid:{}", command, pid);
-                ReturnHandleMessage::End
             }
+            ReturnHandleMessage::Continue
         }
         Event::ChildCreationError => {
             //Recupération de l'objet ChildCreationError et du errno

@@ -527,7 +527,11 @@ def receive_execveterminated(buffer: bytes, size: int) -> Optional[ExecveInfo]:
     try:
         # Get message and check type
         message = demon.Message.Message.GetRootAsMessage(buffer, 0)
+        print(f"ExecveTerminated event type (numeric): {message.EventsType()}")
+        print(f"Expected event type (numeric): {demon.Event.Event.ExecveTerminated}")
+        print(f"ProcessTerminated event type (string): {demon.Event.Event.ProcessTerminated}")
         if message.EventsType() != demon.Event.Event.ExecveTerminated:
+            print("la")
             return None
 
         # Get ExecveTerminated table and create info
@@ -626,6 +630,8 @@ def receive_processterminated(buffer: bytes, size: int) -> Optional[ProcessTermi
     try:
         # Get message and check type
         message = demon.Message.Message.GetRootAsMessage(buffer, 0)
+        print(f"Actual event type (numeric): {message.EventsType()}")
+        print(f"ProcessLaunched type (numeric): {demon.Event.Event.ProcessLaunched}")
         if message.EventsType() != demon.Event.Event.ProcessTerminated:
             return None
 
