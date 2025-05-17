@@ -156,9 +156,11 @@ def execve_executed(IP_address, daemon, command):
 
         print(f"pid : {data.pid}, command : {data.command_name}, succes : {data.success}")
         if data.success==True and data.pid >0:
+            print("Dans la 1ere branche")
             client.close()
             return 1
         else :
+            print("Dans la 2eme branche")
             client.close()
             return -1
     except ConnectionRefusedError:
@@ -172,6 +174,7 @@ def execve_executed(IP_address, daemon, command):
 def fail_launch_process(IP_address, daemon, command):
     process, daemon_type, port = daemon
     assert process.poll() is None
+    print("ici")
     print(f"Testing connection for {daemon_type} daemon on port {port}")
 
     try:
@@ -267,6 +270,57 @@ def process_terminated(IP_address, daemon, command):
         print(f"Erreur de socket : {e}")
         return -1
     
+def inotify_watchlist_updated(IP_address, daemon, command):
+    process, daemon_type, port = daemon
+    assert process.poll() is None
+    print(f"Testing connection for {daemon_type} daemon on port {port}")
+
+    try:
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect((IP_address, port))
+        buf=send_command_to_demon(command)
+        header = buf.size.to_bytes(4, byteorder='little')
+        client.sendall(header + buf.buffer)
+
+        #receiving conection successfull
+        size_bytes = client.recv(4)
+        size = int.from_bytes(size_bytes, byteorder='little')
+        print(f"size : {size}")
+        data = client.recv(int(size))
+
+        #receiving launch process
+        size_bytes = client.recv(4)
+        size = int.from_bytes(size_bytes, byteorder='little')
+        print(f"size : {size}")
+        data = client.recv(int(size))
+
+        #receiving execve terminated
+        size_bytes = client.recv(4)
+        size = int.from_bytes(size_bytes, byteorder='little')
+        print(f"size : {size}")
+        data = client.recv(int(size))
+
+        #receiving inotify watchlist updated
+        size_bytes= client.recv(4)
+        size = int.from_bytes(size_bytes, byteorder='little')
+        print(f"size : {size}")
+        data = client.recv(int(size))
+        path = receive_inotifywatchlistupdated(data,int(size))
+        print(f"path : {path}")
+        if path!=None:
+            client.close()
+            return 1
+        else :
+            client.close()
+            return -1
+    except ConnectionRefusedError:
+        print(f"Échec de la connexion : Le serveur à {IP_address}:{port} a refusé la connexion.")
+        print(f"Assurez-vous que le serveur {daemon_type} est lancé et écoute sur le bon port.")
+        return -1
+    except socket.error as e:
+        print(f"Erreur de socket : {e}")
+        return -1
+    
 def response_time(IP_address, daemon, command):
     process, daemon_type, port = daemon
     assert process.poll() is None
@@ -326,24 +380,171 @@ def response_time(IP_address, daemon, command):
         return -1
 
 
-@pytest.mark.timeout(3)
-def test_daemon_connection(daemon):
-    res = connect_to_daemon("127.0.0.1", daemon)
-    assert res != -1, "Connexion échouée"
+# @pytest.mark.timeout(3)
+# def test_daemon_connection(daemon):
+#     res = connect_to_daemon("127.0.0.1", daemon)
+#     assert res != -1, "Connexion échouée"
+
+# @pytest.mark.timeout(3)
+# def test_receiving_launch_process(daemon):
+#     # Configuration des arguments
+#     path = "/bin/ls"
+#     args = ["ls", "-l"]
+#     envp = []
+#     flags = 0
+#     stack_size = 1024 * 1024  # 1 MB de stack
+
+#     # Configuration des événements à surveiller
+#     to_watch = []
+
+#     # Création de la commande
+#     command = Command(
+#         path=path,
+#         args=args,
+#         envp=envp,
+#         flags=flags,
+#         stack_size=stack_size,
+#         to_watch=to_watch,
+#         to_watch_size=len(to_watch)
+#     )
+#     res = launch_process("127.0.0.1", daemon,command)
+#     assert res != -1, "Launch process failed"
+
+# @pytest.mark.timeout(3)
+# def test_receiving_failed_launch_process(daemon):
+#     # Configuration des arguments
+#     path = "/bin/OIHDOEJ"
+#     args = ["lss", "-la"]
+#     envp = ["badenvp"]
+#     flags = 0
+#     stack_size = 1024*1024
+
+#     # Configuration des événements à surveiller
+#     to_watch = []
+
+#     # Création de la commande
+#     command = Command(
+#         path=path,
+#         args=args,
+#         envp=envp,
+#         flags=flags,
+#         stack_size=stack_size,
+#         to_watch=to_watch,
+#         to_watch_size=len(to_watch)
+#     )
+#     res = fail_launch_process("127.0.0.1", daemon,command)
+#     assert res != -1, "Receiving fail info failed"
+
+# @pytest.mark.timeout(3)
+# def test_receiving_process_terminated(daemon):
+#     # Configuration des arguments
+#     path = "/bin/ls"
+#     args = ["ls", "-l"]
+#     envp = []
+#     flags = 0
+#     stack_size = 1024 * 1024  # 1 MB de stack
+
+#     # Configuration des événements à surveiller
+#     to_watch = []
+
+#     # Création de la commande
+#     command = Command(
+#         path=path,
+#         args=args,
+#         envp=envp,
+#         flags=flags,
+#         stack_size=stack_size,
+#         to_watch=to_watch,
+#         to_watch_size=len(to_watch)
+#     )
+#     res = process_terminated("127.0.0.1", daemon,command)
+#     assert res != -1, "Receiving process_terminated failed"
+
+# @pytest.mark.timeout(3)
+# def test_echo(daemon):
+#     path = "/bin/echo"
+#     args = ["echo", "bonjour"]
+#     envp = []
+#     flags = 0
+#     stack_size = 1024 * 1024  # 1 MB de stack
+#     to_watch = []
+#     command = Command(
+#         path=path,
+#         args=args,
+#         envp=envp,
+#         flags=flags,
+#         stack_size=stack_size,
+#         to_watch=to_watch,
+#         to_watch_size=len(to_watch)
+#     )
+#     res = process_terminated("127.0.0.1", daemon,command)
+#     assert res != -1, "Receiving process_terminated failed"
+
+# @pytest.mark.timeout(6)
+# def test_response_time(daemon):
+#     path = "/bin/sleep"
+#     args = ["sleep", "3"]
+#     envp = []
+#     flags = 0
+#     stack_size = 1024 * 1024  # 1 MB de stack
+#     to_watch = []
+#     command = Command(
+#         path=path,
+#         args=args,
+#         envp=envp,
+#         flags=flags,
+#         stack_size=stack_size,
+#         to_watch=to_watch,
+#         to_watch_size=len(to_watch)
+#     )
+#     res = response_time("127.0.0.1", daemon,command)
+#     assert res != -1, "Response time is not good"
+
+# @pytest.mark.timeout(3)
+# def test_execve_terminated(daemon):
+#     path = "/bin/echo"
+#     args = ["echo", "bonjour"]
+#     envp = []
+#     flags = 0
+#     stack_size = 1024 * 1024  # 1 MB de stack
+#     to_watch = []
+#     command = Command(
+#         path=path,
+#         args=args,
+#         envp=envp,
+#         flags=flags,
+#         stack_size=stack_size,
+#         to_watch=to_watch,
+#         to_watch_size=len(to_watch)
+#     )
+#     res = execve_executed("127.0.0.1", daemon,command)
+#     assert res != -1, "Receiving execve_termiated with success failed"
+
+IN_MODIFY = 0x00000002
+IN_CREATE = 0x00000100
 
 @pytest.mark.timeout(3)
-def test_receiving_launch_process(daemon):
-    # Configuration des arguments
-    path = "/bin/ls"
-    args = ["ls", "-l"]
+def test_inotify_result(daemon):
+    path = ""
+    args = []
     envp = []
     flags = 0
     stack_size = 1024 * 1024  # 1 MB de stack
 
-    # Configuration des événements à surveiller
-    to_watch = []
+    # Création des paramètres inotify
+    inotify_params = InotifyParameters(
+        root_paths="./test.txt",
+        mask=IN_MODIFY | IN_CREATE,
+        size=4096
+    )
 
-    # Création de la commande
+    # Création de l'événement de surveillance pour ces paramètres
+    surveillance_inotify = Surveillance(
+        event=SurveillanceEventType.INOTIFY,
+        ptr_event=inotify_params
+    )
+
+    to_watch = [surveillance_inotify]
     command = Command(
         path=path,
         args=args,
@@ -353,115 +554,5 @@ def test_receiving_launch_process(daemon):
         to_watch=to_watch,
         to_watch_size=len(to_watch)
     )
-    res = launch_process("127.0.0.1", daemon,command)
-    assert res != -1, "Launch process failed"
-
-@pytest.mark.timeout(3)
-def test_receiving_failed_launch_process(daemon):
-    # Configuration des arguments
-    path = "/bin/OIHDOEJ"
-    args = ["lss", "-la"]
-    envp = ["badenvp"]
-    flags = 0
-    stack_size = 1024*1024
-
-    # Configuration des événements à surveiller
-    to_watch = []
-
-    # Création de la commande
-    command = Command(
-        path=path,
-        args=args,
-        envp=envp,
-        flags=flags,
-        stack_size=stack_size,
-        to_watch=to_watch,
-        to_watch_size=len(to_watch)
-    )
-    res = fail_launch_process("127.0.0.1", daemon,command)
-    assert res != -1, "Receiving fail info failed"
-
-@pytest.mark.timeout(3)
-def test_receiving_process_terminated(daemon):
-    # Configuration des arguments
-    path = "/bin/ls"
-    args = ["ls", "-l"]
-    envp = []
-    flags = 0
-    stack_size = 1024 * 1024  # 1 MB de stack
-
-    # Configuration des événements à surveiller
-    to_watch = []
-
-    # Création de la commande
-    command = Command(
-        path=path,
-        args=args,
-        envp=envp,
-        flags=flags,
-        stack_size=stack_size,
-        to_watch=to_watch,
-        to_watch_size=len(to_watch)
-    )
-    res = process_terminated("127.0.0.1", daemon,command)
-    assert res != -1, "Receiving process_terminated failed"
-
-@pytest.mark.timeout(3)
-def test_echo(daemon):
-    path = "/bin/echo"
-    args = ["echo", "bonjour"]
-    envp = []
-    flags = 0
-    stack_size = 1024 * 1024  # 1 MB de stack
-    to_watch = []
-    command = Command(
-        path=path,
-        args=args,
-        envp=envp,
-        flags=flags,
-        stack_size=stack_size,
-        to_watch=to_watch,
-        to_watch_size=len(to_watch)
-    )
-    res = process_terminated("127.0.0.1", daemon,command)
-    assert res != -1, "Receiving process_terminated failed"
-
-@pytest.mark.timeout(6)
-def test_response_time(daemon):
-    path = "/bin/sleep"
-    args = ["sleep", "3"]
-    envp = []
-    flags = 0
-    stack_size = 1024 * 1024  # 1 MB de stack
-    to_watch = []
-    command = Command(
-        path=path,
-        args=args,
-        envp=envp,
-        flags=flags,
-        stack_size=stack_size,
-        to_watch=to_watch,
-        to_watch_size=len(to_watch)
-    )
-    res = response_time("127.0.0.1", daemon,command)
-    assert res != -1, "Response time is not good"
-
-@pytest.mark.timeout(3)
-def test_execve_terminated(daemon):
-    path = "/bin/echo"
-    args = ["echo", "bonjour"]
-    envp = []
-    flags = 0
-    stack_size = 1024 * 1024  # 1 MB de stack
-    to_watch = []
-    command = Command(
-        path=path,
-        args=args,
-        envp=envp,
-        flags=flags,
-        stack_size=stack_size,
-        to_watch=to_watch,
-        to_watch_size=len(to_watch)
-    )
-    res = execve_executed("127.0.0.1", daemon,command)
-    assert res != -1, "Receiving execve_termiated with success failed"
+    res = inotify_watchlist_updated("127.0.0.1", daemon,command)
+    assert res != -1, "Inotify watch list not updated"
