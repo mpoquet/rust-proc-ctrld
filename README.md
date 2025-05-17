@@ -2,15 +2,11 @@
 
 ## Launch project
 
-### Change port :
-
-`./server_bind <port>` : change port.
-
 ### Rust : 
 
 Go to rust rep
 
-`cargo run --bin run_demon` : command to launch demon.  
+`cargo run --bin run_demon <port>` : command to launch demon on the specify port.  
 `cargo run --bin run_client` : command to launch client prototype (not finished).
 
 ### C :
