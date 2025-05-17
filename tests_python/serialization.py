@@ -87,7 +87,6 @@ class Command:
     flags: int
     stack_size: int
     to_watch: List[Surveillance]
-    to_watch_size: int
 
 class Event(Enum):
     NONE = -1
@@ -105,7 +104,6 @@ class Event(Enum):
     SOCKET_WATCH_TERMINATED = 11
 
 def send_command_to_demon(cmd: Command) -> BufferInfo:
-    # Create FlatBuffer builder
     builder = flatbuffers.Builder(1024)
     
     # Create string arrays
@@ -116,21 +114,36 @@ def send_command_to_demon(cmd: Command) -> BufferInfo:
     # Create surveillances vector first to avoid side effects
     surveillance_offsets = []
     for surv in cmd.to_watch:
-        if surv.event == "INOTIFY":
+        if surv.event == SurveillanceEventType.INOTIFY:
             inotify = surv.ptr_event
             root_paths_offset = builder.CreateString(inotify.root_paths)
+            
+            # Create Inotify table
             demon.Inotify.Start(builder)
             demon.Inotify.AddRootPaths(builder, root_paths_offset)
             demon.Inotify.AddMask(builder, inotify.mask)
             demon.Inotify.AddSize(builder, inotify.size)
             inotify_offset = demon.Inotify.End(builder)
-            surveillance_offsets.append(inotify_offset)
-        elif surv.event == "WATCH_SOCKET":
+            
+            # Create SurveillanceEvent
+            demon.SurveillanceEvent.Start(builder)
+            demon.SurveillanceEvent.AddEventType(builder, demon.Surveillance.Surveillance.Inotify)
+            demon.SurveillanceEvent.AddEvent(builder, inotify_offset)
+            surveillance_offsets.append(demon.SurveillanceEvent.End(builder))
+            
+        elif surv.event == SurveillanceEventType.WATCH_SOCKET:
             socket = surv.ptr_event
+            
+            # Create TCPSocket table
             demon.TCPSocket.Start(builder)
             demon.TCPSocket.AddDestport(builder, socket.destport)
             socket_offset = demon.TCPSocket.End(builder)
-            surveillance_offsets.append(socket_offset)
+            
+            # Create SurveillanceEvent
+            demon.SurveillanceEvent.Start(builder)
+            demon.SurveillanceEvent.AddEventType(builder, demon.Surveillance.Surveillance.TCPSocket)
+            demon.SurveillanceEvent.AddEvent(builder, socket_offset)
+            surveillance_offsets.append(demon.SurveillanceEvent.End(builder))
             
     # Create vectors
     demon.RunCommand.RunCommandStartArgsVector(builder, len(args_offsets))

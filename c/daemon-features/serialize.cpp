@@ -202,7 +202,7 @@ command* receive_command(uint8_t *buffer, int size) {
     // Process surveillances
     auto surveillances = run_command->to_watch();
     if (surveillances) {
-        final_command->to_watch_size = surveillances->Length();
+        final_command->to_watch_size = surveillances->size();
         final_command->to_watch = new surveillance[final_command->to_watch_size]; // Use new instead of malloc
 
         for (size_t i = 0; i < final_command->to_watch_size; ++i) {
