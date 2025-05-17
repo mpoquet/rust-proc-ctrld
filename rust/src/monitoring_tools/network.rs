@@ -18,7 +18,7 @@ pub fn open_port(addr: &str, port: u16) -> std::io::Result<TcpListener> {
     Ok(listener)
 }
 
-pub fn is_port_listening(port: u16) -> bool {
+pub fn is_port_event(port: u16, state: TcpState) -> bool {
     let af_flags = AddressFamilyFlags::IPV4 | AddressFamilyFlags::IPV6;
     let protocol_flags = ProtocolFlags::TCP;
     let socket_info =
@@ -27,7 +27,7 @@ pub fn is_port_listening(port: u16) -> bool {
 
     for info in socket_info {
         if let ProtocolSocketInfo::Tcp(sinfo) = info.protocol_socket_info {
-            if sinfo.local_port == port && sinfo.state == TcpState::Listen {
+            if sinfo.local_port == port && sinfo.state == state {
                 return true;
             }
         }
@@ -35,19 +35,25 @@ pub fn is_port_listening(port: u16) -> bool {
     false
 }
 
-pub async fn read_events_port_tokio(port: u16) -> Result<u32, (u32, Errno)> {
+pub async fn read_events_port_tokio(port: u16) -> Result<TcpState,(u32, Errno)> {
     let join_handle = task::spawn(async move {
         loop {
-            if is_port_listening(port) {
+            if is_port_event(port, TcpState::Listen) {
                 println!("The port {} is LISTENING in tokio", port);
-                break;
+                return TcpState::Listen
+            }
+            else if is_port_event(port, TcpState::Unknown) {
+                return TcpState::Unknown
+            }
+            else if is_port_event(port, TcpState::Established) {
+                return TcpState::Established
             }
             tokio::time::sleep(Duration::from_millis(500)).await;
         }
     });
 
     match join_handle.await {
-        Ok(_) => Ok(std::process::id()),
+        Ok(state) => Ok(state),
         Err(_) => Err((std::process::id(), Errno::UnknownErrno)),
     }
 }

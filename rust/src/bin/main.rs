@@ -11,10 +11,10 @@ use rust_proc_ctrl::monitoring_tools::signal_tool::send_sigkill;
 use rust_proc_ctrl::monitoring_tools::command::exec_command;
 
 // flatbuffers
-use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message,Event, InotifyEvent};
+use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message,Event, InotifyEvent, SocketState};
 
 // sérialisation
-use rust_proc_ctrl::proto::serialisation::{serialize_child_creation_error, serialize_execve_terminated, serialize_process_launched, serialize_process_terminated, serialize_tcp_socket_listenning};
+use rust_proc_ctrl::proto::serialisation::{serialize_child_creation_error, serialize_execve_terminated, serialize_process_launched, serialize_process_terminated, serialize_socket_watch_terminated, serialize_tcp_socket_listenning};
 
 async fn handle_message(buf: &[u8], socket: &mut TcpStream) {
 
@@ -50,7 +50,7 @@ async fn handle_message(buf: &[u8], socket: &mut TcpStream) {
             }
 
             match read_events_inotify(path, trig_events, reach_size as u64).await {
-                Ok(pid) => send_on_socket(serialize_process_launched(pid as i32), socket).await,
+                Ok(pid) => send_on_socket(serialize_process_terminated(pid as i32, 0), socket).await,
                 Err((pid,errno)) => send_on_socket(serialize_process_terminated(pid as i32, errno as u32), socket).await,
             }
         }
@@ -98,12 +98,19 @@ async fn handle_message(buf: &[u8], socket: &mut TcpStream) {
                 Err(errno) => send_on_socket(serialize_process_terminated(pid as i32, errno.raw_os_error().unwrap_or(1) as u32), socket).await,
             }
         }
-        Event::TCPSocketListening => {
-            let from_mess = msg.events_as_tcpsocket_listening().expect("error from receiving message");
+        Event::SocketWatched => {
+            let from_mess = msg.events_as_socket_watched().expect("error from receiving message");
             let port = from_mess.port();
 
-            match read_events_port_tokio(port).await {
-                Ok(pid) => send_on_socket(serialize_process_launched(pid as i32), socket).await,
+            match read_events_port_tokio(port as u16).await {
+                Ok(state) => {
+                    let to_send = match state {
+                        netstat2::TcpState::Listen => SocketState::listeing,
+                        netstat2::TcpState::Established => SocketState::created,
+                        _ => SocketState::unknown,
+                    };
+                    send_on_socket(serialize_socket_watch_terminated(port, to_send), socket).await
+                }
                 Err((pid ,errno)) => send_on_socket(serialize_process_terminated(pid as i32, errno as u32), socket).await,
             }
         }

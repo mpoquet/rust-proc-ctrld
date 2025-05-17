@@ -1,5 +1,6 @@
 use flatbuffers::FlatBufferBuilder;
 
+use super::demon_generated::demon::InotifyEvent;
 use super::demon_generated::demon::{self, Message, RunCommand, RunCommandArgs};
 use crate::proto::serialisation::demon::MessageArgs;
 use crate::proto::serialisation::demon::Event;
@@ -172,4 +173,79 @@ pub fn serialize_inotify(path: &str, mask: i32, size: u32) -> Vec<u8> {
 
     bldr.finish(mess, None);
     bldr.finished_data().to_vec()
+}
+
+pub fn serialize_inotify_path_update(path: &str, trigger: InotifyEvent, size: u32, size_limit: u32) -> Vec<u8> {
+    let mut builder = FlatBufferBuilder::new();
+
+    // Création de l'offset pour la chaîne de caractères "path"
+    let path_offset = builder.create_string(path);
+
+    // Création de l'objet InotifyPathUpdated
+    let inotify_update = demon::InotifyPathUpdated::create(
+        &mut builder,
+        &demon::InotifyPathUpdatedArgs {
+            path: Some(path_offset),
+            trigger_events: trigger,
+            size,
+            size_limit,
+        },
+    );
+
+    // Création du message en incluant l'objet InotifyPathUpdated
+    let message = Message::create(
+        &mut builder,
+        &MessageArgs {
+            events_type: Event::InotifyPathUpdated,
+            events: Some(inotify_update.as_union_value()),
+        },
+    );
+
+    builder.finish(message, None);
+    builder.finished_data().to_vec()
+}
+
+pub fn serialize_socket_watched(port: i32) -> Vec<u8> {
+    let mut builder = FlatBufferBuilder::new();
+
+    let socket_watched = demon::SocketWatched::create(
+        &mut builder,
+        &demon::SocketWatchedArgs {
+            port,
+        },
+    );
+
+    let mess = Message::create(
+        &mut builder,
+        &MessageArgs {
+            events_type: Event::SocketWatched, // Assurez-vous que l'enum Event possède ce variant
+            events: Some(socket_watched.as_union_value()),
+        },
+    );
+
+    builder.finish(mess, None);
+    builder.finished_data().to_vec()
+}
+
+pub fn serialize_socket_watch_terminated(port: i32, state: demon::SocketState) -> Vec<u8> {
+    let mut builder = FlatBufferBuilder::new();
+
+    let socket_watch_terminated = demon::SocketWatchTerminated::create(
+        &mut builder,
+        &demon::SocketWatchTerminatedArgs {
+            port,
+            state,
+        },
+    );
+
+    let mess = Message::create(
+        &mut builder,
+        &MessageArgs {
+            events_type: Event::SocketWatchTerminated, // Assurez-vous que l'enum Event possède ce variant
+            events: Some(socket_watch_terminated.as_union_value()),
+        },
+    );
+
+    builder.finish(mess, None);
+    builder.finished_data().to_vec()
 }

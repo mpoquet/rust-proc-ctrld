@@ -66,7 +66,7 @@ pub async fn read_events_inotify(path: &str, vec: Vec<EventMask>, reach_size: u6
     let handle = task::spawn({
         let path = path.to_string();
         async move {
-            loop {
+            'outer: loop {
                 let num_events = unsafe {
                     epoll_wait(epoll_fd, events.as_mut_ptr(), events.len() as i32, -1)
                 };
@@ -97,26 +97,31 @@ pub async fn read_events_inotify(path: &str, vec: Vec<EventMask>, reach_size: u6
                                     
                                     if file_size > reach_size {
                                         println!("File {} reached size {} o.", name_file, file_size);
+                                        break 'outer;
                                     }
                                 }
-                                if event_mask.contains(EventMask::CREATE) {
+                                if event_mask.contains(EventMask::CREATE) && name_file != "" {
                                     print!("CREATE ");
                                     if event_mask.contains(EventMask::ISDIR) {
                                         print!("| DIR ");
                                     }
                                     println!("named = {}", name_file);
+                                    break 'outer;
                                 }
-                                if event_mask.contains(EventMask::ACCESS) {
+                                if event_mask.contains(EventMask::ACCESS) && name_file != "" {
                                     print!("ACCESS ");
                                     println!("named = {}", name_file);
+                                    break 'outer;
                                 }
-                                if event_mask.contains(EventMask::DELETE) {
+                                if event_mask.contains(EventMask::DELETE) && name_file != "" {
                                     print!("DELETE ");
                                     println!("named = {}", name_file);
+                                    break 'outer;
                                 }
-                                if event_mask.contains(EventMask::MODIFY) {
+                                if event_mask.contains(EventMask::MODIFY) && name_file != "" {
                                     print!("MODIFY");
                                     println!("named = {}", name_file);
+                                    break 'outer;
                                 }
                             }
                         }

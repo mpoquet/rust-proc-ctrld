@@ -11,8 +11,8 @@ use std::net::TcpStream;
 use std::io::Write;
 
 // flatbuffers
-use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message, Event};
-use rust_proc_ctrl::proto::serialisation::{serialize_inotify, serialize_run_command};
+use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message, Event, InotifyEvent, SocketState};
+use rust_proc_ctrl::proto::serialisation::{serialize_inotify_path_update, serialize_run_command, serialize_socket_watched};
 
 enum ReturnHandleMessage {
     Continue,
@@ -73,6 +73,21 @@ fn handle_message(buff: &[u8]) -> ReturnHandleMessage {
 
             //Sortie
             println!("Processus terminé. \npid:{} \nCode de retour :{}", pid, errno);
+            ReturnHandleMessage::End
+        }
+        Event::SocketWatchTerminated => {
+            let from_mess = msg.events_as_socket_watch_terminated().expect("error events as socket watch terminated");
+            let port = from_mess.port();
+            let state = from_mess.state();
+
+            print!("Socket ");
+            match state {
+                SocketState::created => print!("established "),
+                SocketState::listeing => print!("listening "),
+                _ => print!("state unknown "),
+            }
+            println!("on port : {}", port);
+
             ReturnHandleMessage::End
         }
         _ => {
@@ -142,8 +157,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Match vers sérialisation
 
-    let finished_data = if path_command.eq("inotify") {
-        serialize_inotify(args_tab[0], 10, 6000)
+    let finished_data =
+    if path_command.eq("inotify") {
+        serialize_inotify_path_update(".", InotifyEvent::accessed, 30, 6000)
+    }
+    else if path_command.eq("socket") {
+        serialize_socket_watched(9090)
     }
     else {
         serialize_run_command(&path_command, args_tab, args_envs)
