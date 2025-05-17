@@ -54,6 +54,14 @@ extern "C" {
         }
     }
 
+    struct buffer_info* send_execveterminated_to_user_c(struct execve_info* info) {
+        try {
+            return send_execveterminated_to_user(info);
+        } catch (...) {
+            return nullptr;
+        }
+    }
+
     struct buffer_info* send_processlaunched_to_user_c(int32_t pid) {
         try {
             return send_processlaunched_to_user(pid);
@@ -113,6 +121,14 @@ extern "C" {
     struct buffer_info* send_socketwatchterminated_to_user_c(struct socket_watch_info* socket_info) {
         try {
             return send_socketwatchterminated_to_user(socket_info);
+        } catch (...) {
+            return nullptr;
+        }
+    }
+
+    struct execve_info* receive_execveterminated_c(uint8_t *buffer, int size) {
+        try {
+            return receive_execveterminated(buffer, size);
         } catch (...) {
             return nullptr;
         }

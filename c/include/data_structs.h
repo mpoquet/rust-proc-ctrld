@@ -4,9 +4,11 @@
 #ifdef __cplusplus
     #include <cstdint>  // C++ version
     #include <cstddef>  // C++ version
+    #include <cstdbool> // C++ version
 #else
     #include <stdint.h>  // C version
     #include <stddef.h>  // C version
+    #include <stdbool.h> // C version
 #endif
 
 
@@ -17,6 +19,12 @@ struct tcp_socket{
 struct buffer_info{
     uint8_t *buffer;
     int size;
+};
+
+struct execve_info{
+    int32_t pid;
+    char *command_name;
+    bool success;
 };
 
 struct process_terminated_info{

@@ -283,6 +283,44 @@ Event receive_message_from_user(uint8_t *buffer, int size) {
 ///PARTIE DEMON->USER
 //
 
+//fonction pour envoyer un execveterminated a l'user
+buffer_info* send_execveterminated_to_user(struct execve_info* info) {
+    flatbuffers::FlatBufferBuilder builder(1024);
+    buffer_info* buf_info = new buffer_info();  
+    if (!buf_info) {
+        return nullptr;
+    }
+    
+    try {
+        auto command_name = builder.CreateString(info->command_name);
+        auto execve_terminated = demon::CreateExecveTerminated(
+            builder,
+            info->pid,
+            command_name,
+            info->success
+        );
+        
+        auto event = demon::CreateMessage(
+            builder, 
+            demon::Event_ExecveTerminated, 
+            execve_terminated.Union()
+        );
+        
+        builder.Finish(event);
+        
+        size_t size = builder.GetSize();
+        uint8_t* buffer_copy = new uint8_t[size];
+        memcpy(buffer_copy, builder.GetBufferPointer(), size);
+        buf_info->buffer = buffer_copy;
+        buf_info->size = size;
+    } catch (...) {
+        delete buf_info;
+        throw;
+    }
+    
+    return buf_info;
+}
+
 //fonction pour envoyer un processlaunched a l'user
 buffer_info* send_processlaunched_to_user(int32_t pid) {
     flatbuffers::FlatBufferBuilder builder(1024);
@@ -525,6 +563,45 @@ buffer_info* send_socketwatchterminated_to_user(struct socket_watch_info* socket
     }
     
     return info;
+}
+
+//fonction pour reçevoir execveterminated du démon
+struct execve_info* receive_execveterminated(uint8_t *buffer, int size) {
+    if (!buffer || size <= 0) {
+        return nullptr;
+    }
+
+    flatbuffers::Verifier verifier(buffer, size);
+    if (!demon::VerifyMessageBuffer(verifier)) {
+        return nullptr;
+    }
+
+    auto message = demon::GetMessage(buffer);
+    if (message->events_type() != demon::Event_ExecveTerminated) {
+        return nullptr;
+    }
+
+    auto execve_terminated = message->events_as_ExecveTerminated();
+    struct execve_info* info = new execve_info();
+    if (!info) {
+        return nullptr;
+    }
+
+    try {
+        info->pid = execve_terminated->pid();
+        info->command_name = strdup(execve_terminated->command_name()->c_str());
+        if (!info->command_name) {
+            delete info;
+            return nullptr;
+        }
+        info->success = execve_terminated->success();
+
+        return info;
+    } catch (...) {
+        if (info->command_name) free(info->command_name);
+        delete info;
+        throw;
+    }
 }
 
 //fonction pour reçevoir processlaunched du démon

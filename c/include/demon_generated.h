@@ -30,6 +30,9 @@ struct RunCommandBuilder;
 struct KillProcess;
 struct KillProcessBuilder;
 
+struct ExecveTerminated;
+struct ExecveTerminatedBuilder;
+
 struct ProcessLaunched;
 struct ProcessLaunchedBuilder;
 
@@ -192,25 +195,27 @@ enum Event : uint8_t {
   Event_KillProcess = 2,
   Event_EstablishTCPConnection = 3,
   Event_EstablishUnixConnection = 4,
-  Event_ProcessLaunched = 5,
-  Event_ChildCreationError = 6,
-  Event_ProcessTerminated = 7,
-  Event_TCPSocketListening = 8,
-  Event_InotifyPathUpdated = 9,
-  Event_InotifyWatchListUpdated = 10,
-  Event_SocketWatched = 11,
-  Event_SocketWatchTerminated = 12,
+  Event_ExecveTerminated = 5,
+  Event_ProcessLaunched = 6,
+  Event_ChildCreationError = 7,
+  Event_ProcessTerminated = 8,
+  Event_TCPSocketListening = 9,
+  Event_InotifyPathUpdated = 10,
+  Event_InotifyWatchListUpdated = 11,
+  Event_SocketWatched = 12,
+  Event_SocketWatchTerminated = 13,
   Event_MIN = Event_NONE,
   Event_MAX = Event_SocketWatchTerminated
 };
 
-inline const Event (&EnumValuesEvent())[13] {
+inline const Event (&EnumValuesEvent())[14] {
   static const Event values[] = {
     Event_NONE,
     Event_RunCommand,
     Event_KillProcess,
     Event_EstablishTCPConnection,
     Event_EstablishUnixConnection,
+    Event_ExecveTerminated,
     Event_ProcessLaunched,
     Event_ChildCreationError,
     Event_ProcessTerminated,
@@ -224,12 +229,13 @@ inline const Event (&EnumValuesEvent())[13] {
 }
 
 inline const char * const *EnumNamesEvent() {
-  static const char * const names[14] = {
+  static const char * const names[15] = {
     "NONE",
     "RunCommand",
     "KillProcess",
     "EstablishTCPConnection",
     "EstablishUnixConnection",
+    "ExecveTerminated",
     "ProcessLaunched",
     "ChildCreationError",
     "ProcessTerminated",
@@ -267,6 +273,10 @@ template<> struct EventTraits<demon::EstablishTCPConnection> {
 
 template<> struct EventTraits<demon::EstablishUnixConnection> {
   static const Event enum_value = Event_EstablishUnixConnection;
+};
+
+template<> struct EventTraits<demon::ExecveTerminated> {
+  static const Event enum_value = Event_ExecveTerminated;
 };
 
 template<> struct EventTraits<demon::ProcessLaunched> {
@@ -646,6 +656,81 @@ inline ::flatbuffers::Offset<KillProcess> CreateKillProcess(
   KillProcessBuilder builder_(_fbb);
   builder_.add_pid(pid);
   return builder_.Finish();
+}
+
+struct ExecveTerminated FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ExecveTerminatedBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_PID = 4,
+    VT_COMMAND_NAME = 6,
+    VT_SUCCESS = 8
+  };
+  int32_t pid() const {
+    return GetField<int32_t>(VT_PID, 0);
+  }
+  const ::flatbuffers::String *command_name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_COMMAND_NAME);
+  }
+  bool success() const {
+    return GetField<uint8_t>(VT_SUCCESS, 0) != 0;
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<int32_t>(verifier, VT_PID, 4) &&
+           VerifyOffset(verifier, VT_COMMAND_NAME) &&
+           verifier.VerifyString(command_name()) &&
+           VerifyField<uint8_t>(verifier, VT_SUCCESS, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct ExecveTerminatedBuilder {
+  typedef ExecveTerminated Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_pid(int32_t pid) {
+    fbb_.AddElement<int32_t>(ExecveTerminated::VT_PID, pid, 0);
+  }
+  void add_command_name(::flatbuffers::Offset<::flatbuffers::String> command_name) {
+    fbb_.AddOffset(ExecveTerminated::VT_COMMAND_NAME, command_name);
+  }
+  void add_success(bool success) {
+    fbb_.AddElement<uint8_t>(ExecveTerminated::VT_SUCCESS, static_cast<uint8_t>(success), 0);
+  }
+  explicit ExecveTerminatedBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ExecveTerminated> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ExecveTerminated>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ExecveTerminated> CreateExecveTerminated(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    int32_t pid = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> command_name = 0,
+    bool success = false) {
+  ExecveTerminatedBuilder builder_(_fbb);
+  builder_.add_command_name(command_name);
+  builder_.add_pid(pid);
+  builder_.add_success(success);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<ExecveTerminated> CreateExecveTerminatedDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    int32_t pid = 0,
+    const char *command_name = nullptr,
+    bool success = false) {
+  auto command_name__ = command_name ? _fbb.CreateString(command_name) : 0;
+  return demon::CreateExecveTerminated(
+      _fbb,
+      pid,
+      command_name__,
+      success);
 }
 
 struct ProcessLaunched FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -1169,6 +1254,9 @@ struct Message FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const demon::EstablishUnixConnection *events_as_EstablishUnixConnection() const {
     return events_type() == demon::Event_EstablishUnixConnection ? static_cast<const demon::EstablishUnixConnection *>(events()) : nullptr;
   }
+  const demon::ExecveTerminated *events_as_ExecveTerminated() const {
+    return events_type() == demon::Event_ExecveTerminated ? static_cast<const demon::ExecveTerminated *>(events()) : nullptr;
+  }
   const demon::ProcessLaunched *events_as_ProcessLaunched() const {
     return events_type() == demon::Event_ProcessLaunched ? static_cast<const demon::ProcessLaunched *>(events()) : nullptr;
   }
@@ -1216,6 +1304,10 @@ template<> inline const demon::EstablishTCPConnection *Message::events_as<demon:
 
 template<> inline const demon::EstablishUnixConnection *Message::events_as<demon::EstablishUnixConnection>() const {
   return events_as_EstablishUnixConnection();
+}
+
+template<> inline const demon::ExecveTerminated *Message::events_as<demon::ExecveTerminated>() const {
+  return events_as_ExecveTerminated();
 }
 
 template<> inline const demon::ProcessLaunched *Message::events_as<demon::ProcessLaunched>() const {
@@ -1329,6 +1421,10 @@ inline bool VerifyEvent(::flatbuffers::Verifier &verifier, const void *obj, Even
     }
     case Event_EstablishUnixConnection: {
       auto ptr = reinterpret_cast<const demon::EstablishUnixConnection *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Event_ExecveTerminated: {
+      auto ptr = reinterpret_cast<const demon::ExecveTerminated *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case Event_ProcessLaunched: {

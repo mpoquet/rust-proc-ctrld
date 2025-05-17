@@ -46,6 +46,12 @@ table KillProcess {
     pid: int32;
 }
 
+table ExecveTerminated {
+    pid: int32;
+    command_name: string;
+    success: bool;
+}
+
 table ProcessLaunched {
     pid: int32;
 }
@@ -101,6 +107,7 @@ union Event {
     EstablishTCPConnection,
     EstablishUnixConnection,
 
+    ExecveTerminated,
     ProcessLaunched,
     ChildCreationError,
     ProcessTerminated,

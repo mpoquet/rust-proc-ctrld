@@ -17,6 +17,7 @@ int32_t receive_kill_c(uint8_t *buffer, int size);
 
 enum Event receive_message_from_user_c(uint8_t *buffer, int size);
 
+struct buffer_info* send_execveterminated_to_user_c(struct execve_info* info);
 struct buffer_info* send_processlaunched_to_user_c(int32_t pid);
 struct buffer_info* send_childcreationerror_to_user_c(uint32_t error_code);
 struct buffer_info* send_processterminated_to_user_c(int32_t pid, uint32_t error_code);
@@ -26,6 +27,7 @@ struct buffer_info* send_inotifywatchlistupdated_to_user_c(char *path);
 struct buffer_info* send_socketwatched_to_user_c(int32_t port);
 struct buffer_info* send_socketwatchterminated_to_user_c(struct socket_watch_info* socket_info);
 
+struct execve_info* receive_execveterminated_c(uint8_t *buffer, int size);
 int32_t receive_processlaunched_c(uint8_t *buffer, int size);
 int32_t receive_childcreationerror_c(uint8_t *buffer, int size);
 struct process_terminated_info* receive_processterminated_c(uint8_t *buffer, int size);

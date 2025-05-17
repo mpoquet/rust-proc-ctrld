@@ -2,6 +2,7 @@ import flatbuffers
 from typing import List, Optional, Any
 from dataclasses import dataclass
 from enum import Enum, auto
+import demon.ExecveTerminated
 import demon.RunCommand
 import demon.Message
 import demon.KillProcess
@@ -27,6 +28,12 @@ class TCPSocket:
 class BufferInfo:
     buffer: bytes
     size: int
+
+@dataclass
+class ExecveInfo:
+    pid: int
+    command_name: str
+    success: bool
 
 @dataclass
 class ProcessTerminatedInfo:
@@ -500,6 +507,39 @@ def send_socketwatchterminated_to_user(socket_info: SocketWatchInfo) -> BufferIn
         
     except Exception as e:
         print(f"Error serializing SocketWatchTerminated: {e}")
+        return None
+    
+def receive_execveterminated(buffer: bytes, size: int) -> Optional[ExecveInfo]:
+    """Deserialize an ExecveTerminated message from a FlatBuffer
+    
+    Args:
+        buffer: Bytes containing the FlatBuffer message
+        size: Size of the buffer
+        
+    Returns:
+        ExecveInfo object or None if error
+    """
+    if not buffer or size <= 0:
+        return None
+
+    try:
+        # Get message and check type
+        message = demon.Message.Message.GetRootAsMessage(buffer, 0)
+        if message.EventsType() != demon.Event.Event.ExecveTerminated:
+            return None
+
+        # Get ExecveTerminated table and create info
+        execve_terminated = demon.ExecveTerminated.ExecveTerminated()
+        execve_terminated.Init(message.Events().Bytes, message.Events().Pos)
+        
+        return ExecveInfo(
+            pid=execve_terminated.Pid(),
+            command_name=execve_terminated.CommandName().decode('utf-8'),
+            success=execve_terminated.Success()
+        )
+    
+    except Exception as e:
+        print(f"Error deserializing ExecveTerminated: {e}")
         return None
     
 def receive_processlaunched(buffer: bytes, size: int) -> int:
