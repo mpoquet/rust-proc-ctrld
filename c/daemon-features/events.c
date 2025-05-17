@@ -110,10 +110,15 @@ void process_command_request(process_info **process_manager, int* nb_process, in
 
 //Todo add the network part when serialiation is finished
 void process_surveillance_requests(command* com, int InotifyFd, int epollfd, int communication_socket){
+    printf("processing surveillance request");
+    printf("NB Surveillance request : %ld\n", com->to_watch_size);
+    fflush(stdout);
     struct inotify_parameters* I_param;
     struct buffer_info* info;
     int* destport;
     if(com->to_watch_size>0){
+        printf("1 event to add to the watch list\n");
+        fflush(stdout);
         for(int i=0; i< com->to_watch_size;i++){
             switch (com->to_watch[i].event)
             {
