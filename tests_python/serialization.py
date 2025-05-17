@@ -105,6 +105,8 @@ class Event(Enum):
     SOCKET_WATCH_TERMINATED = 11
 
 def send_command_to_demon(cmd: Command) -> BufferInfo:
+    cmd.to_watch_size = len(cmd.to_watch)
+    # Create FlatBuffer builder
     builder = flatbuffers.Builder(1024)
     
     # Create string arrays
