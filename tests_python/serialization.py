@@ -113,7 +113,7 @@ def send_command_to_demon(cmd: Command) -> BufferInfo:
     envp_offsets = [builder.CreateString(env) for env in cmd.envp]
     path_offset = builder.CreateString(cmd.path)
     
-    # Create surveillances vector first to avoir side effects
+    # Create surveillances vector first to avoid side effects
     surveillance_offsets = []
     for surv in cmd.to_watch:
         if surv.event == "INOTIFY":
