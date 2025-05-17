@@ -4,6 +4,31 @@ use super::demon_generated::demon::{self, Message, RunCommand, RunCommandArgs};
 use crate::proto::serialisation::demon::MessageArgs;
 use crate::proto::serialisation::demon::Event;
 
+pub fn serialize_execve_terminated(pid: i32, command_name: String, success: bool) -> Vec<u8>{
+    let mut builder = FlatBufferBuilder::new();
+
+    let command_name_str = builder.create_string(&command_name);
+    let execve = demon::ExecveTerminated::create(
+        &mut builder,
+        &demon::ExecveTerminatedArgs {
+            pid,
+            command_name: Some(command_name_str),
+            success
+        },
+    );
+
+    let mess = demon::Message::create(
+        &mut builder,
+        &demon::MessageArgs {
+            events_type: demon::Event::ExecveTerminated,
+            events: Some(execve.as_union_value()),
+        },
+    );
+
+    builder.finish(mess, None);
+    builder.finished_data().to_vec()
+}
+
 
 pub fn serialize_tcp_socket_listenning(port: u16) -> Vec<u8> {
     let mut builder = FlatBufferBuilder::new();

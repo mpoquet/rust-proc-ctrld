@@ -298,15 +298,16 @@ pub struct SurveillanceUnionTableOffset {}
 #[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
 pub const ENUM_MIN_EVENT: u8 = 0;
 #[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
-pub const ENUM_MAX_EVENT: u8 = 12;
+pub const ENUM_MAX_EVENT: u8 = 13;
 #[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
 #[allow(non_camel_case_types)]
-pub const ENUM_VALUES_EVENT: [Event; 13] = [
+pub const ENUM_VALUES_EVENT: [Event; 14] = [
   Event::NONE,
   Event::RunCommand,
   Event::KillProcess,
   Event::EstablishTCPConnection,
   Event::EstablishUnixConnection,
+  Event::ExecveTerminated,
   Event::ProcessLaunched,
   Event::ChildCreationError,
   Event::ProcessTerminated,
@@ -330,23 +331,25 @@ impl Event {
   pub const KillProcess: Self = Self(2);
   pub const EstablishTCPConnection: Self = Self(3);
   pub const EstablishUnixConnection: Self = Self(4);
-  pub const ProcessLaunched: Self = Self(5);
-  pub const ChildCreationError: Self = Self(6);
-  pub const ProcessTerminated: Self = Self(7);
-  pub const TCPSocketListening: Self = Self(8);
-  pub const InotifyPathUpdated: Self = Self(9);
-  pub const InotifyWatchListUpdated: Self = Self(10);
-  pub const SocketWatched: Self = Self(11);
-  pub const SocketWatchTerminated: Self = Self(12);
+  pub const ExecveTerminated: Self = Self(5);
+  pub const ProcessLaunched: Self = Self(6);
+  pub const ChildCreationError: Self = Self(7);
+  pub const ProcessTerminated: Self = Self(8);
+  pub const TCPSocketListening: Self = Self(9);
+  pub const InotifyPathUpdated: Self = Self(10);
+  pub const InotifyWatchListUpdated: Self = Self(11);
+  pub const SocketWatched: Self = Self(12);
+  pub const SocketWatchTerminated: Self = Self(13);
 
   pub const ENUM_MIN: u8 = 0;
-  pub const ENUM_MAX: u8 = 12;
+  pub const ENUM_MAX: u8 = 13;
   pub const ENUM_VALUES: &'static [Self] = &[
     Self::NONE,
     Self::RunCommand,
     Self::KillProcess,
     Self::EstablishTCPConnection,
     Self::EstablishUnixConnection,
+    Self::ExecveTerminated,
     Self::ProcessLaunched,
     Self::ChildCreationError,
     Self::ProcessTerminated,
@@ -364,6 +367,7 @@ impl Event {
       Self::KillProcess => Some("KillProcess"),
       Self::EstablishTCPConnection => Some("EstablishTCPConnection"),
       Self::EstablishUnixConnection => Some("EstablishUnixConnection"),
+      Self::ExecveTerminated => Some("ExecveTerminated"),
       Self::ProcessLaunched => Some("ProcessLaunched"),
       Self::ChildCreationError => Some("ChildCreationError"),
       Self::ProcessTerminated => Some("ProcessTerminated"),
@@ -1101,6 +1105,137 @@ impl core::fmt::Debug for KillProcess<'_> {
   fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
     let mut ds = f.debug_struct("KillProcess");
       ds.field("pid", &self.pid());
+      ds.finish()
+  }
+}
+pub enum ExecveTerminatedOffset {}
+#[derive(Copy, Clone, PartialEq)]
+
+pub struct ExecveTerminated<'a> {
+  pub _tab: flatbuffers::Table<'a>,
+}
+
+impl<'a> flatbuffers::Follow<'a> for ExecveTerminated<'a> {
+  type Inner = ExecveTerminated<'a>;
+  #[inline]
+  unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+    Self { _tab: flatbuffers::Table::new(buf, loc) }
+  }
+}
+
+impl<'a> ExecveTerminated<'a> {
+  pub const VT_PID: flatbuffers::VOffsetT = 4;
+  pub const VT_COMMAND_NAME: flatbuffers::VOffsetT = 6;
+  pub const VT_SUCCESS: flatbuffers::VOffsetT = 8;
+
+  #[inline]
+  pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+    ExecveTerminated { _tab: table }
+  }
+  #[allow(unused_mut)]
+  pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr, A: flatbuffers::Allocator + 'bldr>(
+    _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr, A>,
+    args: &'args ExecveTerminatedArgs<'args>
+  ) -> flatbuffers::WIPOffset<ExecveTerminated<'bldr>> {
+    let mut builder = ExecveTerminatedBuilder::new(_fbb);
+    if let Some(x) = args.command_name { builder.add_command_name(x); }
+    builder.add_pid(args.pid);
+    builder.add_success(args.success);
+    builder.finish()
+  }
+
+
+  #[inline]
+  pub fn pid(&self) -> i32 {
+    // Safety:
+    // Created from valid Table for this object
+    // which contains a valid value in this slot
+    unsafe { self._tab.get::<i32>(ExecveTerminated::VT_PID, Some(0)).unwrap()}
+  }
+  #[inline]
+  pub fn command_name(&self) -> Option<&'a str> {
+    // Safety:
+    // Created from valid Table for this object
+    // which contains a valid value in this slot
+    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(ExecveTerminated::VT_COMMAND_NAME, None)}
+  }
+  #[inline]
+  pub fn success(&self) -> bool {
+    // Safety:
+    // Created from valid Table for this object
+    // which contains a valid value in this slot
+    unsafe { self._tab.get::<bool>(ExecveTerminated::VT_SUCCESS, Some(false)).unwrap()}
+  }
+}
+
+impl flatbuffers::Verifiable for ExecveTerminated<'_> {
+  #[inline]
+  fn run_verifier(
+    v: &mut flatbuffers::Verifier, pos: usize
+  ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+    use self::flatbuffers::Verifiable;
+    v.visit_table(pos)?
+     .visit_field::<i32>("pid", Self::VT_PID, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("command_name", Self::VT_COMMAND_NAME, false)?
+     .visit_field::<bool>("success", Self::VT_SUCCESS, false)?
+     .finish();
+    Ok(())
+  }
+}
+pub struct ExecveTerminatedArgs<'a> {
+    pub pid: i32,
+    pub command_name: Option<flatbuffers::WIPOffset<&'a str>>,
+    pub success: bool,
+}
+impl<'a> Default for ExecveTerminatedArgs<'a> {
+  #[inline]
+  fn default() -> Self {
+    ExecveTerminatedArgs {
+      pid: 0,
+      command_name: None,
+      success: false,
+    }
+  }
+}
+
+pub struct ExecveTerminatedBuilder<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> {
+  fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a, A>,
+  start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+}
+impl<'a: 'b, 'b, A: flatbuffers::Allocator + 'a> ExecveTerminatedBuilder<'a, 'b, A> {
+  #[inline]
+  pub fn add_pid(&mut self, pid: i32) {
+    self.fbb_.push_slot::<i32>(ExecveTerminated::VT_PID, pid, 0);
+  }
+  #[inline]
+  pub fn add_command_name(&mut self, command_name: flatbuffers::WIPOffset<&'b  str>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(ExecveTerminated::VT_COMMAND_NAME, command_name);
+  }
+  #[inline]
+  pub fn add_success(&mut self, success: bool) {
+    self.fbb_.push_slot::<bool>(ExecveTerminated::VT_SUCCESS, success, false);
+  }
+  #[inline]
+  pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a, A>) -> ExecveTerminatedBuilder<'a, 'b, A> {
+    let start = _fbb.start_table();
+    ExecveTerminatedBuilder {
+      fbb_: _fbb,
+      start_: start,
+    }
+  }
+  #[inline]
+  pub fn finish(self) -> flatbuffers::WIPOffset<ExecveTerminated<'a>> {
+    let o = self.fbb_.end_table(self.start_);
+    flatbuffers::WIPOffset::new(o.value())
+  }
+}
+
+impl core::fmt::Debug for ExecveTerminated<'_> {
+  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    let mut ds = f.debug_struct("ExecveTerminated");
+      ds.field("pid", &self.pid());
+      ds.field("command_name", &self.command_name());
+      ds.field("success", &self.success());
       ds.finish()
   }
 }
@@ -2270,6 +2405,21 @@ impl<'a> Message<'a> {
 
   #[inline]
   #[allow(non_snake_case)]
+  pub fn events_as_execve_terminated(&self) -> Option<ExecveTerminated<'a>> {
+    if self.events_type() == Event::ExecveTerminated {
+      self.events().map(|t| {
+       // Safety:
+       // Created from a valid Table for this object
+       // Which contains a valid union in this slot
+       unsafe { ExecveTerminated::init_from_table(t) }
+     })
+    } else {
+      None
+    }
+  }
+
+  #[inline]
+  #[allow(non_snake_case)]
   pub fn events_as_process_launched(&self) -> Option<ProcessLaunched<'a>> {
     if self.events_type() == Event::ProcessLaunched {
       self.events().map(|t| {
@@ -2403,6 +2553,7 @@ impl flatbuffers::Verifiable for Message<'_> {
           Event::KillProcess => v.verify_union_variant::<flatbuffers::ForwardsUOffset<KillProcess>>("Event::KillProcess", pos),
           Event::EstablishTCPConnection => v.verify_union_variant::<flatbuffers::ForwardsUOffset<EstablishTCPConnection>>("Event::EstablishTCPConnection", pos),
           Event::EstablishUnixConnection => v.verify_union_variant::<flatbuffers::ForwardsUOffset<EstablishUnixConnection>>("Event::EstablishUnixConnection", pos),
+          Event::ExecveTerminated => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ExecveTerminated>>("Event::ExecveTerminated", pos),
           Event::ProcessLaunched => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ProcessLaunched>>("Event::ProcessLaunched", pos),
           Event::ChildCreationError => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ChildCreationError>>("Event::ChildCreationError", pos),
           Event::ProcessTerminated => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ProcessTerminated>>("Event::ProcessTerminated", pos),
@@ -2488,6 +2639,13 @@ impl core::fmt::Debug for Message<'_> {
         },
         Event::EstablishUnixConnection => {
           if let Some(x) = self.events_as_establish_unix_connection() {
+            ds.field("events", &x)
+          } else {
+            ds.field("events", &"InvalidFlatbuffer: Union discriminant does not match value.")
+          }
+        },
+        Event::ExecveTerminated => {
+          if let Some(x) = self.events_as_execve_terminated() {
             ds.field("events", &x)
           } else {
             ds.field("events", &"InvalidFlatbuffer: Union discriminant does not match value.")

@@ -4,8 +4,6 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use std::error::Error;
 use tokio::net::{TcpListener, TcpStream};
 
-const PORT : u16 = 8080;
-
 // monitoring tools
 use rust_proc_ctrl::monitoring_tools::inotify_tool::read_events_inotify;
 use rust_proc_ctrl::monitoring_tools::network::read_events_port_tokio;
@@ -16,7 +14,7 @@ use rust_proc_ctrl::monitoring_tools::command::exec_command;
 use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message,Event, InotifyEvent};
 
 // sérialisation
-use rust_proc_ctrl::proto::serialisation::{serialize_child_creation_error, serialize_process_launched, serialize_process_terminated, serialize_tcp_socket_listenning};
+use rust_proc_ctrl::proto::serialisation::{serialize_child_creation_error, serialize_execve_terminated, serialize_process_launched, serialize_process_terminated, serialize_tcp_socket_listenning};
 
 async fn handle_message(buf: &[u8], socket: &mut TcpStream) -> Vec<u8> {
 
@@ -68,28 +66,23 @@ async fn handle_message(buf: &[u8], socket: &mut TcpStream) -> Vec<u8> {
         Event::RunCommand => {
             let from_mess = msg.events_as_run_command().expect("error events_as_run_command");
             let mut command = exec_command(&from_mess);
+            let command_exec = from_mess.path().expect("error getting path from serialize message").to_string();
 
             let mut child = match command.spawn() {
                 Ok(child) => child,
                 Err(error_code) => {
                     match error_code.kind() {
-                        // std::io::ErrorKind::NotFound => serialize_execve_failed(),
+                        std::io::ErrorKind::NotFound => return serialize_execve_terminated(0, command_exec, false),
                         _ => return serialize_child_creation_error(error_code.raw_os_error().unwrap_or(1) as u32),
                     }
                 }
             };
             let pid = child.id().expect("could not get child pid");
-            send_on_socket(serialize_process_launched(pid as i32), socket).await;
+            send_on_socket(serialize_execve_terminated(pid as i32, command_exec, true), socket).await;
             
             let res = child.wait().await;
             match res {
-                Ok(ret_code) => {
-                    match ret_code.code() {
-                        //Some(127) => serialize_command_not_found(),
-                        Some(code) => serialize_process_terminated(pid as i32, code as u32),
-                        None => serialize_process_terminated(pid as i32, 1),
-                    }
-                },
+                Ok(ret_code) => serialize_process_terminated(pid as i32, ret_code.code().unwrap_or(1) as u32),
                 Err(errno) => serialize_process_terminated(pid as i32, errno.raw_os_error().unwrap_or(1) as u32),
             }
         }
@@ -118,15 +111,22 @@ async fn send_on_socket(retour: Vec<u8>, socket: &mut TcpStream) {
 
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn Error>> {
-    println!("The demon pid is {}", std::process::id());
-    println!("We listen on the port {}", PORT);
+    let args : Vec<String> = std::env::args().collect();
+    if args.len() != 2 {
+        println!("Usage : {} <port>.", args[0]);
+        return Err(Box::<dyn Error>::from(std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid arguments")))
+    }
 
-    let listener = TcpListener::bind(format!("127.0.0.1:{}", PORT)).await?;
+    let port : u16 = args[1].parse::<u16>().expect("Invalid port number");
+    println!("The demon pid is {}", std::process::id());
+    println!("We listen on the port {}", port);
+
+    let listener = TcpListener::bind(format!("127.0.0.1:{}", port)).await?;
 
     loop {
         let (mut socket, addr) = listener.accept().await?;
         println!("Connexion de : {}", addr);
-        let established_connection = serialize_tcp_socket_listenning(PORT);
+        let established_connection = serialize_tcp_socket_listenning(port);
         send_on_socket(established_connection, &mut socket).await;
 
         tokio::spawn(async move {

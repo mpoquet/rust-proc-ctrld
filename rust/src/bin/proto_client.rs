@@ -37,11 +37,25 @@ fn handle_message(buff: &[u8]) -> ReturnHandleMessage {
             let from_mess = msg.events_as_tcpsocket_listening().expect("error event as established tcp connection");
             let port = from_mess.port();
 
-            println!("Established TCP Connection\n port:{}", port);
+            println!("Established TCP Connection\nport:{}", port);
 
             ReturnHandleMessage::Continue
         }
+        Event::ExecveTerminated => {
+            let from_mess = msg.events_as_execve_terminated().expect("error event as execve terminated");
+            let pid = from_mess.pid();
+            let command = from_mess.command_name().expect("error getting command name execve terminated");
+            let succed = from_mess.success();
 
+            if succed {
+                println!("Execve success launched the command : {}\npid:{}", command, pid);
+                ReturnHandleMessage::Continue
+            }
+            else {
+                println!("Execve failed, the command was {}.\npid:{}", command, pid);
+                ReturnHandleMessage::End
+            }
+        }
         Event::ChildCreationError => {
             //Recupération de l'objet ChildCreationError et du errno
             let from_message = msg.events_as_child_creation_error().expect("error event as child creation error");
