@@ -15,6 +15,7 @@ enum eventType{
     INOTIFYFD,
     SOCK_CONNEXION,
     SOCK_MESSAGE,
+    EXECVE,
 };
 
 struct clone_parameters{
@@ -43,11 +44,20 @@ typedef struct {
     int size;
 } event_data_Inotify_size;
 
+typedef struct {
+    int fd;
+    enum eventType type;
+    int pid;
+    char* path;
+} event_data_pipe_execve;
+
 typedef struct s_process_info process_info;
+
+int add_event_pipeExecve(int fd, int epollfd, int pid, char* path);
 
 void process_surveillance_requests(command* com, int InotifyFd, int epollfd, int communication_socket);
 
-void process_command_request(process_info **process_manager, int* nb_process, int com_sock, command* com );
+void process_command_request(process_info **process_manager, int* nb_process, int com_sock, command* com, int epollfd );
 
 info_child* handle_clone_event(struct clone_parameters* param, int errorfd);
 

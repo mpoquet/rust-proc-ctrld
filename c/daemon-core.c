@@ -92,6 +92,7 @@ int main(int argc, char** argv){
     }
     num_inotifyFD++;
 
+    //create inotifyFD to watch files requested by user
     int inotifyFd = inotify_init();
     if (inotifyFd == -1){
         printf("error while initializing inotify");
@@ -149,6 +150,7 @@ int main(int argc, char** argv){
                             printf("Unable to read signalfd\n");
                         }else{
                             printf("sending child terminated\n");
+                            fflush(stdout);
                             send_message(communication_socket,res);
                         }
                         break;
@@ -163,9 +165,9 @@ int main(int argc, char** argv){
                         if(size==0){
                             printf("The socket has been closed\n");
                             fflush(stdout);
+                            epoll_ctl(epollfd, EPOLL_CTL_DEL, edata->fd, NULL);
                             close(edata->fd);          
                             free(edata);
-                            epoll_ctl(epollfd, EPOLL_CTL_DEL, edata->fd, NULL);
                             num_inotifyFD--;
                             break;
                         }
@@ -175,7 +177,7 @@ int main(int argc, char** argv){
                                 //First check if there is a program to execute
                                 printf("RUNCOMMAND\n");
                                 com= receive_command_c(buffer,size);
-                                process_command_request(process_manager,&nb_process,edata->fd,com);
+                                process_command_request(process_manager,&nb_process,edata->fd,com,epollfd);
                                 process_surveillance_requests(com,inotifyFd,epollfd, edata->fd);
                                 free(com);
                                 break;
@@ -220,14 +222,66 @@ int main(int argc, char** argv){
                         send_message(new_connexion, info);
                         break;
                     }
+                    case EXECVE: {
+                        printf("receiving execve notification\n");
+                        fflush(stdout);
+                        event_data_pipe_execve* edata = (event_data_pipe_execve*)events[i].data.ptr;
+                        int res;
+                        ssize_t n = read(edata->fd, &res, sizeof(res));
+                        struct execve_info info_e;
+                        info_e.command_name=edata->path;
+                        info_e.pid=edata->pid;
+                        if (n > 0) {
+                            info_e.success=false;
+                        } else if (n == 0) {
+                            info_e.success=true;
+                        } else {
+                            // erreur de lecture
+                        }
+                        printf("sending execve termitated\n");
+                        fflush(stdout);
+                        struct buffer_info* info = send_execveterminated_to_user_c(&info_e);
+                        send_message(communication_socket, info);
+                        epoll_ctl(epollfd, EPOLL_CTL_DEL, edata->fd, NULL);
+                        close(edata->fd);          
+                        free(edata);
+                        break;
+                    }
                     default:
                         break;
                     }
                 } else {                /* POLLERR | POLLHUP */
-                    printf("    closing fd %d\n", edata->fd);
-                    if (close(events[i].data.fd) == -1)
-                        perror("close");
-                    num_inotifyFD--;
+                    event_data_t* edata_test= (event_data_t*)events[i].data.ptr;
+                    if(edata_test->type==EXECVE){
+                        printf("receiving execve notification\n");
+                        fflush(stdout);
+                        event_data_pipe_execve* edata = (event_data_pipe_execve*)events[i].data.ptr;
+                        int res;
+                        ssize_t n = read(edata->fd, &res, sizeof(res));
+                        struct execve_info info_e;
+                        info_e.command_name=edata->path;
+                        info_e.pid=edata->pid;
+                        if (n > 0) {
+                            info_e.success=false;
+                        } else if (n == 0) {
+                            info_e.success=true;
+                        } else {
+                            // erreur de lecture
+                        }
+                        printf("sending execve termitated\n");
+                        fflush(stdout);
+                        struct buffer_info* info = send_execveterminated_to_user_c(&info_e);
+                        send_message(communication_socket, info);
+                        epoll_ctl(epollfd, EPOLL_CTL_DEL, edata->fd, NULL);
+                        close(edata->fd);          
+                        free(edata);
+                    }else{
+                        printf("    closing fd %d\n", edata->fd);
+                        if (close(events[i].data.fd) == -1)
+                            perror("close");
+                        num_inotifyFD--;
+                    }
+
                 }
             }
         }

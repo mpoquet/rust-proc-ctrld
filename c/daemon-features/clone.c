@@ -15,6 +15,11 @@
 int child_function(void *arg) {
     printf("Processus enfant : PID = %d, PPID = %d\n", getpid(), getppid());
     execve_parameter* params = (execve_parameter *)arg;
+
+    int write_fd =params->pipe;
+
+    // closing reading side
+    close(write_fd - 1);
     
     if (dup2(params->error_file,STDOUT_FILENO)==-1) {
         perror("dup2");
@@ -23,7 +28,9 @@ int child_function(void *arg) {
     if (execve((const char*) params->filepath, (char* const*) params->args, (char* const*) params->envp)==-1){
         printf("Something went wrong when opening executing program\n");
         perror("execve");
-        _exit(errno);
+        int err = errno;
+        write(write_fd, &err, sizeof(err));
+        _exit(err);
     };
     
     exit(0);
@@ -47,6 +54,16 @@ info_child* launch_process(int stack_size, execve_parameter* parameters, int fla
 
     info_c->stack_p=stack;
 
+    int pipefd[2];
+    if (pipe(pipefd) < 0) {
+        perror("pipe"); exit(1);
+    }
+
+    // Marquer l'extrémité écriture CLOEXEC
+    fcntl(pipefd[1], F_SETFD, FD_CLOEXEC);
+
+    parameters->pipe=pipefd[1];
+
     pid_t child_pid = clone(child_function, stack + stack_size, SIGCHLD | flags, (void*) parameters);
     if (child_pid == -1) {
         printf("clone failed\n");
@@ -57,7 +74,10 @@ info_child* launch_process(int stack_size, execve_parameter* parameters, int fla
         return NULL;
     }
 
+    close(pipefd[1]);
+
     info_c->child_id=child_pid;
+    info_c->pipe=pipefd[0];
 
     return info_c;
 

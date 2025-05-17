@@ -77,7 +77,7 @@ void handle_inotify_event(int fd, int size, int com_sock){
 
 }
 
-void process_command_request(process_info **process_manager, int* nb_process, int com_sock, command* com ){
+void process_command_request(process_info **process_manager, int* nb_process, int com_sock, command* com, int epollfd ){
     int err_file;
     printf("nbProcess : %d", *nb_process);
     struct clone_parameters* param = extract_clone_parameters(com);
@@ -100,6 +100,7 @@ void process_command_request(process_info **process_manager, int* nb_process, in
             printf("process successfully launched\n");
             struct buffer_info* result_message = send_processlaunched_to_user_c(res->child_id);
             send_message(com_sock,(void*)result_message);
+            add_event_pipeExecve(res->pipe,epollfd,res->child_id,com->path);
             free(res);
         }
     }else{
@@ -243,6 +244,34 @@ int add_event_signalFd(int fd, int epollfd) {
 
     edata->fd = fd;
     edata->type = SIGNALFD;
+    ev.events = EPOLLIN;
+    ev.data.ptr = edata;
+    
+    printf("adding file descriptor : %d\n", fd);
+    
+    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev) == -1) {
+        perror("epoll_ctl");
+        free(edata);
+        close(fd);
+        return -1;
+    }
+    
+    return 0;
+}
+
+int add_event_pipeExecve(int fd, int epollfd, int pid, char* path) {
+    struct epoll_event ev;
+    event_data_pipe_execve *edata = malloc(sizeof(event_data_pipe_execve));
+    if (edata == NULL) {
+        perror("malloc");
+        close(fd);
+        return -1;
+    }
+
+    edata->fd = fd;
+    edata->type = EXECVE;
+    edata->pid=pid;
+    edata->path=path;
     ev.events = EPOLLIN;
     ev.data.ptr = edata;
     

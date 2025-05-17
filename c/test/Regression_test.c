@@ -13,6 +13,7 @@
 #include "../include/serialize_c.h"
 #include <sys/inotify.h>
 #include <sys/signalfd.h>
+#include <time.h>
 
 unsigned char buffer[512];
 
@@ -146,6 +147,79 @@ int receiving_process_terminated(int sock, struct sockaddr_in serv_addr){
     return 0;
 }
 
+int benchmark(int sock, struct sockaddr_in serv_addr, command* com){
+
+    unsigned char buf[128];
+
+    struct buffer_info* info = send_command_to_demon_c(com);
+
+    uint8_t* temp_buffer = malloc(sizeof(int) + info->size);
+    if (!temp_buffer) {
+        return -1;
+    }
+
+    // append size to data
+    memcpy(temp_buffer, &info->size, sizeof(int));
+    memcpy(temp_buffer + sizeof(int), info->buffer, info->size);
+    
+    // pour stocker le temps d'exécution du code
+    double time_spent = 0.0;
+
+    clock_t begin = clock();
+    
+    for(int i=0; i<100; i++){
+        // send data+size
+        ssize_t sent = send(sock, temp_buffer, sizeof(int) + info->size, 0);
+
+        if (sent != sizeof(int) + info->size) {
+            return -1;
+        }
+        int size;
+
+        if(read(sock, &size,sizeof(int))==-1){
+            close(sock);
+            return -1;
+        };
+
+        if (recv(sock, buf, size, MSG_WAITALL) != size) {
+            perror("recv MSG_WAITALL");
+            close(sock);
+            exit(1);
+        }
+
+        int pid = receive_processlaunched_c(buf,size);
+
+        if(pid<0){
+            close(sock);
+            return -1;
+        }
+
+        if(read(sock, &size,sizeof(int))==-1){
+            close(sock);
+            return -1;
+        };
+
+        if (recv(sock, buf, size, MSG_WAITALL) != size) {
+            perror("recv MSG_WAITALL");
+            close(sock);
+            exit(1);
+        }
+
+        struct process_terminated_info* info = receive_processterminated_c(buf,size);
+
+    }
+
+    clock_t end = clock();
+    
+    // calcule le temps écoulé en trouvant la différence (end - begin) et
+    // divisant la différence par CLOCKS_PER_SEC pour convertir en secondes
+    time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+    
+    printf("The elapsed time is %f seconds", time_spent);
+
+    return 0;
+}
+
 
 int main(int argc, char** argv){
     /*launching daemon*/
@@ -210,6 +284,8 @@ int main(int argc, char** argv){
 
     printf("TEST 3 succeeded, getting exit status of termiated programms\n");
     fflush(stdout);
+
+    benchmark(sock,serv_addr,cmd);
 
     // struct surveillance* to_watch= malloc(sizeof(struct surveillance)*1); //Fois 1 parce que la y'a que une élément
     // to_watch->event=INOTIFY;
