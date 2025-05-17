@@ -15,7 +15,7 @@ DAEMON_PORTS = {
     "c": 9090
 }
 
-@pytest.fixture(params=["rust"])
+@pytest.fixture(params=["rust", "c"])
 def daemon(request):
     daemon_type = request.param
     port = DAEMON_PORTS[daemon_type]
