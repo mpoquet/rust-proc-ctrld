@@ -2,6 +2,10 @@
 
 ## Launch project
 
+### Change port :
+
+`./server_bind <port>` : change port.
+
 ### Rust : 
 
 Go to rust rep

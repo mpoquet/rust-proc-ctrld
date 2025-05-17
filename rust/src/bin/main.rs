@@ -1,11 +1,10 @@
 use inotify::EventMask;
-use netstat2::error;
 use nix::errno::Errno;
-use nix::libc::WEXITSTATUS;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use std::error::Error;
 use tokio::net::{TcpListener, TcpStream};
 
+const PORT : u16 = 8080;
 
 // monitoring tools
 use rust_proc_ctrl::monitoring_tools::inotify_tool::read_events_inotify;
@@ -33,7 +32,6 @@ async fn handle_message(buf: &[u8], socket: &mut TcpStream) -> Vec<u8> {
 
             // new vector of "real" Inotify Event not from flatbuffer
             let mut trig_events = Vec::<EventMask>::new();
-
             
             match event {
                 InotifyEvent::accessed => trig_events.push(EventMask::ACCESS),
@@ -120,16 +118,15 @@ async fn send_on_socket(retour: Vec<u8>, socket: &mut TcpStream) {
 
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn Error>> {
-    let port: u16 = 8080;
     println!("The demon pid is {}", std::process::id());
-    println!("We listen on the port {}", port);
+    println!("We listen on the port {}", PORT);
 
-    let listener = TcpListener::bind(format!("127.0.0.1:{}", port)).await?;
+    let listener = TcpListener::bind(format!("127.0.0.1:{}", PORT)).await?;
 
     loop {
         let (mut socket, addr) = listener.accept().await?;
         println!("Connexion de : {}", addr);
-        let established_connection = serialize_tcp_socket_listenning(port);
+        let established_connection = serialize_tcp_socket_listenning(PORT);
         send_on_socket(established_connection, &mut socket).await;
 
         tokio::spawn(async move {
