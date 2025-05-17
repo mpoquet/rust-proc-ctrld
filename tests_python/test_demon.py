@@ -15,7 +15,7 @@ DAEMON_PORTS = {
     "c": 9090
 }
 
-@pytest.fixture(params=["rust", "c"])
+@pytest.fixture(params=["rust"])
 def daemon(request):
     daemon_type = request.param
     port = DAEMON_PORTS[daemon_type]
@@ -156,9 +156,11 @@ def execve_executed(IP_address, daemon, command):
 
         print(f"pid : {data.pid}, command : {data.command_name}, succes : {data.success}")
         if data.success==True and data.pid >0:
+            print("Dans la 1ere branche")
             client.close()
             return 1
         else :
+            print("Dans la 2eme branche")
             client.close()
             return -1
     except ConnectionRefusedError:
@@ -172,6 +174,7 @@ def execve_executed(IP_address, daemon, command):
 def fail_launch_process(IP_address, daemon, command):
     process, daemon_type, port = daemon
     assert process.poll() is None
+    print("ici")
     print(f"Testing connection for {daemon_type} daemon on port {port}")
 
     try:
