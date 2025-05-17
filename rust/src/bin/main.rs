@@ -1,5 +1,7 @@
 use inotify::EventMask;
+use netstat2::error;
 use nix::errno::Errno;
+use nix::libc::WEXITSTATUS;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use std::error::Error;
 use tokio::net::{TcpListener, TcpStream};
@@ -72,17 +74,24 @@ async fn handle_message(buf: &[u8], socket: &mut TcpStream) -> Vec<u8> {
             let mut child = match command.spawn() {
                 Ok(child) => child,
                 Err(error_code) => {
-                    return serialize_process_terminated(-1, error_code.raw_os_error().unwrap_or(1) as u32);
+                    match error_code.kind() {
+                        // std::io::ErrorKind::NotFound => serialize_execve_failed(),
+                        _ => return serialize_child_creation_error(error_code.raw_os_error().unwrap_or(1) as u32),
+                    }
                 }
             };
             let pid = child.id().expect("could not get child pid");
-
             send_on_socket(serialize_process_launched(pid as i32), socket).await;
             
             let res = child.wait().await;
-
             match res {
-                Ok(ret_code) => serialize_process_terminated(pid as i32, ret_code.code().unwrap_or(1) as u32),
+                Ok(ret_code) => {
+                    match ret_code.code() {
+                        //Some(127) => serialize_command_not_found(),
+                        Some(code) => serialize_process_terminated(pid as i32, code as u32),
+                        None => serialize_process_terminated(pid as i32, 1),
+                    }
+                },
                 Err(errno) => serialize_process_terminated(pid as i32, errno.raw_os_error().unwrap_or(1) as u32),
             }
         }

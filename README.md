@@ -1,36 +1,26 @@
-# Démon de contrôle
+# Control Daemon
+
+## Launch project
+
+### Rust : 
+
+Go to rust rep
+
+`cargo run --bin run_demon` : command to launch demon.  
+`cargo run --bin run_client` : command to launch client prototype (not finished).
+
+### C :
+
+
+### Tests :
+
+
 
 ## Description
 
-Ce projet a pour but de développer une <b>application distribuée légère et robuste </b> pour
-l’exécution et le contrôle des exécutions de processus sur un ensemble de machine. Ce sera dans le
-langage <b>Rust</b> et dans le langage <b>C</b>. On y fera des <b>comparaisons entre les langages</b>, afin de répondre
-au mieux aux exigences. Nous appellerons cette application un « Démon de Contrôle ». Cette
-application utilisera une architecture basée sur des démons, avec un processus longue durée sur
-chaque machine, offrant une interface de contrôle distant.
+This project aims to develop a lightweight and robust distributed application for executing and controlling the execution of processes across a set of machines. It will be implemented in both Rust and C. Comparisons between the languages will be made to best meet the requirements. We will refer to this application as a "Control Daemon". The application will use a daemon-based architecture, with a long-running process on each machine, providing a remote control interface.
 
-## Structure du projet
-
-```
-├── c
-│   ├── include
-│   │   └── type.h
-│   └── src
-│       └── main.c
-├── LICENSE.Apache-2.0.md
-├── LICENSE.CC-BY-4.0.md
-├── README.md
-└── rust
-    ├── Cargo.lock
-    ├── Cargo.toml
-    └── src
-        ├── main.rs
-        └── prototype.rs
-
-6 directories, 9 files
-```
-
-## Crédit
+## Credit
 
 FORT Alexandre  
 MAATI Mohamed  
