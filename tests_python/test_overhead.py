@@ -183,10 +183,13 @@ def test_traitement_donne():
     print(f"Moyenne de temps avec demon c : {np.mean(temps_demon_c)} secondes")
     print(f"{len(temps_sans_demon)} {len(temps_demon_rust)} {len(temps_demon_c)}")
 
-    #Initialisation du dataframe
-    data = {'Sans_demon':temps_sans_demon,
-            'Demon_rust':temps_demon_rust,
-            'Demon_c':temps_demon_c}
+    data = {
+        "variante": ["Sans_demon"] * len(temps_sans_demon) +
+                    ["Demon_rust"] * len(temps_demon_rust) +
+                    ["Demon_c"] * len(temps_demon_c),
+        "temps_performance": temps_sans_demon + temps_demon_rust + temps_demon_c
+    }
+
 
     df = pd.DataFrame(data)
 
