@@ -40,7 +40,7 @@ cd builddir
 
 
 
-### Tests :
+### Regression Tests :
 - Flatbuffers
 - pytest
 
@@ -49,11 +49,16 @@ First compile both projects then launch the tests
 ```bash
 cd test_python
 pytest test_daemon
-pytest -s --disable-warnings test_overhead
-
 ```
 
+### Regression Tests :
+- pandas
+- seaborn
+- scipy
 
+```bash
+pytest -s --disable-warnings test_overhead
+```
 
 ## Description
 
