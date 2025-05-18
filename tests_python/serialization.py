@@ -744,6 +744,9 @@ def receive_inotifywatchlistupdated(buffer: bytes, size: int) -> Optional[str]:
     try:
         # Get message and check type
         message = demon.Message.Message.GetRootAsMessage(buffer, 0)
+        actual_type = message.EventsType()
+        print(f"Actual event type (numeric): {actual_type}")
+        print(f"InotifyWatchListUpdated type (numeric): {demon.Event.Event.InotifyWatchListUpdated}")
         if message.EventsType() != demon.Event.Event.InotifyWatchListUpdated:
             return None
 
