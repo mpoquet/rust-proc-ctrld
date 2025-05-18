@@ -142,6 +142,8 @@ void process_surveillance_requests(command* com, int InotifyFd, int epollfd, int
                 break;
             case WATCH_SOCKET:
                 destport = com->to_watch[i].ptr_event;
+                printf("Starting the surveillance of socket %d\n", *destport);
+                fflush(stdout);
                 info = send_socketwatched_to_user_c(*destport);
                 send_message(communication_socket,info);
                 detect_socket(*destport, communication_socket);

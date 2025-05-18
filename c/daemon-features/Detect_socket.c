@@ -178,6 +178,7 @@ void search_TCP_connection(int port, int communication_socket){
     if(found!=1){
         sock_info.state=SOCKET_UNKNOWN;
     }
+    printf("Sendind socket watched terminated. State : %d\n", sock_info.state);
     info = send_socketwatchterminated_to_user_c(&sock_info);
     send_message(communication_socket,info);
 }

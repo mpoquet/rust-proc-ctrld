@@ -680,6 +680,9 @@ def receive_TCPSocketListening(buffer: bytes, size: int) -> int:
     try:
         # Get message and check type
         message = demon.Message.Message.GetRootAsMessage(buffer, 0)
+        actual_type = message.EventsType()
+        print(f"Actual event type (numeric): {actual_type}")
+        print(f"TCPSocketListening type (numeric): {demon.Event.Event.TCPSocketListening}")
         if message.EventsType() != demon.Event.Event.TCPSocketListening:
             return -1
 
@@ -776,6 +779,9 @@ def receive_socketwatched(buffer: bytes, size: int) -> int:
     try:
         # Get message and check type
         message = demon.Message.Message.GetRootAsMessage(buffer, 0)
+        actual_type = message.EventsType()
+        print(f"Actual event type (numeric): {actual_type}")
+        print(f"socketwatched type (numeric): {demon.Event.Event.SocketWatched}")
         if message.EventsType() != demon.Event.Event.SocketWatched:
             return -1
 
@@ -805,6 +811,9 @@ def receive_socketwatchterminated(buffer: bytes, size: int) -> Optional[SocketWa
     try:
         # Get message and check type
         message = demon.Message.Message.GetRootAsMessage(buffer, 0)
+        actual_type = message.EventsType()
+        print(f"Actual event type (numeric): {actual_type}")
+        print(f"socketwatchterminated type (numeric): {demon.Event.Event.SocketWatchTerminated}")
         if message.EventsType() != demon.Event.Event.SocketWatchTerminated:
             return None
 
