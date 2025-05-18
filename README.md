@@ -11,8 +11,45 @@ Go to rust rep
 
 ### C :
 
+Requirements : 
+- Flatbuffers >= 25.2.10
+- Meson
+
+Compilation : 
+
+Clone repo
+
+```bash
+git clone https://github.com/mpoquet/rust-proc-ctrld.git
+cd c
+```
+
+compile 
+
+```bash
+meson setup builddir
+meson compile -C builddir
+```
+
+execute
+
+```bash
+cd builddir
+./daemon 8080
+```
+
+
 
 ### Tests :
+- Flatbuffers
+- pytest
+
+First compile both projects then launch the tests
+
+```bash
+cd test_python
+pytest test_daemon
+```
 
 
 
