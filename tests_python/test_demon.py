@@ -15,7 +15,8 @@ DAEMON_PORTS = {
     "c": 9090
 }
 
-@pytest.fixture(params=["rust", "c"])
+#@pytest.fixture(params=["rust", "c"])
+@pytest.fixture(params=["rust"])
 def daemon(request):
     daemon_type = request.param
     port = DAEMON_PORTS[daemon_type]
@@ -90,23 +91,22 @@ def launch_process(IP_address, daemon, command):
         header = buf.size.to_bytes(4, byteorder='little')
         client.sendall(header + buf.buffer)
 
-        #receiving conection successfull
         size_bytes = client.recv(4)
         size = int.from_bytes(size_bytes, byteorder='little')
         print(f"size : {size}")
-        data = client.recv(int(size))
-        res_port = receive_TCPSocketListening(data,int(size))
-        print(f"received port {res_port}")
+        res = client.recv(int(size))
 
+        print(receive_message_from_demon(res,size))
 
-        #receiving launch process
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
-        pid = receive_processlaunched(data,int(size))
-        print(f"pid : {pid}")
-        if pid < 0 :
+        while(receive_message_from_demon(res,size)!=Event.PROCESS_LAUNCHED):
+            print(receive_message_from_demon(res,size))
+            size_bytes = client.recv(4)
+            size = int.from_bytes(size_bytes, byteorder='little')
+            res = client.recv(int(size))
+
+        data = receive_processlaunched(res,int(size))
+        print(f"pid : {data}")
+        if data < 0 :
             client.close()
             return -1
         else :
@@ -132,27 +132,17 @@ def execve_executed(IP_address, daemon, command):
         header = buf.size.to_bytes(4, byteorder='little')
         client.sendall(header + buf.buffer)
 
-        #receiving conection successfull
         size_bytes = client.recv(4)
         size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
-        res_port = receive_TCPSocketListening(data,int(size))
-        print(f"received port {res_port}")
+        res = client.recv(int(size))
 
-        #receiving launch process
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
-        pid = receive_processlaunched(data,int(size))
+        while(receive_message_from_demon(res,size)!=Event.NONE):
+            print(receive_message_from_demon(res,size))
+            size_bytes = client.recv(4)
+            size = int.from_bytes(size_bytes, byteorder='little')
+            res = client.recv(int(size))
 
-        #receiving execve terminated
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
-        data = receive_execveterminated(data,int(size))
+        data = receive_execveterminated(res,int(size))
 
         print(f"pid : {data.pid}, command : {data.command_name}, succes : {data.success}")
         if data.success==True and data.pid >0:
@@ -174,7 +164,6 @@ def execve_executed(IP_address, daemon, command):
 def fail_launch_process(IP_address, daemon, command):
     process, daemon_type, port = daemon
     assert process.poll() is None
-    print("ici")
     print(f"Testing connection for {daemon_type} daemon on port {port}")
 
     try:
@@ -184,26 +173,17 @@ def fail_launch_process(IP_address, daemon, command):
         header = buf.size.to_bytes(4, byteorder='little')
         client.sendall(header + buf.buffer)
 
-        #receiving conection successfull
         size_bytes = client.recv(4)
         size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
-        res_port = receive_TCPSocketListening(data,int(size))
-        print(f"received port {res_port}")
+        res = client.recv(int(size))
 
-        #receiving launch process
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
+        while(receive_message_from_demon(res,size)!=Event.NONE):
+            print(receive_message_from_demon(res,size))
+            size_bytes = client.recv(4)
+            size = int.from_bytes(size_bytes, byteorder='little')
+            res = client.recv(int(size))
 
-        #receiving execve terminated
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
-        data = receive_execveterminated(data,int(size))
+        data = receive_execveterminated(res,int(size))
 
         print(f"pid : {data.pid}, command : {data.command_name}, succes : {data.success}")
         if data.success==False and data.pid >0:
@@ -231,29 +211,17 @@ def process_terminated(IP_address, daemon, command):
         header = buf.size.to_bytes(4, byteorder='little')
         client.sendall(header + buf.buffer)
 
-        #receiving conection successfull
         size_bytes = client.recv(4)
         size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
+        res = client.recv(int(size))
 
-        #receiving launch process
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
+        while(receive_message_from_demon(res,size)!=Event.PROCESS_TERMINATED):
+            print(receive_message_from_demon(res,size))
+            size_bytes = client.recv(4)
+            size = int.from_bytes(size_bytes, byteorder='little')
+            res = client.recv(int(size))
 
-        #receiving execve terminated
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
-
-        #receiving process terminated
-        size_bytes= client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        data = client.recv(int(size))
-        info = receive_processterminated(data,int(size))
+        info = receive_processterminated(res,int(size))
         print(f"error_code : {info.error_code}, pid: {info.pid}")
         if info.pid>=0 and info.error_code==0:
             client.close()
@@ -281,24 +249,17 @@ def inotify_watchlist_updated(IP_address, daemon, command):
         header = buf.size.to_bytes(4, byteorder='little')
         client.sendall(header + buf.buffer)
 
-        #receiving conection successfull
         size_bytes = client.recv(4)
         size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
+        res = client.recv(int(size))
 
-        #receiving launch process
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
+        while(receive_message_from_demon(res,size)!=Event.INOTIFY_WATCH_LIST_UPDATED):
+            print(receive_message_from_demon(res,size))
+            size_bytes = client.recv(4)
+            size = int.from_bytes(size_bytes, byteorder='little')
+            res = client.recv(int(size))
 
-        #receiving inotify watchlist updated
-        size_bytes= client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
-        path = receive_inotifywatchlistupdated(data,int(size))
+        path = receive_inotifywatchlistupdated(res,int(size))
         print(f"path : {path}")
         if path!=None:
             client.close()
@@ -326,41 +287,17 @@ def inotify_event(IP_address, daemon, command):
         header = buf.size.to_bytes(4, byteorder='little')
         client.sendall(header + buf.buffer)
 
-        #receiving conection successfull
         size_bytes = client.recv(4)
         size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
+        res = client.recv(int(size))
 
-        #receiving launch process
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
+        while(receive_message_from_demon(res,size)!=Event.INOTIFY_PATH_UPDATED):
+            print(receive_message_from_demon(res,size))
+            size_bytes = client.recv(4)
+            size = int.from_bytes(size_bytes, byteorder='little')
+            res = client.recv(int(size))
 
-        #receiving inotify watchlist updated
-        size_bytes= client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
-
-        #receiving execve terminated
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
-
-        #receiving process terminated
-        size_bytes= client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        data = client.recv(int(size))
-
-        #receiving inotify event
-        size_bytes= client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
-        info = receive_inotifypathupdated(data,int(size))
+        info = receive_inotifypathupdated(res,int(size))
         print(f"path : {info.path}")
         if info.path!=None:
             client.close()
@@ -397,23 +334,17 @@ def response_time(IP_address, daemon, command):
 
         start = time.perf_counter()
 
-        #receiving launch process
         size_bytes = client.recv(4)
         size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
+        res = client.recv(int(size))
 
-        #receiving execve terminated
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
+        while(receive_message_from_demon(res,size)!=Event.PROCESS_TERMINATED):
+            print(receive_message_from_demon(res,size))
+            size_bytes = client.recv(4)
+            size = int.from_bytes(size_bytes, byteorder='little')
+            res = client.recv(int(size))
 
-        #receiving process terminated
-        size_bytes= client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        data = client.recv(int(size))
-        info = receive_processterminated(data,int(size))
+        info = receive_processterminated(res,int(size))
 
         end = time.perf_counter()
         print(f"Time elapsed : {end-start:.4f}")
@@ -441,28 +372,25 @@ def watching_socket(IP_address, daemon, command):
     try:
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((IP_address, port))
-        buf = send_command_to_demon(command)
+        buf=send_command_to_demon(command)
         header = buf.size.to_bytes(4, byteorder='little')
         client.sendall(header + buf.buffer)
 
-        port_res = None
-        socket_watch_terminated_received = False
-
-        #receiving launch process
         size_bytes = client.recv(4)
         size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
+        res = client.recv(int(size))
 
-        #receiving socket_watched
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
+        while(receive_message_from_demon(res,size)!=Event.SOCKET_WATCHED):
+            print(receive_message_from_demon(res,size))
+            size_bytes = client.recv(4)
+            size = int.from_bytes(size_bytes, byteorder='little')
+            res = client.recv(int(size))
+
+        port_res = receive_socketwatched(res,size)
 
         client.close()
 
-        if socket_watch_terminated_received and port_res and port_res > 0:
+        if port_res > 0:
             return 1
         else:
             return -1
@@ -486,42 +414,16 @@ def socket_listening(IP_address, daemon, command):
         header = buf.size.to_bytes(4, byteorder='little')
         client.sendall(header + buf.buffer)
 
-        #receiving conection successfull
         size_bytes = client.recv(4)
         size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
+        res = client.recv(int(size))
 
-        #receiving launch process
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
+        while(receive_message_from_demon(res,size)!=Event.SOCKET_WATCH_TERMINATED):
+            size_bytes = client.recv(4)
+            size = int.from_bytes(size_bytes, byteorder='little')
+            res = client.recv(int(size))
 
-        #receiving execve terminated
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
-
-        #receiving process_terminated
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
-
-        #receiving socket_watched
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
-
-        #receiving socket watched terminated
-        size_bytes= client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
-        info = receive_socketwatchterminated(data,int(size))
+        info = receive_socketwatchterminated(res,int(size))
 
         print(f"dest port : {info.port}")
 

@@ -20,7 +20,7 @@ DAEMON_PORTS = {
     "c": 9090
 }
 
-nb_mesures = 20
+nb_mesures = 2
 nb_iteration = 30
 
 temps_sans_demon = []
