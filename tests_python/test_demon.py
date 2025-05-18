@@ -441,15 +441,12 @@ def watching_socket(IP_address, daemon, command):
     try:
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((IP_address, port))
-        buf=send_command_to_demon(command)
+        buf = send_command_to_demon(command)
         header = buf.size.to_bytes(4, byteorder='little')
         client.sendall(header + buf.buffer)
 
-        #receiving conection successfull
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
+        port_res = None
+        socket_watch_terminated_received = False
 
         #receiving launch process
         size_bytes = client.recv(4)
@@ -463,15 +460,13 @@ def watching_socket(IP_address, daemon, command):
         print(f"size : {size}")
         data = client.recv(int(size))
 
-        port_res = receive_socketwatched(data,int(size))
-        print(f"dest port : {port_res}")
+        client.close()
 
-        if port_res > 0:
-            client.close()
+        if socket_watch_terminated_received and port_res and port_res > 0:
             return 1
-        else :
-            client.close()
+        else:
             return -1
+
     except ConnectionRefusedError:
         print(f"Échec de la connexion : Le serveur à {IP_address}:{port} a refusé la connexion.")
         print(f"Assurez-vous que le serveur {daemon_type} est lancé et écoute sur le bon port.")

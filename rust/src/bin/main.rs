@@ -15,7 +15,7 @@ use rust_proc_ctrl::monitoring_tools::command::exec_command;
 use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message, Event, InotifyEvent, SocketState, Surveillance, SurveillanceEvent};
 
 // sérialisation
-use rust_proc_ctrl::proto::serialisation::{serialize_child_creation_error, serialize_execve_terminated, serialize_inotify_path_update, serialize_process_launched, serialize_process_terminated, serialize_socket_watch_terminated, serialize_tcp_socket_listenning};
+use rust_proc_ctrl::proto::serialisation::{serialize_child_creation_error, serialize_execve_terminated, serialize_inotify_path_update, serialize_process_launched, serialize_process_terminated, serialize_socket_watch_terminated, serialize_socket_watched, serialize_tcp_socket_listenning};
 
 async fn handle_surveillance_event(msg: &SurveillanceEvent<'_>, socket: &mut TcpStream) {
     match msg.event_type() {
@@ -66,6 +66,7 @@ async fn handle_surveillance_event(msg: &SurveillanceEvent<'_>, socket: &mut Tcp
             let from_mess = msg.event_as_tcpsocket().expect("error from receiving message");
             let port = from_mess.destport();
 
+            send_on_socket(serialize_socket_watched(port as i32), socket).await;
             match read_events_port_tokio(port as u16).await {
                 Ok(state) => {
                     let to_send = match state {
