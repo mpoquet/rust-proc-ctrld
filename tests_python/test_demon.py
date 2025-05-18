@@ -635,34 +635,34 @@ def socket_listening(IP_address, daemon, command):
 #     res = execve_executed("127.0.0.1", daemon,command)
 #     assert res != -1, "Receiving execve_termiated with success failed"
 
-# @pytest.mark.timeout(3)
-# def test_socket_listening(daemon):
-#     path = ""
-#     args = []
-#     envp = []
-#     flags = 0
-#     stack_size = 1024 * 1024  # 1 MB de stack
+@pytest.mark.timeout(3)
+def test_socket_listening(daemon):
+    path = ""
+    args = []
+    envp = []
+    flags = 0
+    stack_size = 1024 * 1024  # 1 MB de stack
 
-#     process, daemon_type, port = daemon
+    process, daemon_type, port = daemon
 
-#     scoket_evt = TCPSocket(destport=port)
+    scoket_evt = TCPSocket(destport=port)
 
-#     surveillance = Surveillance(
-#         event=SurveillanceEventType.WATCH_SOCKET,
-#         ptr_event=scoket_evt
-#     )
-#     to_watch = [surveillance]
-#     command = Command(
-#         path=path,
-#         args=args,
-#         envp=envp,
-#         flags=flags,
-#         stack_size=stack_size,
-#         to_watch=to_watch,
-#     )
+    surveillance = Surveillance(
+        event=SurveillanceEventType.WATCH_SOCKET,
+        ptr_event=scoket_evt
+    )
+    to_watch = [surveillance]
+    command = Command(
+        path=path,
+        args=args,
+        envp=envp,
+        flags=flags,
+        stack_size=stack_size,
+        to_watch=to_watch,
+    )
 
-#     res = socket_listening("127.0.0.1", daemon,command)
-#     assert res != -1, "Socket listening failed"
+    res = socket_listening("127.0.0.1", daemon,command)
+    assert res != -1, "Socket listening failed"
 
 @pytest.mark.timeout(3)
 def test_watching_socket(daemon):

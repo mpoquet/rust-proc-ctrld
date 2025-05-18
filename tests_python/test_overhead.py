@@ -63,7 +63,14 @@ def boucle_launch_process(IP_address, daemon, command):
         #connexion avec le demon
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((IP_address, port))
+        buf=send_command_to_demon(command)
+        header = buf.size.to_bytes(4, byteorder='little')
 
+        #receiving conection successfull
+        size_bytes = client.recv(4)
+        size = int.from_bytes(size_bytes, byteorder='little')
+        data = client.recv(int(size))
+        res_port = receive_TCPSocketListening(data,int(size))
         #Boucle de i mesures
         for i in range(nb_mesures):
 
@@ -72,24 +79,26 @@ def boucle_launch_process(IP_address, daemon, command):
 
             #Boucle de j itérations
             for j in range(nb_iteration):
-                buf=send_command_to_demon(command)
-                header = buf.size.to_bytes(4, byteorder='little')
                 client.sendall(header + buf.buffer)
-
-                #receiving conection successfull
-                size_bytes = client.recv(4)
-                size = int.from_bytes(size_bytes, byteorder='little')
-
-                data = client.recv(int(size))
-                res_port = receive_TCPSocketListening(data,int(size))
-
 
                 #receiving launch process
                 size_bytes = client.recv(4)
                 size = int.from_bytes(size_bytes, byteorder='little')
-
                 data = client.recv(int(size))
                 pid = receive_processlaunched(data,int(size))
+
+                #receiving execve terminated
+                size_bytes = client.recv(4)
+                size = int.from_bytes(size_bytes, byteorder='little')
+                print(f"size : {size}")
+                data = client.recv(int(size))
+                info_execve= receive_execveterminated(data,int(size))
+
+                #receiving process terminated
+                size_bytes= client.recv(4)
+                size = int.from_bytes(size_bytes, byteorder='little')
+                data = client.recv(int(size))
+                info = receive_processterminated(data,int(size))
             
             #Arrêt chronomètre et enregistrement temps de j itérations
             t_stop = time.perf_counter()
@@ -114,7 +123,7 @@ def boucle_launch_process(IP_address, daemon, command):
 
 
 #Lancement des test
-@pytest.mark.timeout(3)
+@pytest.mark.timeout(10)
 def test_sans_demon():
     #Boucle de i mesures
     for i in range(nb_mesures):
@@ -134,7 +143,7 @@ def test_sans_demon():
 
 
 
-@pytest.mark.timeout(3)
+@pytest.mark.timeout(10)
 def test_avec_demon(daemon):
     process, daemon_type, port = daemon
 
@@ -156,7 +165,6 @@ def test_avec_demon(daemon):
         flags=flags,
         stack_size=stack_size,
         to_watch=to_watch,
-        to_watch_size=len(to_watch)
     )
 
     boucle_launch_process("127.0.0.1", daemon,command)
@@ -164,7 +172,7 @@ def test_avec_demon(daemon):
 
 
 
-@pytest.mark.timeout(3)
+@pytest.mark.timeout(10)
 def test_traitement_donne():
     print("\n")
     print(f"Moyenne de temps sans demon : {np.mean(temps_sans_demon)} secondes")

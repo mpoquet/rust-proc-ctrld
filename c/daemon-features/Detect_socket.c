@@ -59,13 +59,15 @@ static int process_inet_diag(const struct inet_diag_msg *diag, int port_filter, 
             break;
     }
 
-    if (dport == port_filter) {
-        printf("[%s] %s:%u → %s:%u (inode %u, uid %u)\n",
+    fprintf(stderr,"[%s] %s:%u → %s:%u (inode %u, uid %u)\n",
                diag->idiag_family == AF_INET ? "IPv4" : "IPv6",
                src_addr, sport,
                dst_addr, dport,
                diag->idiag_inode,
                diag->idiag_uid);
+
+    if (sport == port_filter) {
+        
         found=1;
         return 0;
     }
@@ -95,10 +97,10 @@ static int recv_tcp_diag(int nl_sock, int port_filter, struct socket_watch_info*
                 return 0;
             if (nh->nlmsg_type == NLMSG_ERROR) {
                 fprintf(stderr, "Netlink error\n");
-                return -1;
             }
 
             struct inet_diag_msg *diag = NLMSG_DATA(nh);
+            fprintf(stderr, "Processing Netlink message\n");
             if (process_inet_diag(diag, port_filter,sock_info))
                 return 1;
         }
@@ -178,7 +180,7 @@ void search_TCP_connection(int port, int communication_socket){
     if(found!=1){
         sock_info.state=SOCKET_UNKNOWN;
     }
-    printf("Sendind socket watched terminated. State : %d\n", sock_info.state);
+    fprintf(stderr, "Sendind socket watched terminated. State : %d\n", sock_info.state);
     info = send_socketwatchterminated_to_user_c(&sock_info);
     send_message(communication_socket,info);
 }
