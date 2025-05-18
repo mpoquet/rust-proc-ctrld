@@ -1,6 +1,6 @@
-use flatbuffers::FlatBufferBuilder;
+use flatbuffers::{FlatBufferBuilder, WIPOffset};
 
-use super::demon_generated::demon::InotifyEvent;
+use super::demon_generated::demon::{InotifyEvent, SurveillanceEvent};
 use super::demon_generated::demon::{self, Message, RunCommand, RunCommandArgs};
 use crate::proto::serialisation::demon::MessageArgs;
 use crate::proto::serialisation::demon::Event;
@@ -115,34 +115,45 @@ pub fn serialize_process_terminated(pid: i32, error_code: u32) -> Vec<u8> {
     builder.finished_data().to_vec()
 }
 
-pub fn serialize_run_command(path_command: &str, args_tab: Vec<&str>, args_envs: Vec<&str>) -> Vec<u8>{
-    //Initialisation du builder
-    let mut bldr = FlatBufferBuilder::new();
-    bldr.reset();
+pub fn serialize_run_command<'a>(
+    bldr: &mut FlatBufferBuilder<'a>,
+    path_command: &str, 
+    args_tab: Vec<&str>, 
+    args_envs: Vec<&str>,
+    flags: u32,
+    stack_size: u32,
+    to_watch: Vec<WIPOffset<SurveillanceEvent<'a>>>
+) -> Vec<u8> {
+    let mut bldr = bldr;
 
+    // Création des offsets pour les vecteurs de chaînes
     let args_offsets: Vec<_> = args_tab.iter().map(|s| bldr.create_string(s)).collect();
     let envs_offsets: Vec<_> = args_envs.iter().map(|s| bldr.create_string(s)).collect();
 
     let args_vector = bldr.create_vector(&args_offsets);
     let envs_vector = bldr.create_vector(&envs_offsets);
-
-
-    //Creation de l'objet RunCommand
-    let args_build = RunCommandArgs{
-        path: Some(bldr.create_string(&path_command)), 
+    
+    // Construction de l'objet RunCommand avec le schéma étendu
+    let args_build = RunCommandArgs {
+        path: Some(bldr.create_string(&path_command)),
         args: Some(args_vector),
         envp: Some(envs_vector),
-        ..Default::default()};
+        flags,
+        stack_size,
+        to_watch: Some(bldr.create_vector(&to_watch)),
+        ..Default::default()
+    };
 
     let object_run_command = RunCommand::create(&mut bldr, &args_build);
 
-    //Creation et serialisation de l'objet Message pour l'envoi
+    // Création et sérialisation de l'objet Message pour l'envoi
     let mess = Message::create(
-        &mut bldr, 
-        &MessageArgs{
+        &mut bldr,
+        &MessageArgs {
             events_type: Event::RunCommand,
-            events: Some(object_run_command.as_union_value())});
-
+            events: Some(object_run_command.as_union_value()),
+        }
+    );
 
     bldr.finish(mess, None);
     bldr.finished_data().to_vec()

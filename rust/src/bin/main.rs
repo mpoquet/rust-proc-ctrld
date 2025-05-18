@@ -11,49 +11,74 @@ use rust_proc_ctrl::monitoring_tools::signal_tool::send_sigkill;
 use rust_proc_ctrl::monitoring_tools::command::exec_command;
 
 // flatbuffers
-use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message,Event, InotifyEvent, SocketState};
+use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message, Event, SocketState, Surveillance, SurveillanceEvent};
 
 // sérialisation
 use rust_proc_ctrl::proto::serialisation::{serialize_child_creation_error, serialize_execve_terminated, serialize_process_launched, serialize_process_terminated, serialize_socket_watch_terminated, serialize_tcp_socket_listenning};
+
+async fn handle_surveillance_event(msg: &SurveillanceEvent<'_>, socket: &mut TcpStream) {
+    match msg.event_type() {
+        Surveillance::Inotify => {
+            let inotify_evt = msg.event_as_inotify().expect("error: event_as_inotify");
+            let path = inotify_evt.root_paths().unwrap_or("");
+            let mask = inotify_evt.mask() as u32;
+            let reach_size = inotify_evt.size();
+
+            let mut trig_events = Vec::<EventMask>::new();
+
+            // Mapping bit flags (à adapter à ton système d'encodage)
+            if mask & EventMask::ACCESS.bits() != 0 {
+                trig_events.push(EventMask::ACCESS);
+            }
+            if mask & EventMask::CREATE.bits() != 0 {
+                trig_events.push(EventMask::CREATE);
+                trig_events.push(EventMask::ISDIR);
+            }
+            if mask & EventMask::DELETE.bits() != 0 {
+                trig_events.push(EventMask::DELETE);
+            }
+            if mask & EventMask::MODIFY.bits() != 0 {
+                trig_events.push(EventMask::MODIFY);
+            }
+            if mask & (EventMask::CLOSE_NOWRITE.bits() | EventMask::CLOSE_WRITE.bits()) != 0 {
+                trig_events.push(EventMask::CLOSE_NOWRITE);
+                trig_events.push(EventMask::CLOSE_WRITE);
+            }
+
+            match read_events_inotify(path, trig_events, reach_size as u64).await {
+                Ok(pid) => send_on_socket(serialize_process_terminated(pid as i32, 0), socket).await,
+                Err((pid, errno)) => {
+                    send_on_socket(serialize_process_terminated(pid as i32, errno as u32), socket).await
+                }
+            }
+        }
+        Surveillance::TCPSocket => {
+            let from_mess = msg.event_as_tcpsocket().expect("error from receiving message");
+            let port = from_mess.destport();
+
+            match read_events_port_tokio(port as u16).await {
+                Ok(state) => {
+                    let to_send = match state {
+                        netstat2::TcpState::Listen => SocketState::listeing,
+                        netstat2::TcpState::Established => SocketState::created,
+                        _ => SocketState::unknown,
+                    };
+                    send_on_socket(serialize_socket_watch_terminated(port as i32, to_send), socket).await
+                }
+                Err((pid ,errno)) => send_on_socket(serialize_process_terminated(pid as i32, errno as u32), socket).await,
+            }
+        }
+        _ => {
+            panic!("Wrong 'Surveillance' type");
+        }
+    } // end match
+}
 
 async fn handle_message(buf: &[u8], socket: &mut TcpStream) {
 
     let msg = root_as_message(buf).expect("error root_as_message()");
 
     match msg.events_type() {
-        Event::InotifyPathUpdated => {
-            let from_message =
-                msg.events_as_inotify_path_updated().expect("error events_as_inotify...");
-            let path = from_message.path().expect("No path from the message");
-            let event = from_message.trigger_events();
-            let reach_size = from_message.size();
-
-            // new vector of "real" Inotify Event not from flatbuffer
-            let mut trig_events = Vec::<EventMask>::new();
-            
-            match event {
-                InotifyEvent::accessed => trig_events.push(EventMask::ACCESS),
-                InotifyEvent::created => {
-                    trig_events.push(EventMask::CREATE);
-                    trig_events.push(EventMask::ISDIR);                        
-                }
-                InotifyEvent::deleted => trig_events.push(EventMask::DELETE),
-                InotifyEvent::modified => trig_events.push(EventMask::MODIFY),
-                // when we want to know the size of a file, we watch when the file is Close
-                InotifyEvent::size_reached => {
-                    trig_events.push(EventMask::CLOSE_NOWRITE);
-                    trig_events.push(EventMask::CLOSE_WRITE);
-                }
-                _ => {
-                    eprintln!("flags error for inotify events");
-                }
-            }
-
-            match read_events_inotify(path, trig_events, reach_size as u64).await {
-                Ok(pid) => send_on_socket(serialize_process_terminated(pid as i32, 0), socket).await,
-                Err((pid,errno)) => send_on_socket(serialize_process_terminated(pid as i32, errno as u32), socket).await,
-            }
-        }
         Event::KillProcess => {
             let from_mess = msg.events_as_kill_process().expect("error events_as_kill_process");
             let pid_kill = from_mess.pid();
@@ -67,7 +92,14 @@ async fn handle_message(buf: &[u8], socket: &mut TcpStream) {
             let from_mess = msg.events_as_run_command().expect("error events_as_run_command");
             let mut command = exec_command(&from_mess);
             let command_exec = from_mess.path().expect("error getting path from serialize message").to_string();
+            let to_watch = from_mess.to_watch().expect("error getting to watch");
 
+            if !to_watch.is_empty() {
+                for event in to_watch {
+                    handle_surveillance_event(&event, socket).await;
+                }
+                return;
+            }
 
             let mut child = match command.spawn() {
                 Ok(child) => child,
@@ -96,22 +128,6 @@ async fn handle_message(buf: &[u8], socket: &mut TcpStream) {
             match res {
                 Ok(ret_code) => send_on_socket(serialize_process_terminated(pid as i32, ret_code.code().unwrap_or(1) as u32), socket).await,
                 Err(errno) => send_on_socket(serialize_process_terminated(pid as i32, errno.raw_os_error().unwrap_or(1) as u32), socket).await,
-            }
-        }
-        Event::SocketWatched => {
-            let from_mess = msg.events_as_socket_watched().expect("error from receiving message");
-            let port = from_mess.port();
-
-            match read_events_port_tokio(port as u16).await {
-                Ok(state) => {
-                    let to_send = match state {
-                        netstat2::TcpState::Listen => SocketState::listeing,
-                        netstat2::TcpState::Established => SocketState::created,
-                        _ => SocketState::unknown,
-                    };
-                    send_on_socket(serialize_socket_watch_terminated(port, to_send), socket).await
-                }
-                Err((pid ,errno)) => send_on_socket(serialize_process_terminated(pid as i32, errno as u32), socket).await,
             }
         }
         _ => {

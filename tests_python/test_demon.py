@@ -520,6 +520,33 @@ def response_time(IP_address, daemon, command):
 #     res = execve_executed("127.0.0.1", daemon,command)
 #     assert res != -1, "Receiving execve_termiated with success failed"
 
+@pytest.mark.timeout(3)
+def test_socket_listening(daemon):
+    path = ""
+    args = []
+    envp = []
+    flags = 0
+    stack_size = 1024 * 1024  # 1 MB de stack
+
+    scoket = send_socketwatched_to_user(8080)
+
+    surveillance = Surveillance(
+        event=SurveillanceEventType.SOCKET,
+        ptr_event=scoket
+    )
+    to_watch = [surveillance]
+    command = Command(
+        path=path,
+        args=args,
+        envp=envp,
+        flags=flags,
+        stack_size=stack_size,
+        to_watch=to_watch,
+        to_watch_size=len(to_watch)
+    )
+
+    send_command_to_demon(command)
+
 IN_MODIFY = 0x00000002
 IN_CREATE = 0x00000100
 

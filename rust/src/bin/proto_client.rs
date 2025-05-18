@@ -10,9 +10,10 @@ use std::io;
 use std::net::TcpStream;
 use std::io::Write;
 
+use flatbuffers::FlatBufferBuilder;
 // flatbuffers
-use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message, Event, InotifyEvent, SocketState};
-use rust_proc_ctrl::proto::serialisation::{serialize_inotify_path_update, serialize_run_command, serialize_socket_watched};
+use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message, Event, Inotify, InotifyArgs, SocketState, Surveillance, SurveillanceEvent, SurveillanceEventArgs, TCPSocket, TCPSocketArgs};
+use rust_proc_ctrl::proto::serialisation::serialize_run_command;
 
 enum ReturnHandleMessage {
     Continue,
@@ -100,9 +101,7 @@ fn handle_message(buff: &[u8]) -> ReturnHandleMessage {
 
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut presence_clone = false;
-    let mut flag: u32 = 0;
-    let mut stack: u32 = 0;
+    let port: u16 = 8080;
 
     let mut input_line = String::new();
     io::stdin().read_line(&mut input_line).expect("Échec de lecture");
@@ -120,33 +119,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .cloned()
         .collect::<Vec<&str>>()
         .join(" ");
-    
-    //Lecture du flag et stack si clone 
-    //Attention : le eq() ne semble pas fonctionner ici (toujours false)
-    if path_command.eq("clone"){
-        //Lecture du flag
-        println!("flag : ");
-        let mut flag_command = String::new();
-        io::stdin().read_line(&mut flag_command).expect("Echec lecture");
-        flag = flag_command.trim().parse().expect("int attendu");
-
-        //Lecture du stack
-        println!("stack : ");
-        let mut stack_command = String::new();
-        io::stdin().read_line(&mut stack_command).expect("Echec lecture");
-        stack = stack_command.trim().parse().expect("int attendu");
-
-        presence_clone = true;
-    }
-
-    // println!("path : {}", path_command);
-    // println!("arguments : {}", args_command);
-    // println!("environnements : {}", envs_command);
-
-    if presence_clone{
-        println!("flag : {}", flag);
-        println!("stack : {}", stack);
-    }
 
     //Attention : Le dernier string contient un \n
     let args_tab: Vec<&str> = args_command.split(" ").collect();
@@ -155,20 +127,36 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args_envs: Vec<&str> = envs_command.split(" ").collect();
     // println!("envs_tab = {:?}", args_envs);
 
-    // Match vers sérialisation
+    let mut fbb = FlatBufferBuilder::new();
 
-    let finished_data =
-    if path_command.eq("inotify") {
-        serialize_inotify_path_update(".", InotifyEvent::accessed, 30, 6000)
+    let to_watch = if path_command == "inotify" {
+        let root_path_offset = fbb.create_string("/some/path");
+        let inotify_obj = Inotify::create(&mut fbb, &InotifyArgs {
+            root_paths: Some(root_path_offset),
+            mask: 0,
+            size: 0,
+        });
+        let inotify_evt = SurveillanceEvent::create(&mut fbb, &SurveillanceEventArgs {
+            event_type: Surveillance::Inotify,
+            event: Some(inotify_obj.as_union_value()),
+        });
+        vec![inotify_evt]
     }
-    else if path_command.eq("socket") {
-        serialize_socket_watched(9090)
+    else if path_command == "socket" {
+        let socket_obj = TCPSocket::create(&mut fbb, &TCPSocketArgs {
+            destport: 9090,
+        });
+        let socket_evt = SurveillanceEvent::create(&mut fbb, &SurveillanceEventArgs {
+            event_type: Surveillance::TCPSocket,
+            event: Some(socket_obj.as_union_value()),
+        });
+        vec![socket_evt]
     }
     else {
-        serialize_run_command(&path_command, args_tab, args_envs)
+        vec![]
     };
 
-    let port: u16 = 8080;
+    let finished_data = serialize_run_command(&mut fbb, &path_command, args_tab, args_envs, 0, 0, to_watch);
 
     let data_len = finished_data.len() as u32;
     let mut stream = TcpStream::connect(format!("127.0.0.1:{}", port))?;
