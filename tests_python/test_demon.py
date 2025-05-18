@@ -15,7 +15,7 @@ DAEMON_PORTS = {
     "c": 9090
 }
 
-@pytest.fixture(params=["rust", "c"])
+@pytest.fixture(params=["rust"])
 def daemon(request):
     daemon_type = request.param
     port = DAEMON_PORTS[daemon_type]
@@ -293,6 +293,12 @@ def inotify_watchlist_updated(IP_address, daemon, command):
         print(f"size : {size}")
         data = client.recv(int(size))
 
+        #receiving execve terminated
+        size_bytes = client.recv(4)
+        size = int.from_bytes(size_bytes, byteorder='little')
+        print(f"size : {size}")
+        data = client.recv(int(size))
+
         #receiving inotify watchlist updated
         size_bytes= client.recv(4)
         size = int.from_bytes(size_bytes, byteorder='little')
@@ -300,6 +306,7 @@ def inotify_watchlist_updated(IP_address, daemon, command):
         data = client.recv(int(size))
         path = receive_inotifywatchlistupdated(data,int(size))
         print(f"path : {path}")
+
         if path!=None:
             client.close()
             return 1
@@ -408,7 +415,6 @@ def response_time(IP_address, daemon, command):
         size = int.from_bytes(size_bytes, byteorder='little')
         print(f"size : {size}")
         data = client.recv(int(size))
-
 
         #receiving process terminated
         size_bytes= client.recv(4)

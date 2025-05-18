@@ -2,6 +2,7 @@ use inotify::EventMask;
 use nix::errno::Errno;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use std::error::Error;
+use std::process::ExitStatus;
 use tokio::net::{TcpListener, TcpStream};
 
 // monitoring tools
@@ -11,10 +12,10 @@ use rust_proc_ctrl::monitoring_tools::signal_tool::send_sigkill;
 use rust_proc_ctrl::monitoring_tools::command::exec_command;
 
 // flatbuffers
-use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message, Event, SocketState, Surveillance, SurveillanceEvent};
+use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message, Event, InotifyEvent, SocketState, Surveillance, SurveillanceEvent};
 
 // sérialisation
-use rust_proc_ctrl::proto::serialisation::{serialize_child_creation_error, serialize_execve_terminated, serialize_process_launched, serialize_process_terminated, serialize_socket_watch_terminated, serialize_tcp_socket_listenning};
+use rust_proc_ctrl::proto::serialisation::{serialize_child_creation_error, serialize_execve_terminated, serialize_inotify_path_update, serialize_process_launched, serialize_process_terminated, serialize_socket_watch_terminated, serialize_tcp_socket_listenning};
 
 async fn handle_surveillance_event(msg: &SurveillanceEvent<'_>, socket: &mut TcpStream) {
     match msg.event_type() {
@@ -25,6 +26,7 @@ async fn handle_surveillance_event(msg: &SurveillanceEvent<'_>, socket: &mut Tcp
             let reach_size = inotify_evt.size();
 
             let mut trig_events = Vec::<EventMask>::new();
+            let mut trigger = InotifyEvent::accessed;
 
             // Mapping bit flags (à adapter à ton système d'encodage)
             if mask & EventMask::ACCESS.bits() != 0 {
@@ -33,20 +35,28 @@ async fn handle_surveillance_event(msg: &SurveillanceEvent<'_>, socket: &mut Tcp
             if mask & EventMask::CREATE.bits() != 0 {
                 trig_events.push(EventMask::CREATE);
                 trig_events.push(EventMask::ISDIR);
+                trigger = InotifyEvent::created;
             }
             if mask & EventMask::DELETE.bits() != 0 {
                 trig_events.push(EventMask::DELETE);
+                trigger = InotifyEvent::deleted;
             }
             if mask & EventMask::MODIFY.bits() != 0 {
                 trig_events.push(EventMask::MODIFY);
+                 trigger = InotifyEvent::modified;
             }
             if mask & (EventMask::CLOSE_NOWRITE.bits() | EventMask::CLOSE_WRITE.bits()) != 0 {
                 trig_events.push(EventMask::CLOSE_NOWRITE);
                 trig_events.push(EventMask::CLOSE_WRITE);
+                 trigger = InotifyEvent::size_reached;
             }
 
-            match read_events_inotify(path, trig_events, reach_size as u64).await {
-                Ok(pid) => send_on_socket(serialize_process_terminated(pid as i32, 0), socket).await,
+            send_on_socket(serialize_inotify_path_update(&path, trigger, 0, reach_size), socket).await;
+
+            match read_events_inotify(path, trig_events, reach_size).await {
+                Ok(pid) => {
+                    send_on_socket(serialize_process_terminated(pid as i32, 0), socket).await
+                },
                 Err((pid, errno)) => {
                     send_on_socket(serialize_process_terminated(pid as i32, errno as u32), socket).await
                 }
@@ -93,16 +103,16 @@ async fn handle_message(buf: &[u8], socket: &mut TcpStream) {
             let mut command = exec_command(&from_mess);
             let command_exec = from_mess.path().expect("error getting path from serialize message").to_string();
             let to_watch = from_mess.to_watch().expect("error getting to watch");
-
-            if !to_watch.is_empty() {
-                for event in to_watch {
-                    handle_surveillance_event(&event, socket).await;
-                }
-                return;
-            }
-
-            let mut child = match command.spawn() {
-                Ok(child) => child,
+            let mut pid = 0;
+            
+            let res: Result<ExitStatus, std::io::Error> = match command.spawn() {
+                Ok(mut child) => {
+                    pid = child.id().expect("could not get child pid");
+                    send_on_socket(serialize_process_launched(pid as i32), socket).await;
+                    send_on_socket(serialize_execve_terminated(pid as i32, command_exec, true), socket).await;
+                    child.wait().await
+                    
+                },
                 Err(error_code) => {
                     let pid = std::process::id() as i32;
                     send_on_socket(serialize_process_launched(pid), socket).await;
@@ -110,21 +120,23 @@ async fn handle_message(buf: &[u8], socket: &mut TcpStream) {
                         std::io::ErrorKind::NotFound => {
                             let msg = serialize_execve_terminated(pid, command_exec, false);
                             send_on_socket(msg, socket).await;
+                            Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Command not found"))
                         },
                         _ => {
                             let msg = serialize_child_creation_error(error_code.raw_os_error().unwrap_or(1) as u32);
                             send_on_socket(msg, socket).await;
+                            Err(error_code)
                         }
                     }
-                    send_on_socket(serialize_process_terminated(pid, error_code.raw_os_error().unwrap_or(1) as u32), socket).await;
-                    return;
                 }
             };
-            let pid = child.id().expect("could not get child pid");
-            send_on_socket(serialize_process_launched(pid as i32), socket).await;
-            send_on_socket(serialize_execve_terminated(pid as i32, command_exec, true), socket).await;
             
-            let res = child.wait().await;
+            if !to_watch.is_empty() {
+                for event in to_watch {
+                    handle_surveillance_event(&event, socket).await;
+                }
+            }
+
             match res {
                 Ok(ret_code) => send_on_socket(serialize_process_terminated(pid as i32, ret_code.code().unwrap_or(1) as u32), socket).await,
                 Err(errno) => send_on_socket(serialize_process_terminated(pid as i32, errno.raw_os_error().unwrap_or(1) as u32), socket).await,

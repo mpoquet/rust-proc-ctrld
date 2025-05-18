@@ -11,6 +11,7 @@ use std::net::TcpStream;
 use std::io::Write;
 
 use flatbuffers::FlatBufferBuilder;
+use inotify::EventMask;
 // flatbuffers
 use rust_proc_ctrl::proto::demon_generated::demon::{root_as_message, Event, Inotify, InotifyArgs, SocketState, Surveillance, SurveillanceEvent, SurveillanceEventArgs, TCPSocket, TCPSocketArgs};
 use rust_proc_ctrl::proto::serialisation::serialize_run_command;
@@ -89,7 +90,17 @@ fn handle_message(buff: &[u8]) -> ReturnHandleMessage {
             }
             println!("on port : {}", port);
 
-            ReturnHandleMessage::End
+            ReturnHandleMessage::Continue
+        }
+        Event::InotifyPathUpdated => {
+            let from_mess = msg.events_as_inotify_path_updated().expect("error events as inotify path update");
+            let path = from_mess.path().expect("error pas de path");
+            let size_limit = from_mess.size_limit();
+            let trigger = from_mess.trigger_events();
+
+            println!("Inotify path update, watching : {} with the trigger {:?} and the limit size : {}", path, trigger, size_limit);
+
+            ReturnHandleMessage::Continue
         }
         _ => {
             println!("Reception d'un event inconnue");
@@ -129,32 +140,45 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut fbb = FlatBufferBuilder::new();
 
-    let to_watch = if path_command == "inotify" {
-        let root_path_offset = fbb.create_string("/some/path");
-        let inotify_obj = Inotify::create(&mut fbb, &InotifyArgs {
-            root_paths: Some(root_path_offset),
-            mask: 0,
-            size: 0,
-        });
-        let inotify_evt = SurveillanceEvent::create(&mut fbb, &SurveillanceEventArgs {
-            event_type: Surveillance::Inotify,
-            event: Some(inotify_obj.as_union_value()),
-        });
-        vec![inotify_evt]
-    }
-    else if path_command == "socket" {
-        let socket_obj = TCPSocket::create(&mut fbb, &TCPSocketArgs {
-            destport: 9090,
-        });
-        let socket_evt = SurveillanceEvent::create(&mut fbb, &SurveillanceEventArgs {
-            event_type: Surveillance::TCPSocket,
-            event: Some(socket_obj.as_union_value()),
-        });
-        vec![socket_evt]
-    }
-    else {
-        vec![]
-    };
+    // let to_watch = if path_command == "inotify" {
+    //     let root_path_offset = fbb.create_string(".");
+    //     let inotify_obj = Inotify::create(&mut fbb, &InotifyArgs {
+    //         root_paths: Some(root_path_offset),
+    //         mask: EventMask::ACCESS.bits() as i32,
+    //         size: 300,
+    //     });
+    //     let inotify_evt = SurveillanceEvent::create(&mut fbb, &SurveillanceEventArgs {
+    //         event_type: Surveillance::Inotify,
+    //         event: Some(inotify_obj.as_union_value()),
+    //     });
+    //     vec![inotify_evt]
+    // }
+    // else if path_command == "socket" {
+    //     let socket_obj = TCPSocket::create(&mut fbb, &TCPSocketArgs {
+    //         destport: 8080,
+    //     });
+    //     let socket_evt = SurveillanceEvent::create(&mut fbb, &SurveillanceEventArgs {
+    //         event_type: Surveillance::TCPSocket,
+    //         event: Some(socket_obj.as_union_value()),
+    //     });
+    //     vec![socket_evt]
+    // }
+    // else {
+    //     vec![]
+    // };
+
+    let root_path_offset = fbb.create_string(".");
+    let inotify_obj = Inotify::create(&mut fbb, &InotifyArgs {
+        root_paths: Some(root_path_offset),
+        mask: EventMask::ACCESS.bits() as i32,
+        size: 300,
+    });
+    let inotify_evt = SurveillanceEvent::create(&mut fbb, &SurveillanceEventArgs {
+        event_type: Surveillance::Inotify,
+        event: Some(inotify_obj.as_union_value()),
+    });
+
+    let to_watch = vec![inotify_evt];
 
     let finished_data = serialize_run_command(&mut fbb, &path_command, args_tab, args_envs, 0, 0, to_watch);
 
