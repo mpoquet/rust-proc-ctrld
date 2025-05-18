@@ -543,9 +543,9 @@ def receive_execveterminated(buffer: bytes, size: int) -> Optional[ExecveInfo]:
     try:
         # Get message and check type
         message = demon.Message.Message.GetRootAsMessage(buffer, 0)
-        print(f"ExecveTerminated event type (numeric): {message.EventsType()}")
-        print(f"Expected event type (numeric): {demon.Event.Event.ExecveTerminated}")
-        print(f"ProcessTerminated event type (string): {demon.Event.Event.ProcessTerminated}")
+        # print(f"ExecveTerminated event type (numeric): {message.EventsType()}")
+        # print(f"Expected event type (numeric): {demon.Event.Event.ExecveTerminated}")
+        # print(f"ProcessTerminated event type (string): {demon.Event.Event.ProcessTerminated}")
         if message.EventsType() != demon.Event.Event.ExecveTerminated:
             print("la")
             return None
@@ -576,20 +576,15 @@ def receive_processlaunched(buffer: bytes, size: int) -> int:
     """
     if not buffer or size <= 0:
         return -1
-    
-    print("1")
 
     try:
-        print("1.5")
         # Get message and check type
         message = demon.Message.Message.GetRootAsMessage(buffer, 0)
-        actual_type = message.EventsType()
-        print(f"Actual event type (numeric): {actual_type}")
-        print(f"ProcessLaunched type (numeric): {demon.Event.Event.ProcessLaunched}")
+        # actual_type = message.EventsType()
+        # print(f"Actual event type (numeric): {actual_type}")
+        # print(f"ProcessLaunched type (numeric): {demon.Event.Event.ProcessLaunched}")
         if message.EventsType() != demon.Event.Event.ProcessLaunched:
             return -1
-        
-        print("2")
 
         # Get ProcessLaunched table and return pid
         process_launched = demon.ProcessLaunched.ProcessLaunched()
@@ -646,8 +641,8 @@ def receive_processterminated(buffer: bytes, size: int) -> Optional[ProcessTermi
     try:
         # Get message and check type
         message = demon.Message.Message.GetRootAsMessage(buffer, 0)
-        print(f"Actual event type (numeric): {message.EventsType()}")
-        print(f"ProcessLaunched type (numeric): {demon.Event.Event.ProcessLaunched}")
+        # print(f"Actual event type (numeric): {message.EventsType()}")
+        # print(f"ProcessLaunched type (numeric): {demon.Event.Event.ProcessLaunched}")
         if message.EventsType() != demon.Event.Event.ProcessTerminated:
             return None
 
@@ -712,6 +707,9 @@ def receive_inotifypathupdated(buffer: bytes, size: int) -> Optional[InotifyPath
     try:   
         # Get message and check type
         message = demon.Message.Message.GetRootAsMessage(buffer, 0)
+        actual_type = message.EventsType()
+        print(f"Actual event type (numeric): {actual_type}")
+        print(f"InotifyPathUpdated type (numeric): {demon.Event.Event.InotifyPathUpdated}")
         if message.EventsType() != demon.Event.Event.InotifyPathUpdated:
             return None
 

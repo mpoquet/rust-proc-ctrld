@@ -136,6 +136,8 @@ int main(int argc, char** argv){
                     switch (edata->type)
                     {
                     case INOTIFYFD: {
+                        printf("Inotify event received\n");
+                        fflush(stdout);
                         event_data_Inotify_size* I_edata = (event_data_Inotify_size*)events[i].data.ptr;
                         handle_inotify_event(edata->fd, I_edata->size,communication_socket);
                         break;

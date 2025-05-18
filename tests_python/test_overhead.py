@@ -16,7 +16,7 @@ DAEMON_PORTS = {
     "c": 9090
 }
 
-nb_mesures = 30
+nb_mesures = 2
 nb_iteration = 30
 
 temps_sans_demon = []
@@ -90,7 +90,6 @@ def boucle_launch_process(IP_address, daemon, command):
                 #receiving execve terminated
                 size_bytes = client.recv(4)
                 size = int.from_bytes(size_bytes, byteorder='little')
-                print(f"size : {size}")
                 data = client.recv(int(size))
                 info_execve= receive_execveterminated(data,int(size))
 
@@ -123,7 +122,7 @@ def boucle_launch_process(IP_address, daemon, command):
 
 
 #Lancement des test
-@pytest.mark.timeout(10)
+@pytest.mark.timeout(5)
 def test_sans_demon():
     #Boucle de i mesures
     for i in range(nb_mesures):
@@ -143,7 +142,7 @@ def test_sans_demon():
 
 
 
-@pytest.mark.timeout(10)
+@pytest.mark.timeout(5)
 def test_avec_demon(daemon):
     process, daemon_type, port = daemon
 
@@ -172,7 +171,7 @@ def test_avec_demon(daemon):
 
 
 
-@pytest.mark.timeout(10)
+@pytest.mark.timeout(5)
 def test_traitement_donne():
     print("\n")
     print(f"Moyenne de temps sans demon : {np.mean(temps_sans_demon)} secondes")

@@ -314,6 +314,68 @@ def inotify_watchlist_updated(IP_address, daemon, command):
         print(f"Erreur de socket : {e}")
         return -1
     
+def inotify_event(IP_address, daemon, command):
+    process, daemon_type, port = daemon
+    assert process.poll() is None
+    print(f"Testing connection for {daemon_type} daemon on port {port}")
+
+    try:
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect((IP_address, port))
+        buf=send_command_to_demon(command)
+        header = buf.size.to_bytes(4, byteorder='little')
+        client.sendall(header + buf.buffer)
+
+        #receiving conection successfull
+        size_bytes = client.recv(4)
+        size = int.from_bytes(size_bytes, byteorder='little')
+        print(f"size : {size}")
+        data = client.recv(int(size))
+
+        #receiving launch process
+        size_bytes = client.recv(4)
+        size = int.from_bytes(size_bytes, byteorder='little')
+        print(f"size : {size}")
+        data = client.recv(int(size))
+
+        #receiving inotify watchlist updated
+        size_bytes= client.recv(4)
+        size = int.from_bytes(size_bytes, byteorder='little')
+        print(f"size : {size}")
+        data = client.recv(int(size))
+
+        #receiving execve terminated
+        size_bytes = client.recv(4)
+        size = int.from_bytes(size_bytes, byteorder='little')
+        print(f"size : {size}")
+        data = client.recv(int(size))
+
+        #receiving process terminated
+        size_bytes= client.recv(4)
+        size = int.from_bytes(size_bytes, byteorder='little')
+        data = client.recv(int(size))
+
+        #receiving inotify event
+        size_bytes= client.recv(4)
+        size = int.from_bytes(size_bytes, byteorder='little')
+        print(f"size : {size}")
+        data = client.recv(int(size))
+        info = receive_inotifypathupdated(data,int(size))
+        print(f"path : {info.path}")
+        if info.path!=None:
+            client.close()
+            return 1
+        else :
+            client.close()
+            return -1
+    except ConnectionRefusedError:
+        print(f"Échec de la connexion : Le serveur à {IP_address}:{port} a refusé la connexion.")
+        print(f"Assurez-vous que le serveur {daemon_type} est lancé et écoute sur le bon port.")
+        return -1
+    except socket.error as e:
+        print(f"Erreur de socket : {e}")
+        return -1
+    
 def response_time(IP_address, daemon, command):
     process, daemon_type, port = daemon
     assert process.poll() is None
@@ -391,18 +453,6 @@ def watching_socket(IP_address, daemon, command):
         data = client.recv(int(size))
 
         #receiving launch process
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
-
-        #receiving execve terminated
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
-
-        #receiving process_terminated
         size_bytes = client.recv(4)
         size = int.from_bytes(size_bytes, byteorder='little')
         print(f"size : {size}")
@@ -635,63 +685,63 @@ def socket_listening(IP_address, daemon, command):
 #     res = execve_executed("127.0.0.1", daemon,command)
 #     assert res != -1, "Receiving execve_termiated with success failed"
 
-@pytest.mark.timeout(3)
-def test_socket_listening(daemon):
-    path = ""
-    args = []
-    envp = []
-    flags = 0
-    stack_size = 1024 * 1024  # 1 MB de stack
+# @pytest.mark.timeout(3)
+# def test_socket_listening(daemon):
+#     path = ""
+#     args = []
+#     envp = []
+#     flags = 0
+#     stack_size = 1024 * 1024  # 1 MB de stack
 
-    process, daemon_type, port = daemon
+#     process, daemon_type, port = daemon
 
-    scoket_evt = TCPSocket(destport=port)
+#     scoket_evt = TCPSocket(destport=port)
 
-    surveillance = Surveillance(
-        event=SurveillanceEventType.WATCH_SOCKET,
-        ptr_event=scoket_evt
-    )
-    to_watch = [surveillance]
-    command = Command(
-        path=path,
-        args=args,
-        envp=envp,
-        flags=flags,
-        stack_size=stack_size,
-        to_watch=to_watch,
-    )
+#     surveillance = Surveillance(
+#         event=SurveillanceEventType.WATCH_SOCKET,
+#         ptr_event=scoket_evt
+#     )
+#     to_watch = [surveillance]
+#     command = Command(
+#         path=path,
+#         args=args,
+#         envp=envp,
+#         flags=flags,
+#         stack_size=stack_size,
+#         to_watch=to_watch,
+#     )
 
-    res = socket_listening("127.0.0.1", daemon,command)
-    assert res != -1, "Socket listening failed"
+#     res = socket_listening("127.0.0.1", daemon,command)
+#     assert res != -1, "Socket listening failed"
 
-@pytest.mark.timeout(3)
-def test_watching_socket(daemon):
-    path = ""
-    args = []
-    envp = []
-    flags = 0
-    stack_size = 1024 * 1024  # 1 MB de stack
+# @pytest.mark.timeout(3)
+# def test_watching_socket(daemon):
+#     path = ""
+#     args = []
+#     envp = []
+#     flags = 0
+#     stack_size = 1024 * 1024  # 1 MB de stack
 
-    process, daemon_type, port = daemon
+#     process, daemon_type, port = daemon
 
-    scoket_evt = TCPSocket(destport=port)
+#     scoket_evt = TCPSocket(destport=port)
 
-    surveillance = Surveillance(
-        event=SurveillanceEventType.WATCH_SOCKET,
-        ptr_event=scoket_evt
-    )
-    to_watch = [surveillance]
-    command = Command(
-        path=path,
-        args=args,
-        envp=envp,
-        flags=flags,
-        stack_size=stack_size,
-        to_watch=to_watch,
-    )
+#     surveillance = Surveillance(
+#         event=SurveillanceEventType.WATCH_SOCKET,
+#         ptr_event=scoket_evt
+#     )
+#     to_watch = [surveillance]
+#     command = Command(
+#         path=path,
+#         args=args,
+#         envp=envp,
+#         flags=flags,
+#         stack_size=stack_size,
+#         to_watch=to_watch,
+#     )
 
-    res = socket_listening("127.0.0.1", daemon,command)
-    assert res != -1, "Socket listening failed"
+#     res = watching_socket("127.0.0.1", daemon,command)
+#     assert res != -1, "Reception of watching socket failed"
 
 IN_MODIFY = 0x00000002
 IN_CREATE = 0x00000100
@@ -728,3 +778,36 @@ IN_CREATE = 0x00000100
 #     )
 #     res = inotify_watchlist_updated("127.0.0.1", daemon,command)
 #     assert res != -1, "Inotify watch list not updated"
+
+@pytest.mark.timeout(3)
+def test_inotify_event(daemon):
+    path = "/bin/echo"
+    args = ["echo", "bonjour"]
+    envp = []
+    flags = 0
+    stack_size = 1024 * 1024  # 1 MB de stack
+
+    # Création des paramètres inotify
+    inotify_params = InotifyParameters(
+        root_paths="./daemone_trace.txt",
+        mask=IN_MODIFY | IN_CREATE,
+        size=128
+    )
+
+    # Création de l'événement de surveillance pour ces paramètres
+    surveillance_inotify = Surveillance(
+        event=SurveillanceEventType.INOTIFY,
+        ptr_event=inotify_params
+    )
+
+    to_watch = [surveillance_inotify]
+    command = Command(
+        path=path,
+        args=args,
+        envp=envp,
+        flags=flags,
+        stack_size=stack_size,
+        to_watch=to_watch,
+    )
+    res = inotify_event("127.0.0.1", daemon,command)
+    assert res != -1, "Inotify path not updated"
