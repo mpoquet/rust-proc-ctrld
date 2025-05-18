@@ -131,7 +131,7 @@ void process_surveillance_requests(command* com, int InotifyFd, int epollfd, int
                         perror("inotify");
                     }
                     //Create a new instance of inotifyFD that will store in epoll the size that trigger an event
-                    inotify_add_watch(InotifyFd, I_param->root_paths, I_param->mask);
+                    inotify_add_watch(inotifyFd, I_param->root_paths, I_param->mask);
                     add_event_inotifyFd(inotifyFd,epollfd, I_param->size);
                 }else{
                     //if size<0 no need to store size value and no need to create new inotify instance

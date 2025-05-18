@@ -15,7 +15,7 @@ DAEMON_PORTS = {
     "c": 9090
 }
 
-@pytest.fixture(params=["rust"])
+@pytest.fixture(params=["rust", "c"])
 def daemon(request):
     daemon_type = request.param
     port = DAEMON_PORTS[daemon_type]
@@ -293,12 +293,6 @@ def inotify_watchlist_updated(IP_address, daemon, command):
         print(f"size : {size}")
         data = client.recv(int(size))
 
-        #receiving execve terminated
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
-
         #receiving inotify watchlist updated
         size_bytes= client.recv(4)
         size = int.from_bytes(size_bytes, byteorder='little')
@@ -306,7 +300,6 @@ def inotify_watchlist_updated(IP_address, daemon, command):
         data = client.recv(int(size))
         path = receive_inotifywatchlistupdated(data,int(size))
         print(f"path : {path}")
-
         if path!=None:
             client.close()
             return 1
@@ -551,239 +544,233 @@ def socket_listening(IP_address, daemon, command):
         print(f"Erreur de socket : {e}")
 
 
-# @pytest.mark.timeout(3)
-# def test_daemon_connection(daemon):
-#     res = connect_to_daemon("127.0.0.1", daemon)
-#     assert res != -1, "Connexion échouée"
+@pytest.mark.timeout(3)
+def test_daemon_connection(daemon):
+    res = connect_to_daemon("127.0.0.1", daemon)
+    assert res != -1, "Connexion échouée"
 
-# @pytest.mark.timeout(3)
-# def test_receiving_launch_process(daemon):
-#     # Configuration des arguments
-#     path = "/bin/ls"
-#     args = ["ls", "-l"]
-#     envp = []
-#     flags = 0
-#     stack_size = 1024 * 1024  # 1 MB de stack
+@pytest.mark.timeout(3)
+def test_receiving_launch_process(daemon):
+    # Configuration des arguments
+    path = "/bin/ls"
+    args = ["ls", "-l"]
+    envp = []
+    flags = 0
+    stack_size = 1024 * 1024  # 1 MB de stack
 
-#     # Configuration des événements à surveiller
-#     to_watch = []
+    # Configuration des événements à surveiller
+    to_watch = []
 
-#     # Création de la commande
-#     command = Command(
-#         path=path,
-#         args=args,
-#         envp=envp,
-#         flags=flags,
-#         stack_size=stack_size,
-#         to_watch=to_watch,
-#         to_watch_size=len(to_watch)
-#     )
-#     res = launch_process("127.0.0.1", daemon,command)
-#     assert res != -1, "Launch process failed"
+    # Création de la commande
+    command = Command(
+        path=path,
+        args=args,
+        envp=envp,
+        flags=flags,
+        stack_size=stack_size,
+        to_watch=to_watch,
+    )
+    res = launch_process("127.0.0.1", daemon,command)
+    assert res != -1, "Launch process failed"
 
-# @pytest.mark.timeout(3)
-# def test_receiving_failed_launch_process(daemon):
-#     # Configuration des arguments
-#     path = "/bin/OIHDOEJ"
-#     args = ["lss", "-la"]
-#     envp = ["badenvp"]
-#     flags = 0
-#     stack_size = 1024*1024
+@pytest.mark.timeout(3)
+def test_receiving_failed_launch_process(daemon):
+    # Configuration des arguments
+    path = "/bin/OIHDOEJ"
+    args = ["lss", "-la"]
+    envp = ["badenvp"]
+    flags = 0
+    stack_size = 1024*1024
 
-#     # Configuration des événements à surveiller
-#     to_watch = []
+    # Configuration des événements à surveiller
+    to_watch = []
 
-#     # Création de la commande
-#     command = Command(
-#         path=path,
-#         args=args,
-#         envp=envp,
-#         flags=flags,
-#         stack_size=stack_size,
-#         to_watch=to_watch,
-#         to_watch_size=len(to_watch)
-#     )
-#     res = fail_launch_process("127.0.0.1", daemon,command)
-#     assert res != -1, "Receiving fail info failed"
+    # Création de la commande
+    command = Command(
+        path=path,
+        args=args,
+        envp=envp,
+        flags=flags,
+        stack_size=stack_size,
+        to_watch=to_watch,
+    )
+    res = fail_launch_process("127.0.0.1", daemon,command)
+    assert res != -1, "Receiving fail info failed"
 
-# @pytest.mark.timeout(3)
-# def test_receiving_process_terminated(daemon):
-#     # Configuration des arguments
-#     path = "/bin/ls"
-#     args = ["ls", "-l"]
-#     envp = []
-#     flags = 0
-#     stack_size = 1024 * 1024  # 1 MB de stack
+@pytest.mark.timeout(3)
+def test_receiving_process_terminated(daemon):
+    # Configuration des arguments
+    path = "/bin/ls"
+    args = ["ls", "-l"]
+    envp = []
+    flags = 0
+    stack_size = 1024 * 1024  # 1 MB de stack
 
-#     # Configuration des événements à surveiller
-#     to_watch = []
+    # Configuration des événements à surveiller
+    to_watch = []
 
-#     # Création de la commande
-#     command = Command(
-#         path=path,
-#         args=args,
-#         envp=envp,
-#         flags=flags,
-#         stack_size=stack_size,
-#         to_watch=to_watch,
-#         to_watch_size=len(to_watch)
-#     )
-#     res = process_terminated("127.0.0.1", daemon,command)
-#     assert res != -1, "Receiving process_terminated failed"
+    # Création de la commande
+    command = Command(
+        path=path,
+        args=args,
+        envp=envp,
+        flags=flags,
+        stack_size=stack_size,
+        to_watch=to_watch,
+    )
+    res = process_terminated("127.0.0.1", daemon,command)
+    assert res != -1, "Receiving process_terminated failed"
 
-# @pytest.mark.timeout(3)
-# def test_echo(daemon):
-#     path = "/bin/echo"
-#     args = ["echo", "bonjour"]
-#     envp = []
-#     flags = 0
-#     stack_size = 1024 * 1024  # 1 MB de stack
-#     to_watch = []
-#     command = Command(
-#         path=path,
-#         args=args,
-#         envp=envp,
-#         flags=flags,
-#         stack_size=stack_size,
-#         to_watch=to_watch,
-#         to_watch_size=len(to_watch)
-#     )
-#     res = process_terminated("127.0.0.1", daemon,command)
-#     assert res != -1, "Receiving process_terminated failed"
+@pytest.mark.timeout(3)
+def test_echo(daemon):
+    path = "/bin/echo"
+    args = ["echo", "bonjour"]
+    envp = []
+    flags = 0
+    stack_size = 1024 * 1024  # 1 MB de stack
+    to_watch = []
+    command = Command(
+        path=path,
+        args=args,
+        envp=envp,
+        flags=flags,
+        stack_size=stack_size,
+        to_watch=to_watch,
+    )
+    res = process_terminated("127.0.0.1", daemon,command)
+    assert res != -1, "Receiving process_terminated failed"
 
-# @pytest.mark.timeout(6)
-# def test_response_time(daemon):
-#     path = "/bin/sleep"
-#     args = ["sleep", "3"]
-#     envp = []
-#     flags = 0
-#     stack_size = 1024 * 1024  # 1 MB de stack
-#     to_watch = []
-#     command = Command(
-#         path=path,
-#         args=args,
-#         envp=envp,
-#         flags=flags,
-#         stack_size=stack_size,
-#         to_watch=to_watch,
-#         to_watch_size=len(to_watch)
-#     )
-#     res = response_time("127.0.0.1", daemon,command)
-#     assert res != -1, "Response time is not good"
+@pytest.mark.timeout(6)
+def test_response_time(daemon):
+    path = "/bin/sleep"
+    args = ["sleep", "3"]
+    envp = []
+    flags = 0
+    stack_size = 1024 * 1024  # 1 MB de stack
+    to_watch = []
+    command = Command(
+        path=path,
+        args=args,
+        envp=envp,
+        flags=flags,
+        stack_size=stack_size,
+        to_watch=to_watch,
+    )
+    res = response_time("127.0.0.1", daemon,command)
+    assert res != -1, "Response time is not good"
 
-# @pytest.mark.timeout(3)
-# def test_execve_terminated(daemon):
-#     path = "/bin/echo"
-#     args = ["echo", "bonjour"]
-#     envp = []
-#     flags = 0
-#     stack_size = 1024 * 1024  # 1 MB de stack
-#     to_watch = []
-#     command = Command(
-#         path=path,
-#         args=args,
-#         envp=envp,
-#         flags=flags,
-#         stack_size=stack_size,
-#         to_watch=to_watch,
-#         to_watch_size=len(to_watch)
-#     )
-#     res = execve_executed("127.0.0.1", daemon,command)
-#     assert res != -1, "Receiving execve_termiated with success failed"
+@pytest.mark.timeout(3)
+def test_execve_terminated(daemon):
+    path = "/bin/echo"
+    args = ["echo", "bonjour"]
+    envp = []
+    flags = 0
+    stack_size = 1024 * 1024  # 1 MB de stack
+    to_watch = []
+    command = Command(
+        path=path,
+        args=args,
+        envp=envp,
+        flags=flags,
+        stack_size=stack_size,
+        to_watch=to_watch,
+    )
+    res = execve_executed("127.0.0.1", daemon,command)
+    assert res != -1, "Receiving execve_termiated with success failed"
 
-# @pytest.mark.timeout(3)
-# def test_socket_listening(daemon):
-#     path = ""
-#     args = []
-#     envp = []
-#     flags = 0
-#     stack_size = 1024 * 1024  # 1 MB de stack
+@pytest.mark.timeout(3)
+def test_socket_listening(daemon):
+    path = ""
+    args = []
+    envp = []
+    flags = 0
+    stack_size = 1024 * 1024  # 1 MB de stack
 
-#     process, daemon_type, port = daemon
+    process, daemon_type, port = daemon
 
-#     scoket_evt = TCPSocket(destport=port)
+    scoket_evt = TCPSocket(destport=port)
 
-#     surveillance = Surveillance(
-#         event=SurveillanceEventType.WATCH_SOCKET,
-#         ptr_event=scoket_evt
-#     )
-#     to_watch = [surveillance]
-#     command = Command(
-#         path=path,
-#         args=args,
-#         envp=envp,
-#         flags=flags,
-#         stack_size=stack_size,
-#         to_watch=to_watch,
-#     )
+    surveillance = Surveillance(
+        event=SurveillanceEventType.WATCH_SOCKET,
+        ptr_event=scoket_evt
+    )
+    to_watch = [surveillance]
+    command = Command(
+        path=path,
+        args=args,
+        envp=envp,
+        flags=flags,
+        stack_size=stack_size,
+        to_watch=to_watch,
+    )
 
-#     res = socket_listening("127.0.0.1", daemon,command)
-#     assert res != -1, "Socket listening failed"
+    res = socket_listening("127.0.0.1", daemon,command)
+    assert res != -1, "Socket listening failed"
 
-# @pytest.mark.timeout(3)
-# def test_watching_socket(daemon):
-#     path = ""
-#     args = []
-#     envp = []
-#     flags = 0
-#     stack_size = 1024 * 1024  # 1 MB de stack
+@pytest.mark.timeout(3)
+def test_watching_socket(daemon):
+    path = ""
+    args = []
+    envp = []
+    flags = 0
+    stack_size = 1024 * 1024  # 1 MB de stack
 
-#     process, daemon_type, port = daemon
+    process, daemon_type, port = daemon
 
-#     scoket_evt = TCPSocket(destport=port)
+    scoket_evt = TCPSocket(destport=port)
 
-#     surveillance = Surveillance(
-#         event=SurveillanceEventType.WATCH_SOCKET,
-#         ptr_event=scoket_evt
-#     )
-#     to_watch = [surveillance]
-#     command = Command(
-#         path=path,
-#         args=args,
-#         envp=envp,
-#         flags=flags,
-#         stack_size=stack_size,
-#         to_watch=to_watch,
-#     )
+    surveillance = Surveillance(
+        event=SurveillanceEventType.WATCH_SOCKET,
+        ptr_event=scoket_evt
+    )
+    to_watch = [surveillance]
+    command = Command(
+        path=path,
+        args=args,
+        envp=envp,
+        flags=flags,
+        stack_size=stack_size,
+        to_watch=to_watch,
+    )
 
-#     res = watching_socket("127.0.0.1", daemon,command)
-#     assert res != -1, "Reception of watching socket failed"
+    res = watching_socket("127.0.0.1", daemon,command)
+    assert res != -1, "Reception of watching socket failed"
 
 IN_MODIFY = 0x00000002
 IN_CREATE = 0x00000100
 
-# @pytest.mark.timeout(3)
-# def test_inotify_result(daemon):
-#     path = "/bin/echo"
-#     args = ["echo", "bonjour"]
-#     envp = []
-#     flags = 0
-#     stack_size = 1024 * 1024  # 1 MB de stack
+@pytest.mark.timeout(3)
+def test_inotify_result(daemon):
+    path = "/bin/echo"
+    args = ["echo", "bonjour"]
+    envp = []
+    flags = 0
+    stack_size = 1024 * 1024  # 1 MB de stack
 
-#     # Création des paramètres inotify
-#     inotify_params = InotifyParameters(
-#         root_paths="./test.txt",
-#         mask=IN_MODIFY | IN_CREATE,
-#         size=4096
-#     )
+    # Création des paramètres inotify
+    inotify_params = InotifyParameters(
+        root_paths="./test.txt",
+        mask=IN_MODIFY | IN_CREATE,
+        size=4096
+    )
 
-#     # Création de l'événement de surveillance pour ces paramètres
-#     surveillance_inotify = Surveillance(
-#         event=SurveillanceEventType.INOTIFY,
-#         ptr_event=inotify_params
-#     )
+    # Création de l'événement de surveillance pour ces paramètres
+    surveillance_inotify = Surveillance(
+        event=SurveillanceEventType.INOTIFY,
+        ptr_event=inotify_params
+    )
 
-#     to_watch = [surveillance_inotify]
-#     command = Command(
-#         path=path,
-#         args=args,
-#         envp=envp,
-#         flags=flags,
-#         stack_size=stack_size,
-#         to_watch=to_watch,
-#     )
-#     res = inotify_watchlist_updated("127.0.0.1", daemon,command)
-#     assert res != -1, "Inotify watch list not updated"
+    to_watch = [surveillance_inotify]
+    command = Command(
+        path=path,
+        args=args,
+        envp=envp,
+        flags=flags,
+        stack_size=stack_size,
+        to_watch=to_watch,
+    )
+    res = inotify_watchlist_updated("127.0.0.1", daemon,command)
+    assert res != -1, "Inotify watch list not updated"
 
 @pytest.mark.timeout(3)
 def test_inotify_event(daemon):
@@ -795,7 +782,7 @@ def test_inotify_event(daemon):
 
     # Création des paramètres inotify
     inotify_params = InotifyParameters(
-        root_paths="./daemone_trace.txt",
+        root_paths="./",
         mask=IN_MODIFY | IN_CREATE,
         size=128
     )
