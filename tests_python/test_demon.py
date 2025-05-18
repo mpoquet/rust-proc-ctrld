@@ -130,7 +130,7 @@ def execve_executed(IP_address, daemon, command):
         size = int.from_bytes(size_bytes, byteorder='little')
         res = client.recv(int(size))
 
-        while(receive_message_from_demon(res,size)!=Event.NONE):
+        while(receive_message_from_demon(res,size)!=Event.EXECVE_TERMINATED):
             print(receive_message_from_demon(res,size))
             size_bytes = client.recv(4)
             size = int.from_bytes(size_bytes, byteorder='little')
@@ -170,7 +170,7 @@ def fail_launch_process(IP_address, daemon, command):
         size = int.from_bytes(size_bytes, byteorder='little')
         res = client.recv(int(size))
 
-        while(receive_message_from_demon(res,size)!=Event.NONE):
+        while(receive_message_from_demon(res,size)!=Event.EXECVE_TERMINATED):
             print(receive_message_from_demon(res,size))
             size_bytes = client.recv(4)
             size = int.from_bytes(size_bytes, byteorder='little')
@@ -426,6 +426,60 @@ def socket_listening(IP_address, daemon, command):
         print(f"Assurez-vous que le serveur {daemon_type} est lancé et écoute sur le bon port.")
     except socket.error as e:
         print(f"Erreur de socket : {e}")
+
+def kill_process(IP_address, daemon, command, killCommand):
+    process, daemon_type, port = daemon
+    print(f"Testing connection for {daemon_type} daemon on port {port}")
+
+    try:
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect((IP_address, port))
+
+        #receiving conection successfull
+        size_bytes = client.recv(4)
+        size = int.from_bytes(size_bytes, byteorder='little')
+        print(f"size : {size}")
+        data = client.recv(int(size))
+
+        buf=send_command_to_demon(command)
+        header = buf.size.to_bytes(4, byteorder='little')
+        client.sendall(header + buf.buffer)
+
+        buf=send_kill_to_demon(killCommand)
+        header = buf.size.to_bytes(4, byteorder='little')
+        client.sendall(header + buf.buffer)
+
+        start = time.perf_counter()
+
+        size_bytes = client.recv(4)
+        size = int.from_bytes(size_bytes, byteorder='little')
+        res = client.recv(int(size))
+
+        while(receive_message_from_demon(res,size)!=Event.PROCESS_TERMINATED):
+            print(receive_message_from_demon(res,size))
+            size_bytes = client.recv(4)
+            size = int.from_bytes(size_bytes, byteorder='little')
+            res = client.recv(int(size))
+
+        info = receive_processterminated(res,int(size))
+
+        end = time.perf_counter()
+        print(f"Time elapsed : {end-start:.4f}")
+
+        print(f"error_code : {info.error_code}, pid: {info.pid}")
+        if info.pid>0 and info.error_code==0 and end-start<2.9:
+            client.close()
+            return 1
+        else :
+            client.close()
+            return -1
+    except ConnectionRefusedError:
+        print(f"Échec de la connexion : Le serveur à {IP_address}:{port} a refusé la connexion.")
+        print(f"Assurez-vous que le serveur {daemon_type} est lancé et écoute sur le bon port.")
+        return -1
+    except socket.error as e:
+        print(f"Erreur de socket : {e}")
+        return -1
 
 
 @pytest.mark.timeout(3)
@@ -691,3 +745,24 @@ def test_inotify_event(daemon):
     )
     res = inotify_event("127.0.0.1", daemon,command)
     assert res != -1, "Inotify path not updated"
+
+@pytest.mark.timeout(3)
+def test_response_time(daemon):
+    path = "/bin/sleep"
+    args = ["sleep", "3"]
+    envp = []
+    flags = 0
+    stack_size = 1024 * 1024  # 1 MB de stack
+    to_watch = []
+    command = Command(
+        path=path,
+        args=args,
+        envp=envp,
+        flags=flags,
+        stack_size=stack_size,
+        to_watch=to_watch,
+    )
+
+    killCommande =
+    res = response_time("127.0.0.1", daemon,command)
+    assert res != -1, "Response time is not good"
