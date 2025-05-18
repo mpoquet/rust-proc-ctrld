@@ -552,7 +552,6 @@ def test_inotify_result(daemon):
         flags=flags,
         stack_size=stack_size,
         to_watch=to_watch,
-        to_watch_size=len(to_watch)
     )
     res = inotify_watchlist_updated("127.0.0.1", daemon,command)
     assert res != -1, "Inotify watch list not updated"

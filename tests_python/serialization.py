@@ -15,6 +15,10 @@ import demon.InotifyWatchListUpdated
 import demon.SocketWatched
 import demon.SocketWatchTerminated
 import demon.Event
+import demon.Inotify 
+import demon.Surveillance
+import demon.TCPSocket
+import demon.SurveillanceEvent 
 
 from dataclasses import dataclass
 from typing import List, Optional, Any
