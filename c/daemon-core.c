@@ -34,26 +34,20 @@ int main(int argc, char** argv){
         return 0;
     }
     int destPort = atoi(argv[1]);
-    //Commenting to simplify testing
-    /*
-    // change to the "/" directory
+
     int nochdir = 0;
 
-    // redirect standard input, output and error to /dev/null
-    // this is equivalent to "closing the file descriptors"
     int noclose = 0;
 
     // glibc call to daemonize this process without a double fork
     if(daemon(nochdir, noclose))
         perror("daemon");
 
-    // sleep to give us time to verify the demon is working. To verify, execute :
+    // To verify, execute :
     // pgrep daemon-core
     // ps -p pid -o "user pid ppid pgid sid tty command"
     // lsof -p pid
 
-    sleep(60);
-    */
     process_info** process_manager = create_process_manager(MAX_PROCESS);
 
     int communication_socket;

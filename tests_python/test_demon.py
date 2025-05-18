@@ -15,8 +15,7 @@ DAEMON_PORTS = {
     "c": 9090
 }
 
-#@pytest.fixture(params=["rust", "c"])
-@pytest.fixture(params=["rust"])
+@pytest.fixture(params=["rust", "c"])
 def daemon(request):
     daemon_type = request.param
     port = DAEMON_PORTS[daemon_type]
@@ -49,9 +48,6 @@ def daemon(request):
 def connect_to_daemon(IP_address, daemon):
     process, daemon_type, port = daemon
 
-    # Vérifie que le processus est toujours en cours d'exécution
-    assert process.poll() is None
-
     print(f"Testing connection for {daemon_type} daemon on port {port}")
 
     try:
@@ -81,7 +77,6 @@ def connect_to_daemon(IP_address, daemon):
 
 def launch_process(IP_address, daemon, command):
     process, daemon_type, port = daemon
-    assert process.poll() is None
     print(f"Testing connection for {daemon_type} daemon on port {port}")
 
     try:
@@ -122,7 +117,6 @@ def launch_process(IP_address, daemon, command):
     
 def execve_executed(IP_address, daemon, command):
     process, daemon_type, port = daemon
-    assert process.poll() is None
     print(f"Testing connection for {daemon_type} daemon on port {port}")
 
     try:
@@ -163,7 +157,6 @@ def execve_executed(IP_address, daemon, command):
 
 def fail_launch_process(IP_address, daemon, command):
     process, daemon_type, port = daemon
-    assert process.poll() is None
     print(f"Testing connection for {daemon_type} daemon on port {port}")
 
     try:
@@ -201,7 +194,6 @@ def fail_launch_process(IP_address, daemon, command):
     
 def process_terminated(IP_address, daemon, command):
     process, daemon_type, port = daemon
-    assert process.poll() is None
     print(f"Testing connection for {daemon_type} daemon on port {port}")
 
     try:
@@ -239,7 +231,6 @@ def process_terminated(IP_address, daemon, command):
     
 def inotify_watchlist_updated(IP_address, daemon, command):
     process, daemon_type, port = daemon
-    assert process.poll() is None
     print(f"Testing connection for {daemon_type} daemon on port {port}")
 
     try:
@@ -277,7 +268,6 @@ def inotify_watchlist_updated(IP_address, daemon, command):
     
 def inotify_event(IP_address, daemon, command):
     process, daemon_type, port = daemon
-    assert process.poll() is None
     print(f"Testing connection for {daemon_type} daemon on port {port}")
 
     try:
@@ -315,7 +305,6 @@ def inotify_event(IP_address, daemon, command):
     
 def response_time(IP_address, daemon, command):
     process, daemon_type, port = daemon
-    assert process.poll() is None
     print(f"Testing connection for {daemon_type} daemon on port {port}")
 
     try:
@@ -366,7 +355,6 @@ def response_time(IP_address, daemon, command):
     
 def watching_socket(IP_address, daemon, command):
     process, daemon_type, port = daemon
-    assert process.poll() is None
     print(f"Testing connection for {daemon_type} daemon on port {port}")
 
     try:
@@ -404,7 +392,6 @@ def watching_socket(IP_address, daemon, command):
 
 def socket_listening(IP_address, daemon, command):
     process, daemon_type, port = daemon
-    assert process.poll() is None
     print(f"Testing connection for {daemon_type} daemon on port {port}")
 
     try:
@@ -633,8 +620,7 @@ def test_watching_socket(daemon):
     res = watching_socket("127.0.0.1", daemon,command)
     assert res != -1, "Reception of watching socket failed"
 
-IN_MODIFY = 0x00000002
-IN_CREATE = 0x00000100
+
 
 @pytest.mark.timeout(3)
 def test_inotify_result(daemon):
@@ -669,6 +655,10 @@ def test_inotify_result(daemon):
     res = inotify_watchlist_updated("127.0.0.1", daemon,command)
     assert res != -1, "Inotify watch list not updated"
 
+IN_MODIFY = 0x00000002
+IN_CREATE = 0x00000100
+IN_ACCESS = 0x00000001
+
 @pytest.mark.timeout(3)
 def test_inotify_event(daemon):
     path = "/bin/echo"
@@ -679,8 +669,8 @@ def test_inotify_event(daemon):
 
     # Création des paramètres inotify
     inotify_params = InotifyParameters(
-        root_paths="./",
-        mask=IN_MODIFY | IN_CREATE,
+        root_paths="/bin/",
+        mask=IN_MODIFY | IN_CREATE | IN_ACCESS,
         size=128
     )
 
