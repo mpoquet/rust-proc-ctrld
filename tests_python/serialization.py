@@ -106,6 +106,7 @@ class Event(Enum):
     INOTIFY_WATCH_LIST_UPDATED = 9
     SOCKET_WATCHED = 10
     SOCKET_WATCH_TERMINATED = 11
+    EXECVE_TERMINATED = 12
 
 def send_command_to_demon(cmd: Command) -> BufferInfo:
     builder = flatbuffers.Builder(1024)
@@ -854,7 +855,8 @@ def receive_message_from_demon(buffer: bytes, size: int) -> Event:
             demon.Event.Event.InotifyPathUpdated: Event.INOTIFY_PATH_UPDATED,
             demon.Event.Event.InotifyWatchListUpdated: Event.INOTIFY_WATCH_LIST_UPDATED,
             demon.Event.Event.SocketWatched: Event.SOCKET_WATCHED,
-            demon.Event.Event.SocketWatchTerminated: Event.SOCKET_WATCH_TERMINATED
+            demon.Event.Event.SocketWatchTerminated: Event.SOCKET_WATCH_TERMINATED,
+            demon.Event.Event.ExecveTerminated: Event.EXECVE_TERMINATED
         }
 
         return event_map.get(message.EventsType(), Event.NONE)

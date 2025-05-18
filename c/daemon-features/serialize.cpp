@@ -835,6 +835,8 @@ Event receive_message_from_demon(uint8_t *buffer, int size) {
             return SOCKET_WATCHED;
         case demon::Event_SocketWatchTerminated:
             return SOCKET_WATCH_TERMINATED;
+        case demon::Event_ExecveTerminated:
+            return EXECVE_TERMINATED;
         default:
             return NONE;
     }
