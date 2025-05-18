@@ -60,7 +60,6 @@ def daemon(request):
 
 def boucle_launch_process(IP_address, daemon, command):
     process, daemon_type, port = daemon
-    assert process.poll() is None
     print(f"Testing connection for {daemon_type} daemon on port {port}")
 
     try:

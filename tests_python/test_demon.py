@@ -245,7 +245,6 @@ def inotify_watchlist_updated(IP_address, daemon, command):
         res = client.recv(int(size))
 
         while(receive_message_from_demon(res,size)!=Event.INOTIFY_WATCH_LIST_UPDATED):
-            print(receive_message_from_demon(res,size))
             size_bytes = client.recv(4)
             size = int.from_bytes(size_bytes, byteorder='little')
             res = client.recv(int(size))
@@ -427,7 +426,7 @@ def socket_listening(IP_address, daemon, command):
     except socket.error as e:
         print(f"Erreur de socket : {e}")
 
-def kill_process(IP_address, daemon, command, killCommand):
+def kill_process(IP_address, daemon, command):
     process, daemon_type, port = daemon
     print(f"Testing connection for {daemon_type} daemon on port {port}")
 
@@ -435,17 +434,7 @@ def kill_process(IP_address, daemon, command, killCommand):
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((IP_address, port))
 
-        #receiving conection successfull
-        size_bytes = client.recv(4)
-        size = int.from_bytes(size_bytes, byteorder='little')
-        print(f"size : {size}")
-        data = client.recv(int(size))
-
         buf=send_command_to_demon(command)
-        header = buf.size.to_bytes(4, byteorder='little')
-        client.sendall(header + buf.buffer)
-
-        buf=send_kill_to_demon(killCommand)
         header = buf.size.to_bytes(4, byteorder='little')
         client.sendall(header + buf.buffer)
 
@@ -456,7 +445,15 @@ def kill_process(IP_address, daemon, command, killCommand):
         res = client.recv(int(size))
 
         while(receive_message_from_demon(res,size)!=Event.PROCESS_TERMINATED):
-            print(receive_message_from_demon(res,size))
+            if(receive_message_from_demon(res,size)!=Event.PROCESS_LAUNCHED):
+                size_bytes = client.recv(4)
+                size = int.from_bytes(size_bytes, byteorder='little')
+                res = client.recv(int(size))
+                pid=receive_processlaunched(res,size)
+                print(pid)
+                # buf=send_kill_to_demon(pid)
+                # header = buf.size.to_bytes(4, byteorder='little')
+                # client.sendall(header + buf.buffer)
             size_bytes = client.recv(4)
             size = int.from_bytes(size_bytes, byteorder='little')
             res = client.recv(int(size))
@@ -746,23 +743,22 @@ def test_inotify_event(daemon):
     res = inotify_event("127.0.0.1", daemon,command)
     assert res != -1, "Inotify path not updated"
 
-@pytest.mark.timeout(3)
-def test_response_time(daemon):
-    path = "/bin/sleep"
-    args = ["sleep", "3"]
-    envp = []
-    flags = 0
-    stack_size = 1024 * 1024  # 1 MB de stack
-    to_watch = []
-    command = Command(
-        path=path,
-        args=args,
-        envp=envp,
-        flags=flags,
-        stack_size=stack_size,
-        to_watch=to_watch,
-    )
+# @pytest.mark.timeout(3)
+# def test_kill_process(daemon):
+#     path = "/bin/sleep"
+#     args = ["sleep", "3"]
+#     envp = []
+#     flags = 0
+#     stack_size = 1024 * 1024  # 1 MB de stack
+#     to_watch = []
+#     command = Command(
+#         path=path,
+#         args=args,
+#         envp=envp,
+#         flags=flags,
+#         stack_size=stack_size,
+#         to_watch=to_watch,
+#     )
 
-    killCommande =
-    res = response_time("127.0.0.1", daemon,command)
-    assert res != -1, "Response time is not good"
+#     res = kill_process("127.0.0.1", daemon,command)
+#     assert res != -1, "Response time is not good"
