@@ -49,6 +49,8 @@ First compile both projects then launch the tests
 ```bash
 cd test_python
 pytest test_daemon
+pytest -s --disable-warnings test_overhead
+
 ```
 
 
@@ -60,7 +62,7 @@ This project aims to develop a lightweight and robust distributed application fo
 ## Credit
 
 FORT Alexandre  
-MAATI Mohamed  
+MAATI Mohamed-Yâ-Sîn  
 FIEUX Telmo  
 LAGIER Hadrien  
 
