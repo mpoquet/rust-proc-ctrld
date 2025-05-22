@@ -47,7 +47,7 @@ Pour l'implémentation asynchrone en Rust, nous utilisons la bibliothèque \href
 
 \subsection{Répartition des tâches}
 
-On c'est répartie les tâches de la manière suivante :
+Nous nous sommes répartis les tâches de la manière suivante :
 
 %----------------------------------------------------------------------------------------------
 \section{État de l’art et veille technologique}
@@ -101,11 +101,13 @@ On c'est répartie les tâches de la manière suivante :
     \end{tabularx}
 \end{table}
 
-On se rend compte que la technologie des \textbf{sockets} constitue une bonne solution, à condition de mettre en place une gestion d’erreurs rigoureuse ainsi qu’un protocole de découpage efficace. Les types algébriques de Rust semblent être un outil idéal pour assurer le bon fonctionnement du système. Et dans un futur (pas démandé dans ce projet) une sécurité dans le transport des données.
+On se rend compte que la technologie des \textbf{sockets} constitue une bonne solution, à condition de mettre en place une gestion d’erreurs rigoureuse ainsi qu’un protocole de découpage efficace. Les types algébriques de Rust semblent être un outil idéal pour assurer le bon fonctionnement du système. Et dans un futur (pas demandé dans ce projet) une sécurité dans le transport des données.
 
 \subsection{Outils et technologies comparés}
 
-Il existe une multitude d'outils de sérialisation. L'étude ... nous a montré que flatbuffer semble être le plus ...
+La sérialisation des données est essentielle pour la communication réseau. Elle transforme des structures complexes en une séquence d'octets, ce qui va nous permettre de transporter facilement différents types de données, ainsi que de faire communiquer des programmes de différents langages ensemble, une fonctionnalité qui nous sera utile lors des tests de régression et de performance.
+
+Après une étude des différentes options qui s'offraient a nous, nous avons décidé d'utiliser Flatbuffers, une bibliothèque de sérialisation \textit{cross-platform} qui supportent des langages tels que C, Python et Rust. Cette bibliothèque ayant été initialement créée pour des applications à fort enjeu de performance, elle correspond parfaitement a notre projet.
 
 \subsection{Limites identifiées et opportunités}
 
