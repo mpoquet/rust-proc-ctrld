@@ -139,7 +139,9 @@ header = buf.size.to_bytes(4, byteorder='little')
 client.sendall(header + buf.buffer)
 ```
 
-That's all for sending messages. 
+That's how you send a message. There are multiple type of message described in the flatbuffer schema : 
+- RUNCOMMAND wich can execute a process or start the surveillance of a socket or file
+- KILLPROCESS wich kill a process
 
 The daemon can also send messages that you will have te receive and deserialize. Here are the cases when the daemon sends message and a few sequence diagram to help visualize.
 
