@@ -1,0 +1,35 @@
+.
+├── arborescence.txt
+├── c
+│   ├── builddir
+│   ├── daemon-core.c
+│   ├── daemon-features
+│   ├── include
+│   ├── meson.build
+│   └── test
+├── flatbuffer
+│   └── demon.fbs
+├── out
+│   └── diagrame
+├── README.md
+├── rendu
+│   ├── rendu_final.aux
+│   ├── rendu_final.fdb_latexmk
+│   ├── rendu_final.fls
+│   ├── rendu_final.pdf
+│   ├── rendu_final.synctex.gz
+│   ├── rendu_final.tex
+│   └── rendu_final.toc
+├── rust
+│   ├── Cargo.lock
+│   ├── Cargo.toml
+│   ├── src
+│   └── target
+└── tests_python
+    ├── demon
+    ├── performance_comparison.png
+    ├── serialization.py
+    ├── test_demon.py
+    └── test_overhead.py
+
+14 directories, 18 files
