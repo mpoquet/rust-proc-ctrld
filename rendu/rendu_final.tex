@@ -3,6 +3,8 @@
 \usepackage{fancyhdr} % Pour personnaliser les en-têtes/pieds de page
 \usepackage[colorlinks=true, urlcolor=blue, linkcolor=red]{hyperref}
 \usepackage[a4paper, margin=3cm]{geometry}
+\usepackage{tabularx}
+\usepackage{float}
 
 \title{Daemon de Contrôle Distribué : Rapport de Projet}
 \author{
@@ -20,14 +22,15 @@
 
 \maketitle
 \newpage
+\tableofcontents % génère le sommaire
+\newpage
 
 %----------------------------------------------------------------------------------------------
 \section{Introduction}
 
 \subsection{Présentation du projet}
 
-    L’expérimentation réelle est une méthode essentielle pour l’étude des systèmes et
-applications distribuées en informatique. Elle consiste à exécuter de manière contrôlée de vraies
+L’expérimentation réelle est une méthode essentielle pour l’étude des systèmes et applications distribuées en informatique. Elle consiste à exécuter de manière contrôlée de vraies
 applications distribuées sur des systèmes réels, permettant ainsi d’observer et d’analyser leur
 comportement afin d’en extraire des connaissances.\\
 
@@ -36,15 +39,79 @@ robustesse, la remontée d’erreurs efficace, et la faible interférence néces
 
 \subsection{Objectifs}
 
-Ce projet vise à développer une application distribuée \textbf{légère}, \textbf{robuste} et \textbf{asynchrone} conçue pour \textbf{exécuter et contrôler des processus} à travers un réseau de machines. L'application sera \textbf{implémentée} en \textbf{Rust} et en \textbf{C}, avec des comparaisons de performances et de conception entre les deux langages afin de mieux répondre aux exigences du projet.\\
+Ce projet vise à développer une application distribuée \textbf{légère}, \textbf{robuste} et \textbf{asynchrone} conçue pour \textbf{exécuter et contrôler des processus} à travers un réseau de machines. L'application sera \textbf{implémentée} en \textbf{Rust} et en \textbf{C}, avec des comparaisons de performances et de conception entre les deux langages afin de mieux répondre aux exigences du projet.\newline
 
 Nous appelons cette application un \textit{Daemon de Contrôle}. Elle suit une \textbf{architecture basée sur des démons}, dans laquelle un processus de longue durée fonctionne sur chaque machine, offrant une interface de contrôle à distance. La communication entre les composants est assurée via le \textbf{protocole TCP}, et les commandes sont échangées à l'aide d'un mécanisme de \textbf{sérialisation inter-langages}.\\
 
 Pour l'implémentation asynchrone en Rust, nous utilisons la bibliothèque \href{https://docs.rs/tokio/latest/tokio/}{Tokio}, qui fournit des outils puissants pour la concurrence et les entrées/sorties non bloquantes.
 
+\subsection{Répartition des tâches}
+
+On c'est répartie les tâches de la manière suivante :
+
+%----------------------------------------------------------------------------------------------
+\section{État de l’art et veille technologique}
+
+\begin{table}[H]
+    \centering
+    \caption{Comparaison des technologies pour envoyer des données sérialisées à un démon de contrôle}
+    \begin{tabularx}{\textwidth}{|l|X|X|}
+      \hline
+      \textbf{Technologie} & \textbf{Avantages} & \textbf{Inconvénients / Problèmes} \\
+      \hline
+      Script Python + \texttt{netcat} & 
+      - Simple à mettre en place \newline
+      - Permet l'envoi de données brutes ou sérialisées (ex. JSON) \newline
+      - Utilisable localement ou à distance via TCP &
+      - Pas de gestion de protocole \newline
+      - Risque de perte de données si connexion instable \newline
+      - Nécessite une gestion explicite du découpage des messages \\
+      \hline
+      Utilisation de \texttt{SSH} & 
+      - Communication sécurisée par chiffrement \newline
+      - Accès distant fiable \newline
+      - Permet d’exécuter des commandes à distance \newline
+      - Facile à intégrer dans des scripts existants &
+      - Plus lourd à configurer (clé SSH, authentification) \newline
+      - Moins direct pour communiquer en temps réel \newline
+      - Pas conçu pour un échange de messages continu ou en temps réel \\
+      \hline
+      Named Pipes (FIFO) & 
+      - Très simple pour communication locale \newline
+      - Pas besoin de protocole complexe \newline
+      - Faible latence &
+      - Limitée à la communication locale \newline
+      - Peut bloquer si le pipe n’est pas bien géré \newline
+      - Pas de sécurité intrinsèque \\
+      \hline
+      Unix Domain Sockets & 
+      - Communication locale performante et bidirectionnelle \newline
+      - Plus flexible que les pipes \newline
+      - Supporte les connexions multiples &
+      - Limité à la machine locale \newline
+      - Nécessite un peu plus de programmation pour gérer les connexions \\
+      \hline
+      TCP Socket (avec protocole simple) & 
+      - Fonctionne localement et à distance \newline
+      - Permet d’envoyer des données sérialisées dans un protocole défini \newline
+      - Facile à tester avec des outils comme \texttt{netcat} ou \texttt{telnet} &
+      - Nécessite d’implémenter un protocole de découpage et gestion d’erreurs \newline
+      - Pas sécurisé par défaut (besoin de TLS pour sécuriser) \\
+      \hline
+    \end{tabularx}
+\end{table}
+
+On se rend compte que la technologie des \textbf{sockets} constitue une bonne solution, à condition de mettre en place une gestion d’erreurs rigoureuse ainsi qu’un protocole de découpage efficace. Les types algébriques de Rust semblent être un outil idéal pour assurer le bon fonctionnement du système. Et dans un futur (pas démandé dans ce projet) une sécurité dans le transport des données.
+
+\subsection{Outils et technologies comparés}
+
+Il existe une multitude d'outils de sérialisation. L'étude ... nous a montré que flatbuffer semble être le plus ...
+
+\subsection{Limites identifiées et opportunités}
+
 %----------------------------------------------------------------------------------------------
 
-\section{Calendrier du Projet}
+\section{Organisation et conception des modules logiciels}
 
 \subsection{Étude de Faisabilité}
 
@@ -136,6 +203,28 @@ async fn handle_surveillance_event(surveillance_event) {
 Pour comprendre l’efficacité du démon, nous avons conçu et mis en œuvre des outils automatisés de test de performance. Ces outils simulaient des scénarios d’utilisation réels et mesuraient les ressources système consommées par le démon sous différentes charges.\\
 
 Nous avons ensuite recueilli des données de performance telles que la latence, l’utilisation du processeur, et mené une analyse détaillée des résultats (cf. \ref{sec:analyse}). Cela nous a aidés à comprendre les compromis entre l'utilisation de Rust et de C en termes d’efficacité à l'exécution et à choisir l’un des deux.
+
+\subsubsection{Détails}
+
+Grâce au framework de tests, \texttt{pytest} nous avons pu créer des fixtures permettant de réutiliser le code dans plusieurs fonctions de tests. Par exemple pour lancer le démon une fixture s'impose pour pas réécrire le code plusieurs fois.\\
+
+Prototype de tests en pseudo-code : 
+
+\begin{verbatim}
+    fn test_sleep(daemon) {
+        connect(port)
+        send(serialize_command("sleep 3"))
+        wait_received_process_launched()
+        start_timer()
+        wait_received_process_terminated()
+        stop_timer()
+        assert timer +- 100 == 3
+    }
+\end{verbatim}
+
+Dans ce test le paramètre \texttt{daemon} est une \textbf{fixture} de notre jeu de tests, il lancera automatiquement le démon sur un \texttt{port} précisé en amont. Ici, on vérifie si une attente de 3 secondes a été détectée avec une marge d’erreur de $\varepsilon$ \textbf{seconde(s)} (100 dans ce cas).
+
+
 
 %----------------------------------------------------------------------------------------------
 
