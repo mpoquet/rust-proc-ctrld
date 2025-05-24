@@ -8,9 +8,7 @@ import pytest
 import socket
 import numpy as np
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-from scipy import stats
+
 
 RUST_PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../rust"))
 C_PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../c/builddir"))
@@ -20,7 +18,7 @@ DAEMON_PORTS = {
     "c": 9090
 }
 
-nb_mesures = 2
+nb_mesures = 20
 nb_iteration = 30
 
 temps_sans_demon = []
@@ -109,9 +107,9 @@ def boucle_launch_process(IP_address, daemon, command):
 
             match daemon_type:
                 case "rust":
-                    temps_demon_rust.append(difference)
+                    temps_demon_rust.append(difference / nb_iteration)
                 case "c":
-                    temps_demon_c.append(difference)
+                    temps_demon_c.append(difference / nb_iteration)
                 case _ : print("non couvert")
 
     except ConnectionRefusedError:
@@ -141,7 +139,7 @@ def test_sans_demon():
 
         difference = t_stop - t_start
 
-        temps_sans_demon.append(difference)
+        temps_sans_demon.append(difference / nb_iteration)
 
 
 
@@ -183,15 +181,24 @@ def test_traitement_donne():
     print(f"{len(temps_sans_demon)} {len(temps_demon_rust)} {len(temps_demon_c)}")
 
     data = {
-        "variante": ["Sans_demon"] * len(temps_sans_demon) +
-                    ["Demon_rust"] * len(temps_demon_rust) +
-                    ["Demon_c"] * len(temps_demon_c),
-        "temps_performance": temps_sans_demon + temps_demon_rust + temps_demon_c
+        'Sans demon' : temps_sans_demon,
+        'Demon rust' : temps_demon_rust,
+        'Demon c' : temps_demon_c
     }
 
 
     df = pd.DataFrame(data)
 
+    #enregistrement
+    df.to_csv('donnees.csv', index=False)
+
+    print("données générées dans donnees.csv")
+
+    '''
+    "variante": ["Sans_demon"] * len(temps_sans_demon) +
+                    ["Demon_rust"] * len(temps_demon_rust) +
+                    ["Demon_c"] * len(temps_demon_c),
+        "temps_performance": temps_sans_demon + temps_demon_rust + temps_demon_c
 
     # Afficher les premières lignes pour vérifier les données
     print("Aperçu des données :")
@@ -280,3 +287,4 @@ def test_traitement_donne():
         print(f"  Intervalle de confiance à 95%: [{subset.mean() - stats_df.loc[variante, 'ci_95']:.2f}, {subset.mean() + stats_df.loc[variante, 'ci_95']:.2f}]")
         print(f"  Min: {subset.min():.2f} ms")
         print(f"  Max: {subset.max():.2f} ms")
+    '''
