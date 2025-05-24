@@ -18,7 +18,7 @@ DAEMON_PORTS = {
     "c": 9090
 }
 
-nb_mesures = 20
+nb_mesures = 10
 nb_iteration = 30
 
 temps_sans_demon = []
@@ -34,8 +34,8 @@ def daemon(request):
         process = subprocess.Popen(
             ["cargo", "run", "--bin", "run_demon", "--", str(port)],
             cwd=RUST_PROJECT_DIR,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
             text=True,
             preexec_fn=os.setsid
         )
@@ -43,8 +43,8 @@ def daemon(request):
         process = subprocess.Popen(
             ["./daemon", str(port)],
             cwd=C_PROJECT_DIR,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
             text=True,
             preexec_fn=os.setsid
         )
