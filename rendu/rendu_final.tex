@@ -45,12 +45,20 @@ Nous appelons cette application un \textit{Daemon de Contrôle}. Elle suit une \
 
 Pour l'implémentation asynchrone en Rust, nous utilisons la bibliothèque \href{https://docs.rs/tokio/latest/tokio/}{Tokio}, qui fournit des outils puissants pour la concurrence et les entrées/sorties non bloquantes.
 
-\subsection{Répartition des tâches}
-
-Nous nous sommes répartis les tâches de la manière suivante :
 
 %----------------------------------------------------------------------------------------------
 \section{État de l’art et veille technologique}
+
+\subsection{Outils et technologies comparés}
+
+\subsubsection{Sérialisation des données}
+
+
+La sérialisation des données est essentielle pour la communication réseau. Elle transforme des structures complexes en une séquence d'octets, ce qui va nous permettre de transporter facilement différents types de données, ainsi que de faire communiquer des programmes de différents langages ensemble, une fonctionnalité qui nous sera utile lors des tests de régression et de performance.
+
+Après une étude des différentes options qui s'offraient a nous, nous avons décidé d'utiliser Flatbuffers, une bibliothèque de sérialisation \textit{cross-platform} qui supportent des langages tels que C, Python et Rust. Cette bibliothèque ayant été initialement créée pour des applications à fort enjeu de performance, elle correspond parfaitement a notre projet.
+
+\subsubsection{Technologies réseau}
 
 \begin{table}[H]
     \centering
@@ -103,17 +111,11 @@ Nous nous sommes répartis les tâches de la manière suivante :
 
 On se rend compte que la technologie des \textbf{sockets} constitue une bonne solution, à condition de mettre en place une gestion d’erreurs rigoureuse ainsi qu’un protocole de découpage efficace. Les types algébriques de Rust semblent être un outil idéal pour assurer le bon fonctionnement du système. Et dans un futur (pas demandé dans ce projet) une sécurité dans le transport des données.
 
-\subsection{Outils et technologies comparés}
-
-La sérialisation des données est essentielle pour la communication réseau. Elle transforme des structures complexes en une séquence d'octets, ce qui va nous permettre de transporter facilement différents types de données, ainsi que de faire communiquer des programmes de différents langages ensemble, une fonctionnalité qui nous sera utile lors des tests de régression et de performance.
-
-Après une étude des différentes options qui s'offraient a nous, nous avons décidé d'utiliser Flatbuffers, une bibliothèque de sérialisation \textit{cross-platform} qui supportent des langages tels que C, Python et Rust. Cette bibliothèque ayant été initialement créée pour des applications à fort enjeu de performance, elle correspond parfaitement a notre projet.
-
 \subsection{Limites identifiées et opportunités}
 
 %----------------------------------------------------------------------------------------------
 
-\section{Organisation et conception des modules logiciels}
+\section{Conception des modules logiciels}
 
 \subsection{Étude de Faisabilité}
 
@@ -226,7 +228,9 @@ Prototype de tests en pseudo-code :
 
 Dans ce test le paramètre \texttt{daemon} est une \textbf{fixture} de notre jeu de tests, il lancera automatiquement le démon sur un \texttt{port} précisé en amont. Ici, on vérifie si une attente de 3 secondes a été détectée avec une marge d’erreur de $\varepsilon$ \textbf{seconde(s)} (100 dans ce cas).
 
+%----------------------------------------------------------------------------------------------
 
+\section{Gestion du projet}
 
 %----------------------------------------------------------------------------------------------
 
