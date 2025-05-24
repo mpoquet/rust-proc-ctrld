@@ -200,6 +200,48 @@ async fn handle_surveillance_event(surveillance_event) {
 }
 \end{verbatim}
 
+\subsubsection{Implémentation de la sérialisation}
+
+Pour implémenter la sérialisation nous avons commencé par établir un schéma, qui nous permet de définir des structures de données que l'on va sérialiser.
+Nous avons décidé de catégoriser chaque type de message que le client peut envoyer au démon ainsi que ceux que le démon peut envoyer au client comme des \textit{events}. Chaque message sérialisé contient un \textit{event} parmi tout les \textit{events} possibles. Tous les \textit{events} sont nommés et répertoriés dans une \textit{table}, et chaque \textit{event} est ensuite défini plus haut dans le schéma.
+
+\begin{verbatim}
+    union Event {
+    RunCommand,
+    KillProcess,
+    EstablishTCPConnection,
+    EstablishUnixConnection,
+
+    ExecveTerminated,
+    ProcessLaunched,
+    ChildCreationError,
+    ProcessTerminated,
+    TCPSocketListening,
+    InotifyPathUpdated,
+    InotifyWatchListUpdated,
+    SocketWatched,
+    SocketWatchTerminated
+}
+
+table Message {
+    events: Event;
+}
+\end{verbatim}
+
+\noindent Exemple de la définition d'un \textit{event} : 
+
+\begin{verbatim}
+    table ExecveTerminated {
+    pid: int32;
+    command_name: string;
+    success: bool;
+}
+\end{verbatim}
+
+Nous avons ensuite codé une fonction pour sérialiser et une fonction pour désérialiser chacune des \textit{table} répertoriées dans l'\textit{union} Event. Ce travail a été effectué en Rust pour le démon codé en Rust, en C++ pour le démon codé en C ainsi qu'en Python pour effectuer différents tests sur le démon. 
+
+Nous avons choisi de coder la sérialisation du démon C en C++ car si nous avions travaillé en C, il aurait fallu utiliser un projet à part, FlatCC, qui contient son propre compilateur de schéma ainsi que sa propre bibliothèque en C. Cette solution n'était pas viable car FlatCC n'est pas maintenu de la même manière que Flatbuffers, et la bibliothèque C n'est pas nécessairement mise à jour au même rythme que dans les autres langages, ce qui aurait posé problème. Nous avons préféré rester sur la même dépendance pour tout le projet.
+
 \subsection{Analyse des Performances}
 
 À ce stade, nous avons entièrement intégré le démon dans un système. Nous avons veillé à ce que toutes les fonctionnalités majeures soient couvertes par les tests de régression.\\
