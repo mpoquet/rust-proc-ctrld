@@ -132,7 +132,7 @@ def test_sans_demon():
 
         #Boucle de j itérations
         for j in range(nb_iteration):
-            subprocess.call(["echo", ""] , stdout=subprocess.DEVNULL)
+            subprocess.call(["echo", ""])
 
         #Arrêt chronomètre et enregistrement temps de j itérations
         t_stop = time.perf_counter()
