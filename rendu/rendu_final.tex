@@ -127,6 +127,7 @@ A la fin de cette première partie du projet nous nous sommes rendu compte de pl
 \begin{itemize}
     \item \texttt{epoll} est mieux que \texttt{poll} car il permet d'ajouter et de retirer facilement des files descriptors. Par la même occasion il permet d’attacher à un file descriptor certaines données, notamment pour identifier son type avant de le lire.
     \item Les primitives systèmes (comme \texttt{epoll}) s'est avérées trop complexe pour la partie Rust. On a priviligié les libs comme \texttt{tokio, netstat2, inotify}.
+    \item Il n'existe pas de méthode asynchrone simple pour detecter la création ou le passage en listening d'un socket. Des outils comme netlink en C offre un mécanisme de notification qui malheureusement ne notifie pas les évènement précédement mentionné. La seul méthode asynchrone restante aurait été d'utiliser les eBPF en Rust et en C. Cela permet d'exécuter de manière sécuriser du code dans le kernel et d'avoir accés à des fonctionnalité particulière indisponible dans le user space. Cependant, non seulement, c'est très technique à utiliser mais en plus il faut compiler le code puis l'injecter pour qu'il fasse effet. Donc, utiliser ce type de mécanisme, pour qu'il fonctionne avec n'importe quel port demandé par l'utilisateur, aurait demandé soit de recompiler un nouveau code à chaque fois, soit de pouvoir communiquer via un système comme socket unix ou tube avec le code s'exécutant dans le kernel. Tout ça en recevant des notifications du kernel de façon asynchrone aussi. Bref c'est une méthode imparfaite qui aurait pu fonctionné si on avait eu le temps, mais n'aurait pas forcément permis de réduire l'overhead de façon significative par rapport au méthode synchrone qui on été retenu.
     \item \texttt{Flatbuffers} seul suffit à sérialiser des messages d’erreurs de manière relativement simple, nous ne pensons pas que Serde ait une utilité pour notre utilisation.
 \end{itemize}
 
@@ -273,6 +274,10 @@ Dans ce test le paramètre \texttt{daemon} est une \textbf{fixture} de notre jeu
 %----------------------------------------------------------------------------------------------
 
 \section{Gestion du projet}
+
+\subsection{Partage des tâches}
+
+La répartition des tâches s'est faite de façon assez naturelle. Mohamed s'est concentré sur la partie sérialisation en Rust et les tests d'overheads. Alexandre s'est occupé de la sérialisation C et python pour permettre la création des tests de régression. Quant à Telmo et Hadrien, ils se sont respectivement occupé de la conception du daemon C et Rust. Enfin les tests de régression ont aussi été conçu par Telmo et Hadrien.  
 
 %----------------------------------------------------------------------------------------------
 
