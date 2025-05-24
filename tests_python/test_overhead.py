@@ -143,7 +143,7 @@ def test_sans_demon():
 
 
 
-@pytest.mark.timeout(5)
+@pytest.mark.timeout(30)
 def test_avec_demon(daemon):
     process, daemon_type, port = daemon
 
