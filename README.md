@@ -176,7 +176,7 @@ pytest test_daemon
 - scipy
 
 ```bash
-pytest -s --disable-warnings test_overhead
+pytest -s --disable-warnings test_overhead.py
 ```
 
 ## Credit
