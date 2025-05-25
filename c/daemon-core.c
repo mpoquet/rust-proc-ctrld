@@ -22,7 +22,6 @@
 
 #define MAX_EVENTS 128
 
-int num_inotifyFD=0;
 int nfds;
 struct epoll_event events[MAX_EVENTS];
 command* com;
@@ -56,6 +55,7 @@ int main(int argc, char** argv){
 
     int err_file = initialize_error_file("daemon_trace.txt");
 
+    //Error file for debugging purpose
     if (err_file!=-1){
         dup2(err_file,STDOUT_FILENO);
         dup2(err_file,STDERR_FILENO);
@@ -84,7 +84,6 @@ int main(int argc, char** argv){
         free(edata);
         return -1;
     }
-    num_inotifyFD++;
 
     //create inotifyFD to watch files requested by user
     int inotifyFd = inotify_init();
@@ -114,7 +113,7 @@ int main(int argc, char** argv){
 
     add_event_signalFd(sfd, epollfd);
 
-    while(num_inotifyFD>0){
+    while(1){
         printf("Waiting for incoming notifications\n");
         nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
         if (nfds == -1) {
@@ -164,7 +163,6 @@ int main(int argc, char** argv){
                             epoll_ctl(epollfd, EPOLL_CTL_DEL, edata->fd, NULL);
                             close(edata->fd);          
                             free(edata);
-                            num_inotifyFD--;
                             break;
                         }
                         printf("Command received\n");
@@ -181,11 +179,17 @@ int main(int argc, char** argv){
                             case KILL_PROCESS:
                                 printf("KILLPROCESS\n");
                                 int pid = receive_kill_c(buffer,size);
-                                if (pid==0){ //Kill Daemon
+                                printf("pid to kill : %d\n", pid);
+                                fflush(stdout);
+                                if(pid>0){
+                                    printf("Killing process : %d\n", pid);
+                                    fflush(stdout);
+                                    kill(pid,SIGKILL);
+                                }
+                                else if (pid==0){ //Kill Daemon
+                                    printf("Killing daemon\n");
                                     free_manager(process_manager, nb_process);
                                     kill(-getpgrp(), SIGTERM); // Kill all process of the group
-                                }else{
-                                    kill(pid,SIGKILL);
                                 }
                                 break;
 
@@ -212,7 +216,6 @@ int main(int argc, char** argv){
                             free(edata);
                             return -1;
                         }
-                        num_inotifyFD++;
                         communication_socket=new_connexion; //Temporary, assume there is only one client
                         struct buffer_info* info = send_tcpsocketlistening_to_user_c(destPort);
                         send_message(new_connexion, info);
@@ -262,7 +265,7 @@ int main(int argc, char** argv){
                         } else if (n == 0) {
                             info_e.success=true;
                         } else {
-                            // erreur de lecture
+                            // reading error
                         }
                         printf("sending execve termitated\n");
                         fflush(stdout);
@@ -275,7 +278,6 @@ int main(int argc, char** argv){
                         printf("    closing fd %d\n", edata->fd);
                         if (close(events[i].data.fd) == -1)
                             perror("close");
-                        num_inotifyFD--;
                     }
 
                 }

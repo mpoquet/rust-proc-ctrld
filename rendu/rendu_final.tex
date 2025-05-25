@@ -149,6 +149,7 @@ Notre démon sera capable :
 \begin{itemize}
     \item D'exécuter des fichier binaire exécutable. Ce qui comprend des commandes (Unix-like) : \textit{echo}, \textit{sleep}. Mais aussi, par exemple, n'importe quelle programme C déjà compilé qui se trouve sur la machine ou le daemon s'exécute.
     \item Des surveillances sur un \textbf{socket} ou sur un \textbf{fichier} avec \textit{inotify}.
+    \item De kill un process en cours d'exécution
 \end{itemize}
 
 % exemple de code
@@ -322,10 +323,11 @@ Nous mesurons d'abord 20 fois le temps moyen mis par l'appel consécutif de 30 f
 
 L'appel système d'\textbf{echo} dure en moyenne 0.8 ms, tandis que les \texttt{daemons} en Rust et en C mettent respectivement 42.2 ms et 42.0 ms pour exécuter la commande. L'écart entre ces deux derniers est trop faible pour désigner un \texttt{daemon} plus performant que l'autre sur l'échelle temporelle, si une personne souhaite poursuivre le dévellopement d'un démon elle devra choisir celui avec le language dont elle a le plus d'affinité, ou bien effectuer des mesures sur la consommation de mémoire. De façon plus globale, les \texttt{daemons} lancent l'exécution d'une commande rapidement, l'objectif souhaité de ce projet est donc satisfait. 
 
-
-
 %----------------------------------------------------------------------------------------------
 \section{Conclusion}
+
+En conclusion, nous avons réussi à produire 2 daemon de contrôle offrant les même fonctionnalités, avec un overhead léger. Le tout avec un layer de sérialisation permettant une communication interlanguage garantissant une certaine flexibilité du coté de l'utilisateur. Cependant, il reste des pistes d'amélioration possible. Par exemple, pour le moment on ne peut avoir qu'un seul client connecté par daemon. La detection de socket se fait de façon synchrone ce qui pourrait être améliorer. On pourrait aussi étendre le schéma Flatbuffers pour, par exemple, proposer plus de type d'évènement différent au moment de la reception d'une notification inotification inotify. On pourrait aussi permettre à l'utilisateur de décider du timeout pour la detection de socket. On pourrait ajouter la possibilité de créer et détecter des socket unix. Enfin à l'heure actuel, il n'est aussi pas possible de supprimer, depuis le coté client, un évènement inotify déjà ajouté.
+Bref, le code fourni n'est qu'une base sur laquelle étendre les fonctionnalités au grés des besoins.  
 
 
 \end{document}

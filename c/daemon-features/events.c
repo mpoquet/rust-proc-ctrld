@@ -84,9 +84,10 @@ void process_command_request(process_info **process_manager, int* nb_process, in
     if(param!=NULL){
         char buffer[20]="errFile";
         //On créer un fichier avec un nom unique normalement. Pours ça il faut que les valeurs soit proprement initalisé.
-        if(snprintf(buffer, sizeof(buffer), "%d-%s", *nb_process, param->pathname)){
+        if(snprintf(buffer, sizeof(buffer), "%d-%s", *nb_process, param->args[0])){
             printf("Error while formatting the name of the errFile for the process %s\n", param->pathname);
         }
+        //creation of error files for each process for debugging purpose
         err_file = initialize_error_file(buffer);
         err_file = err_file==-1?STDOUT_FILENO:err_file;
         info_child* res;

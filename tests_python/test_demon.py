@@ -445,15 +445,13 @@ def kill_process(IP_address, daemon, command):
         res = client.recv(int(size))
 
         while(receive_message_from_demon(res,size)!=Event.PROCESS_TERMINATED):
-            if(receive_message_from_demon(res,size)!=Event.PROCESS_LAUNCHED):
-                size_bytes = client.recv(4)
-                size = int.from_bytes(size_bytes, byteorder='little')
-                res = client.recv(int(size))
-                pid=receive_processlaunched(res,size)
-                print(pid)
-                # buf=send_kill_to_demon(pid)
-                # header = buf.size.to_bytes(4, byteorder='little')
-                # client.sendall(header + buf.buffer)
+            if(receive_message_from_demon(res,size)==Event.EXECVE_TERMINATED):
+                print(receive_message_from_demon(res,size))
+                data=receive_execveterminated(res,int(size))
+                print(data.pid)
+                buf=send_kill_to_demon(data.pid)
+                header = buf.size.to_bytes(4, byteorder='little')
+                client.sendall(header + buf.buffer)
             size_bytes = client.recv(4)
             size = int.from_bytes(size_bytes, byteorder='little')
             res = client.recv(int(size))
@@ -461,10 +459,11 @@ def kill_process(IP_address, daemon, command):
         info = receive_processterminated(res,int(size))
 
         end = time.perf_counter()
-        print(f"Time elapsed : {end-start:.4f}")
+        time_elapsed = end-start
+        print(f"Time elapsed : {time_elapsed:.4f}")
 
         print(f"error_code : {info.error_code}, pid: {info.pid}")
-        if info.pid>0 and info.error_code==0 and end-start<2.9:
+        if info.pid>0 and info.error_code>0 and time_elapsed<2.9:
             client.close()
             return 1
         else :
@@ -743,22 +742,22 @@ def test_inotify_event(daemon):
     res = inotify_event("127.0.0.1", daemon,command)
     assert res != -1, "Inotify path not updated"
 
-# @pytest.mark.timeout(3)
-# def test_kill_process(daemon):
-#     path = "/bin/sleep"
-#     args = ["sleep", "3"]
-#     envp = []
-#     flags = 0
-#     stack_size = 1024 * 1024  # 1 MB de stack
-#     to_watch = []
-#     command = Command(
-#         path=path,
-#         args=args,
-#         envp=envp,
-#         flags=flags,
-#         stack_size=stack_size,
-#         to_watch=to_watch,
-#     )
+@pytest.mark.timeout(3)
+def test_kill_process(daemon):
+    path = "/bin/sleep"
+    args = ["sleep", "10"]
+    envp = []
+    flags = 0
+    stack_size = 1024 * 1024  # 1 MB de stack
+    to_watch = []
+    command = Command(
+        path=path,
+        args=args,
+        envp=envp,
+        flags=flags,
+        stack_size=stack_size,
+        to_watch=to_watch,
+    )
 
-#     res = kill_process("127.0.0.1", daemon,command)
-#     assert res != -1, "Response time is not good"
+    res = kill_process("127.0.0.1", daemon,command)
+    assert res != -1, "Response time is not good"
