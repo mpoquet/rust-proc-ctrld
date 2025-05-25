@@ -153,7 +153,7 @@ Notre démon sera capable :
 
 \subsubsection{Détails}
 
-\subsubsubsection{Boucle interne du daemon}
+\subsubsection{Boucle interne du daemon}
 
 Voici en pseudo-code comment fonctionne notre démon :
 
@@ -203,31 +203,31 @@ async fn handle_surveillance_event(surveillance_event) {
 }
 \end{verbatim}
 
-\subsubsubsection{Utilisation de epoll dans le daemon C}
+\subsubsection{Utilisation de epoll dans le daemon C}
 
 Un détail qui mérite une explication un peu plus poussé est l'utilisation de epoll dans le daemon C. Epoll en c permet de faire comme poll c'est à dire gérer plusieurs file descriptor en même temps mais avec plusieurs fonctionnalité supplémentaire. Celle qui s'est avéré très utile est le fait de pouvoir attacher une structure de données personnalisé à n'importe quel évènement epoll ajouté. Par exemple comme ceci : 
 
 \begin{verbatim}
-struct epoll_event ev;
-event_data_sock *edata = malloc(sizeof(event_data_sock));
-if(edata==NULL){
-    free(edata);
-    perror("malloc");
-    return -1;
-}
-edata->fd = server_socket->sockfd;
-edata->type = SOCK_CONNEXION;
-edata->sock_info=server_socket;
-ev.events=EPOLLIN;
-ev.data.ptr=edata;
-if (epoll_ctl(epollfd, EPOLL_CTL_ADD, server_socket->sockfd, &ev)==-1){
-    printf("error while trying to add file descriptor to epoll interest list");
-    free(edata);
-    return -1;
-}
+    struct epoll_event ev;
+    event_data_sock *edata = malloc(sizeof(event_data_sock));
+    if(edata==NULL){
+        free(edata);
+        perror("malloc");
+        return -1;
+    }
+    edata->fd = server_socket->sockfd;
+    edata->type = SOCK_CONNEXION;
+    edata->sock_info=server_socket;
+    ev.events=EPOLLIN;
+    ev.data.ptr=edata;
+    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, server_socket->sockfd, &ev)==-1){
+        printf("error while trying to add file descriptor to epoll interest list");
+        free(edata);
+        return -1;
+    }
 \end{verbatim}
 
-L'interet principal est de savoir à quel type de notification on a affaire. Car on ne traite pas une notification de message sur un socket de la même manière qu'une notification provoqué par un signalfd. Mais aussi cela permet de stocker des info supplémentaire nécessaire pour certaine fonctionnalité. Par exemple on devait pouvoir déclancher une notification quand un fichier atteint une certaine taille. Or, inotify ne propose pas nativement cette feature. Alors ce qu'on fait c'est qu'on créer un nouveau file descriptor de type inotify, on y ajoute le fichier, on ajoute les flags comme IN_MODIFY, puis quand on l'ajoute à epoll on utilise une structure de données personnalisé dans laquelle on stock la taille qui trigger la notification vers le client. Cette méthode a été utilisé de multiple fois, par exemple pour savoir quel fils vient d'exécuter execve ou pour conserver les info du socket servant de serveur pour accepter les connexions arrivantes.
+%L'interet principal est de savoir à quel type de notification on a affaire. Car on ne traite pas une notification de message sur un socket de la même manière qu'une notification provoqué par un signalfd. Mais aussi cela permet de stocker des info supplémentaire nécessaire pour certaine fonctionnalité. Par exemple on devait pouvoir déclancher une notification quand un fichier atteint une certaine taille. Or, inotify ne propose pas nativement cette feature. Alors ce qu'on fait c'est qu'on créer un nouveau file descriptor de type inotify, on y ajoute le fichier, on ajoute les flags comme IN_MODIFY, puis quand on l'ajoute à epoll on utilise une structure de données personnalisé dans laquelle on stock la taille qui trigger la notification vers le client. Cette méthode a été utilisé de multiple fois, par exemple pour savoir quel fils vient d'exécuter execve ou pour conserver les info du socket servant de serveur pour accepter les connexions arrivantes.\\
 
 \subsubsection{Implémentation de la sérialisation}
 
@@ -235,7 +235,7 @@ Pour implémenter la sérialisation nous avons commencé par établir un schéma
 Nous avons décidé de catégoriser chaque type de message que le client peut envoyer au démon ainsi que ceux que le démon peut envoyer au client comme des \textit{events}. Chaque message sérialisé contient un \textit{event} parmi tout les \textit{events} possibles. Tous les \textit{events} sont nommés et répertoriés dans une \textit{table}, et chaque \textit{event} est ensuite défini plus haut dans le schéma.
 
 \begin{verbatim}
-    union Event {
+union Event {
     RunCommand,
     KillProcess,
     EstablishTCPConnection,
