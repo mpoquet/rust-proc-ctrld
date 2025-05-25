@@ -296,7 +296,7 @@ Prototype de tests en pseudo-code :
         start_timer()
         wait_received_process_terminated()
         stop_timer()
-        assert timer +- 100 == 3
+        assert timer ± 100 == 3
     }
 \end{verbatim}
 
@@ -314,7 +314,7 @@ La répartition des tâches s'est faite de façon assez naturelle. Mohamed s'est
 \subsection{Bilan personnel}
 
 \begin{itemize}
-    \item Hadrien Lagier : Ce fut une experience enrichissante pour ma part. Dans mon cursus universitaire j'ai toujours eu des projet où l'on nous disait quoi faire. C'est l'inverse dans ce projet où on a du s'organiser par nous même et faire avancer le sujet de recherche. Ce projet m'a permis de me rendre compte que la recherche est un domaine qui m'intéresse tout particulièrement.
+    \item Hadrien Lagier : Ce fut une expérience enrichissante pour ma part. Dans mon cursus universitaire, j'ai toujours eu des projets où l'on nous disait quoi faire. C'est l'inverse dans ce projet où on a dû s'organiser par nous-même et faire avancer le sujet de recherche. Ce projet m'a permis de me rendre compte que la recherche est un domaine qui m'intéresse tout particulièrement.
 \end{itemize}
 
 %----------------------------------------------------------------------------------------------
@@ -337,8 +337,7 @@ Pour ce qui est de l'analyse de la \textbf{mémoire vive}. Nous avons analysé l
 %----------------------------------------------------------------------------------------------
 \section{Conclusion}
 
-En conclusion, nous avons réussi à produire 2 daemon de contrôle offrant les même fonctionnalités, avec un overhead léger. Le tout avec un layer de sérialisation permettant une communication interlanguage garantissant une certaine flexibilité du coté de l'utilisateur. Cependant, il reste des pistes d'amélioration possible. Par exemple, pour le moment on ne peut avoir qu'un seul client connecté par daemon. La detection de socket se fait de façon synchrone ce qui pourrait être améliorer. On pourrait aussi étendre le schéma Flatbuffers pour, par exemple, proposer plus de type d'évènement différent au moment de la reception d'une notification inotification inotify. On pourrait aussi permettre à l'utilisateur de décider du timeout pour la detection de socket. On pourrait ajouter la possibilité de créer et détecter des socket unix. Enfin à l'heure actuel, il n'est aussi pas possible de supprimer, depuis le coté client, un évènement inotify déjà ajouté.
-Bref, le code fourni n'est qu'une base sur laquelle étendre les fonctionnalités au grés des besoins.  
+En conclusion, nous avons réussi à produire 2 daemon de contrôle offrant les mêmes fonctionnalités, avec un overhead léger. Le tout avec un layer de sérialisation permettant une communication interlanguage garantissant une certaine flexibilité du côté de l'utilisateur. Cependant, il reste des pistes d'amélioration possible. Par exemple, pour le moment, on ne peut avoir qu'un seul client connecté par daemon. La détection de socket se fait de façon synchrone ce qui pourrait être amélioré. On pourrait aussi étendre le schéma Flatbuffers pour, par exemple, proposer plus de type d'événement différent au moment de la réception d'une notification inotification inotify. On pourrait aussi permettre à l'utilisateur de décider du timeout pour la détection de socket. On pourrait ajouter la possibilité de créer et détecter des socket unix. Enfin, à l'heure actuelle, il n'est aussi pas possible de supprimer, depuis le côté client, un événement inotify déjà ajouté. Bref, le code fourni n'est qu'une base sur laquelle étendre les fonctionnalités au gré des besoins.   
 
 
 \end{document}
