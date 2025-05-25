@@ -11,13 +11,11 @@
 \contentsline {subsubsection}{\numberline {3.1.1}Réflexion à la fin de cette première étape}{5}{subsubsection.3.1.1}%
 \contentsline {subsection}{\numberline {3.2}Implémentation du Démon}{5}{subsection.3.2}%
 \contentsline {subsubsection}{\numberline {3.2.1}Détails}{6}{subsubsection.3.2.1}%
-\contentsline {subsubsection}{\numberline {3.2.2}Boucle interne du daemon}{6}{subsubsection.3.2.2}%
-\contentsline {subsubsection}{\numberline {3.2.3}Utilisation de epoll dans le daemon C}{6}{subsubsection.3.2.3}%
-\contentsline {subsubsection}{\numberline {3.2.4}Implémentation de la sérialisation}{7}{subsubsection.3.2.4}%
-\contentsline {subsubsection}{\numberline {3.2.5}Implémentation des tests}{8}{subsubsection.3.2.5}%
+\contentsline {subsubsection}{\numberline {3.2.2}Détail, utilisation de epoll dans le daemon C}{7}{subsubsection.3.2.2}%
+\contentsline {subsubsection}{\numberline {3.2.3}Implémentation de la sérialisation}{8}{subsubsection.3.2.3}%
 \contentsline {subsection}{\numberline {3.3}Analyse des Performances}{8}{subsection.3.3}%
-\contentsline {subsubsection}{\numberline {3.3.1}Détails}{8}{subsubsection.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.1}Détails}{9}{subsubsection.3.3.1}%
 \contentsline {section}{\numberline {4}Gestion du projet}{9}{section.4}%
 \contentsline {subsection}{\numberline {4.1}Partage des tâches}{9}{subsection.4.1}%
 \contentsline {section}{\numberline {5}Analyse}{9}{section.5}%
-\contentsline {section}{\numberline {6}Conclusion}{9}{section.6}%
+\contentsline {section}{\numberline {6}Conclusion}{10}{section.6}%
