@@ -4,6 +4,16 @@ out/
 builddir/
 tmp/
 
+# Fichier pour le latex
+*.aux
+*.log
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.out
+*.toc
+
+
 # Fichiers temporaires ou de sauvegarde
 *.log
 *.tmp

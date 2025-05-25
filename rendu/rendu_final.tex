@@ -329,7 +329,7 @@ Nous mesurons d'abord 20 fois le temps moyen mis par l'appel consécutif de 30 f
 
 L'appel système d'\textbf{echo} dure en moyenne 0.8 ms, tandis que les \texttt{daemons} en Rust et en C mettent respectivement 42.2 ms et 42.0 ms pour exécuter la commande. L'écart entre ces deux derniers est trop faible pour désigner un \texttt{daemon} plus performant que l'autre sur l'échelle temporelle, si une personne souhaite poursuivre le dévellopement d'un démon elle devra choisir celui avec le language dont elle a le plus d'affinité. De façon plus globale, les \texttt{daemons} lancent l'exécution d'une commande rapidement, l'objectif souhaité de ce projet est donc satisfait.\\
 
-Pour ce qui est de l'analyse de la \textbf{mémoire vive} :
+Pour ce qui est de l'analyse de la \textbf{mémoire vive}. Nous avons analysé la mémoire vive résidente (sans compter le swap ou les pages partagées) avec la commande : \texttt{grep VmRSS /proc/$PID$/status}.
 \begin{itemize}
     \item En \textbf{Rust} : on obtient a l'exécution une utilisation de 4.1 Mo lorsque on attend une commande. Elle est de 4.4 Mo quand elle exécute une commande \texttt{sleep}.
 \end{itemize}
