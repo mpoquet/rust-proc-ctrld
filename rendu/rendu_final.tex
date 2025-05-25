@@ -113,8 +113,6 @@ Après une étude des différentes options qui s'offraient a nous, nous avons d�
 
 On se rend compte que la technologie des \textbf{sockets} constitue une bonne solution, à condition de mettre en place une gestion d’erreurs rigoureuse ainsi qu’un protocole de découpage efficace. Les types algébriques de Rust semblent être un outil idéal pour assurer le bon fonctionnement du système. Et dans un futur (pas demandé dans ce projet) une sécurité dans le transport des données.
 
-\subsection{Limites identifiées et opportunités}
-
 %----------------------------------------------------------------------------------------------
 
 \section{Conception des modules logiciels}
@@ -151,6 +149,10 @@ Notre démon sera capable :
     \item Des surveillances sur un \textbf{socket} ou sur un \textbf{fichier} avec \textit{inotify}.
     \item De kill un process en cours d'exécution
 \end{itemize}
+
+Voici un exemple de diagramme de séquence d'une execution d'une commande :
+
+\centerline{\includegraphics[scale=0.35]{fonctionnement_normal.png}}
 
 % exemple de code
 
@@ -204,8 +206,6 @@ async fn handle_surveillance_event(surveillance_event) {
 }
 \end{verbatim}
 
-\centerline{\includegraphics[scale=0.35]{fonctionnement_normal.png}}
-
 \subsubsection{Détail, utilisation de epoll dans le daemon C}
 
 Un détail qui mérite une explication un peu plus poussé est l'utilisation de epoll dans le daemon C. Epoll en c permet de faire comme poll c'est à dire gérer plusieurs file descriptor en même temps mais avec plusieurs fonctionnalité supplémentaire. Celle qui s'est avéré très utile est le fait de pouvoir attacher une structure de données personnalisé à n'importe quel évènement epoll ajouté. Par exemple comme ceci : 
@@ -238,7 +238,7 @@ Pour implémenter la sérialisation nous avons commencé par établir un schéma
 Nous avons décidé de catégoriser chaque type de message que le client peut envoyer au démon ainsi que ceux que le démon peut envoyer au client comme des \textit{events}. Chaque message sérialisé contient un \textit{event} parmi tout les \textit{events} possibles. Tous les \textit{events} sont nommés et répertoriés dans une \textit{table}, et chaque \textit{event} est ensuite défini plus haut dans le schéma.
 
 \begin{verbatim}
-    union Event {
+union Event {
     RunCommand,
     KillProcess,
     EstablishTCPConnection,
@@ -309,7 +309,13 @@ Dans ce test le paramètre \texttt{daemon} est une \textbf{fixture} de notre jeu
 
 \subsection{Partage des tâches}
 
-La répartition des tâches s'est faite de façon assez naturelle. Mohamed s'est concentré sur la partie sérialisation en Rust et les tests d'overheads. Alexandre s'est occupé de la sérialisation C et python pour permettre la création des tests de régression. Quant à Telmo et Hadrien, ils se sont respectivement occupé de la conception du daemon C et Rust. Enfin les tests de régression ont aussi été conçu par Telmo et Hadrien.  
+La répartition des tâches s'est faite de façon assez naturelle. Mohamed s'est concentré sur la partie sérialisation en Rust et les tests d'overheads. Alexandre s'est occupé de la sérialisation C et python pour permettre la création des tests de régression. Quant à Telmo et Hadrien, ils se sont respectivement occupé de la conception du daemon C et Rust. Enfin les tests de régression ont aussi été conçu par Telmo et Hadrien.
+
+\subsection{Bilan personnel}
+
+\begin{itemize}
+    \item Hadrien Lagier : Ce fut une experience enrichissante pour ma part. Dans mon cursus universitaire j'ai toujours eu des projet où l'on nous disait quoi faire. C'est l'inverse dans ce projet où on a du s'organiser par nous même et faire avancer le sujet de recherche. Ce projet m'a permis de me rendre compte que la recherche est un domaine qui m'intéresse tout particulièrement.
+\end{itemize}
 
 %----------------------------------------------------------------------------------------------
 
@@ -321,7 +327,12 @@ Nous mesurons d'abord 20 fois le temps moyen mis par l'appel consécutif de 30 f
 
 \centerline{\includegraphics[scale=0.4]{performance_comparison}}
 
-L'appel système d'\textbf{echo} dure en moyenne 0.8 ms, tandis que les \texttt{daemons} en Rust et en C mettent respectivement 42.2 ms et 42.0 ms pour exécuter la commande. L'écart entre ces deux derniers est trop faible pour désigner un \texttt{daemon} plus performant que l'autre sur l'échelle temporelle, si une personne souhaite poursuivre le dévellopement d'un démon elle devra choisir celui avec le language dont elle a le plus d'affinité, ou bien effectuer des mesures sur la consommation de mémoire. De façon plus globale, les \texttt{daemons} lancent l'exécution d'une commande rapidement, l'objectif souhaité de ce projet est donc satisfait. 
+L'appel système d'\textbf{echo} dure en moyenne 0.8 ms, tandis que les \texttt{daemons} en Rust et en C mettent respectivement 42.2 ms et 42.0 ms pour exécuter la commande. L'écart entre ces deux derniers est trop faible pour désigner un \texttt{daemon} plus performant que l'autre sur l'échelle temporelle, si une personne souhaite poursuivre le dévellopement d'un démon elle devra choisir celui avec le language dont elle a le plus d'affinité. De façon plus globale, les \texttt{daemons} lancent l'exécution d'une commande rapidement, l'objectif souhaité de ce projet est donc satisfait.\\
+
+Pour ce qui est de l'analyse de la \textbf{mémoire vive} :
+\begin{itemize}
+    \item En \textbf{Rust} : on obtient a l'exécution une utilisation de 4.1 Mo lorsque on attend une commande. Elle est de 4.4 Mo quand elle exécute une commande \texttt{sleep}.
+\end{itemize}
 
 %----------------------------------------------------------------------------------------------
 \section{Conclusion}
