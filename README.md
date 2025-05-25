@@ -45,6 +45,8 @@ serialization.py provides serialization/deserialization functions usable in Pyth
 The test_daemon folder contains regression tests for the daemon’s various features.
 Finally, test_overhead performs a test to measure the overhead introduced by the daemon compared to running without it.
 
+![diagramme_sequence](https://github.com/user-attachments/assets/319b5431-858d-4236-a09d-9d76b2d4dd56)
+
 ## Compile project :
 
 ### Rust : 
