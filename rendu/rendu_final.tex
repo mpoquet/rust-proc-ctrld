@@ -335,6 +335,7 @@ L'appel système d'\textbf{echo} dure en moyenne 0.8 ms, tandis que les \texttt{
 Pour ce qui est de l'analyse de la \textbf{mémoire vive}. Nous avons analysé la mémoire vive résidente (sans compter le swap ou les pages partagées) avec la commande : \texttt{grep VmRSS /proc/$PID$/status}.
 \begin{itemize}
     \item En \textbf{Rust} : on obtient a l'exécution une utilisation de 4.1 Mo lorsque on attend une commande. Elle est de 4.4 Mo quand elle exécute une commande \texttt{sleep}.
+    \item En \textbf{C} : on a utilisé pgrep daemon pour connaître le pid du daemon (daemon étant le nom de l'exécutable dans builddir). Ensuite on utilise pmap -x pid pour obtenir l'utilisation de la RAM. On obtient ainsi, à la création du daemon, 6160 Ko de mémoire virtuelle totale allouée (toute la mémoire mappée, y compris les fichiers, bibliothèques, etc.), 1476 Ko (RSS) de mémoire résidente réelle utilisée en RAM. C’est la quantité de RAM effectivement utilisée. Et enfin, 216 Ko de pages modifiées (dirty), donc susceptibles d’être écrites sur disque (swap ou fichiers modifiés).
 \end{itemize}
 
 %----------------------------------------------------------------------------------------------
