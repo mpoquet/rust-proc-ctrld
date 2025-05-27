@@ -172,7 +172,7 @@ cd test_python
 pytest test_daemon
 ```
 
-### Regression Tests :
+### Overhead Tests :
 - pandas
 - seaborn
 - scipy
